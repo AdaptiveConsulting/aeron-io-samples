@@ -11,7 +11,7 @@ dependencies {
     checkstyle(libs.checkstyle)
     implementation(libs.agrona)
     implementation(libs.aeron)
-    implementation(libs.sbe)
+    implementation(project(":cluster-protocol"))
 }
 
 testing {

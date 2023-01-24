@@ -4,6 +4,8 @@
 
 package io.aeron.samples;
 
+import io.aeron.sample.cluster.protocol.SampleDecoder;
+
 /***
  * App. Empty. Pointless comment due to checkstyle.
  */
@@ -15,5 +17,6 @@ public class App
      */
     public static void main(final String[] args)
     {
+        final SampleDecoder foo;
     }
 }

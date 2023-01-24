@@ -18,3 +18,9 @@ group = "io.aeron"
 version = "0.0.1-SNAPSHOT"
 
 defaultTasks("check", "build")
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}

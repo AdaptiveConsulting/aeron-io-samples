@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+                   package="io.aeron.sample.cluster.protocol"
+                   id="101"
+                   version="1"
+                   semanticVersion="1"
+                   description="Message Codecs for communicating with sample Aeron Cluster."
+                   byteOrder="littleEndian">
+    <types>
+        <composite name="messageHeader" description="Message identifiers and length of message root.">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId"  primitiveType="uint16"/>
+            <type name="schemaId"    primitiveType="uint16"/>
+            <type name="version"     primitiveType="uint16"/>
+        </composite>
+        <composite name="groupSizeEncoding" description="Repeating group dimensions.">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="numInGroup"  primitiveType="uint16"/>
+        </composite>
+        <composite name="varAsciiEncoding" description="Variable length ASCII string header.">
+            <type name="length"      primitiveType="uint32" maxValue="1073741824"/>
+            <type name="varData"     primitiveType="uint8" length="0" characterEncoding="US-ASCII"/>
+        </composite>
+        <composite name="varDataEncoding" description="Variable length data blob header.">
+            <type name="length"      primitiveType="uint32" maxValue="1073741824"/>
+            <type name="varData"     primitiveType="uint8" length="0"/>
+        </composite>
+        <enum name="BooleanType" encodingType="int32" description="Language independent boolean type.">
+            <validValue name="FALSE" description="Language independent boolean false.">0</validValue>
+            <validValue name="TRUE" description="Language independent boolean true.">1</validValue>
+        </enum>
+        <type name="time_t" primitiveType="int64" description="Epoch time in milliseconds since 1 Jan 1970 UTC."/>
+    </types>
+
+
+    <sbe:message name="Sample"
+                 id="123"
+                 description="Just a placeholder.">
+        <field name="field1"     id="1" type="int64"/>
+        <field name="field2"        id="2" type="int64"/>
+        <field name="field3"          id="3" type="int64"/>
+    </sbe:message>
+
+</sbe:messageSchema>
