@@ -1,0 +1,38 @@
+root = true
+
+[*]
+charset                     = utf-8
+trim_trailing_whitespace    = true
+insert_final_newline        = true
+indent_style                = space
+indent_size                 = 2
+continuation_indent_size    = 2
+max_line_length             = 120
+
+[*.cs]
+indent_size                 = 4
+continuation_indent_size    = 4
+
+[*.py]
+indent_size                 = 4
+continuation_indent_size    = 4
+
+[*.{ts,tsx}]
+indent_size                 = 4
+continuation_indent_size    = 4
+
+# Retain the existing formatting
+[*.sh]
+indent_size                 = 4
+continuation_indent_size    = 4
+end_of_line                 = lf
+
+# shfmt options
+shell_variant               = bash # like -ln=bash
+binary_next_line            = true # like -bn
+switch_case_indent          = true # like -ci
+space_redirects             = true # like -sr
+
+# Retain the existing formatting
+[*.{bat,cmd,ps1}]
+end_of_line                 = crlf
