@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class SbeDemuxer
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SbeDemuxer.class);
-    private final SessionMessageContext sessionMessageContext;
+    private final SessionMessageContextImpl sessionMessageContext;
     private final Participants participants;
     private final Auctions auctions;
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
@@ -35,7 +35,7 @@ public class SbeDemuxer
      * @param participants          the participants domain model to which commands are dispatched
      * @param auctions              the auction domain model to which commands are dispatched
      */
-    public SbeDemuxer(final SessionMessageContext sessionMessageContext, final Participants participants,
+    public SbeDemuxer(final SessionMessageContextImpl sessionMessageContext, final Participants participants,
         final Auctions auctions)
     {
         this.sessionMessageContext = sessionMessageContext;
@@ -70,7 +70,7 @@ public class SbeDemuxer
             case CreateAuctionDecoder.TEMPLATE_ID ->
             {
                 createAuctionDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
-                auctions.createAuction(createAuctionDecoder.createdByParticipantId(),
+                auctions.addAuction(createAuctionDecoder.createdByParticipantId(),
                     createAuctionDecoder.startTime(),
                     createAuctionDecoder.endTime(),
                     createAuctionDecoder.name(),

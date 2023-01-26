@@ -4,33 +4,14 @@
 
 package io.aeron.samples.infra;
 
-import io.aeron.cluster.service.ClientSession;
-import io.aeron.logbuffer.Header;
-
 /**
- * The context for a single cluster session message
+ * Interface to session context data
  */
-public class SessionMessageContext
+public interface SessionMessageContext
 {
-    private ClientSessionEgress clientSessionEgress;
-
     /**
-     * Sets the egress to be used
-     * @param clientSessionEgress the client session egress to be used
+     * Gets the cluster time
+     * @return the cluster time at the time the message was written to log
      */
-    public void setClientSessionEgress(final ClientSessionEgress clientSessionEgress)
-    {
-        this.clientSessionEgress = clientSessionEgress;
-    }
-
-    /**
-     * Sets the session context for this cluster message
-     * @param session the session
-     * @param timestamp the timestamp
-     * @param header the header
-     */
-    public void setSessionContext(final ClientSession session, final long timestamp, final Header header)
-    {
-
-    }
+    long getClusterTime();
 }

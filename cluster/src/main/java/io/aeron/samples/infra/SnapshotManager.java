@@ -9,10 +9,13 @@ import io.aeron.Image;
 import io.aeron.Publication;
 import io.aeron.logbuffer.FragmentHandler;
 import io.aeron.logbuffer.Header;
+import io.aeron.sample.cluster.protocol.IdGeneratorSnapshotDecoder;
+import io.aeron.sample.cluster.protocol.IdGeneratorSnapshotEncoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderDecoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderEncoder;
 import io.aeron.sample.cluster.protocol.ParticipantSnapshotDecoder;
 import io.aeron.sample.cluster.protocol.ParticipantSnapshotEncoder;
+import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
 import org.agrona.DirectBuffer;
@@ -32,6 +35,7 @@ public class SnapshotManager implements FragmentHandler
     private static final int RETRY_COUNT = 3;
     private final Auctions auctions;
     private final Participants participants;
+    private final IdGenerators idGenerators;
     private IdleStrategy idleStrategy;
 
     private final ExpandableDirectByteBuffer buffer = new ExpandableDirectByteBuffer(1024);
@@ -39,16 +43,20 @@ public class SnapshotManager implements FragmentHandler
     private final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
     private final ParticipantSnapshotDecoder participantDecoder = new ParticipantSnapshotDecoder();
     private final ParticipantSnapshotEncoder participantEncoder = new ParticipantSnapshotEncoder();
+    private final IdGeneratorSnapshotEncoder idGeneratorEncoder = new IdGeneratorSnapshotEncoder();
+    private final IdGeneratorSnapshotDecoder idGeneratorDecoder = new IdGeneratorSnapshotDecoder();
     /**
      * Constructor
      *
      * @param auctions     the auction domain model to read and write with snapshot interactions
      * @param participants the participant domain model to read and write with snapshot interactions
+     * @param idGenerators the id generator domain model to read and write with snapshot interactions
      */
-    public SnapshotManager(final Auctions auctions, final Participants participants)
+    public SnapshotManager(final Auctions auctions, final Participants participants, final IdGenerators idGenerators)
     {
         this.auctions = auctions;
         this.participants = participants;
+        this.idGenerators = idGenerators;
     }
 
     /**
@@ -59,8 +67,10 @@ public class SnapshotManager implements FragmentHandler
     {
         LOGGER.info("Starting snapshot...");
         offerParticipants(snapshotPublication);
+        offerIdGenerators(snapshotPublication);
         LOGGER.info("Snapshot complete");
     }
+
 
     /**
      * Called by the clustered service once a snapshot has been provided by the cluster
@@ -113,6 +123,11 @@ public class SnapshotManager implements FragmentHandler
                 participants.addParticipant(participantDecoder.participantId(),
                     participantDecoder.name());
             }
+            case IdGeneratorSnapshotDecoder.TEMPLATE_ID ->
+            {
+                idGeneratorDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
+                idGenerators.initializeAuctionId(idGeneratorDecoder.nextAuctionId());
+            }
             default -> LOGGER.warn("Unknown snapshot message template id: {}", headerDecoder.templateId());
         }
     }
@@ -133,6 +148,21 @@ public class SnapshotManager implements FragmentHandler
                 headerEncoder.encodedLength() + participantEncoder.encodedLength());
         });
     }
+
+
+    /**
+     * Offers the id generators to the snapshot publication using the IdGeneratorSnapshotEncoder
+     * @param snapshotPublication the publication to offer the snapshot data to
+     */
+    private void offerIdGenerators(final ExclusivePublication snapshotPublication)
+    {
+        headerEncoder.wrap(buffer, 0);
+        idGeneratorEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
+        idGeneratorEncoder.nextAuctionId(idGenerators.getAuctionId());
+        retryingOffer(snapshotPublication, buffer, 0,
+            headerEncoder.encodedLength() + idGeneratorEncoder.encodedLength());
+    }
+
 
     /**
      * Retries the offer to the publication if it fails on back pressure or admin action

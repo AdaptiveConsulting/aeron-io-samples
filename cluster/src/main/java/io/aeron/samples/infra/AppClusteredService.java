@@ -11,8 +11,11 @@ import io.aeron.cluster.service.ClientSession;
 import io.aeron.cluster.service.Cluster;
 import io.aeron.cluster.service.ClusteredService;
 import io.aeron.logbuffer.Header;
+import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
+import io.aeron.samples.domaininfra.AuctionResponder;
+import io.aeron.samples.domaininfra.AuctionResponderImpl;
 import org.agrona.DirectBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +26,12 @@ import org.slf4j.LoggerFactory;
 public class AppClusteredService implements ClusteredService
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppClusteredService.class);
-    private final SessionMessageContext context = new SessionMessageContext();
-    private final Participants participants = new Participants(context);
-    private final Auctions auctions = new Auctions(context);
-    private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants);
+    private final SessionMessageContextImpl context = new SessionMessageContextImpl();
+    private final Participants participants = new Participants();
+    private final IdGenerators idGenerators = new IdGenerators();
+    private final AuctionResponder auctionResponder = new AuctionResponderImpl(context);
+    private final Auctions auctions = new Auctions(context, participants, idGenerators, auctionResponder);
+    private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, idGenerators);
     private final TimerManager timerManager = new TimerManager(auctions);
     private final SbeDemuxer sbeDemuxer = new SbeDemuxer(context, participants, auctions);
     private ClientSessionEgress clientSessionEgress;

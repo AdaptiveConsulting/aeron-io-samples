@@ -29,8 +29,15 @@
             <validValue name="FALSE">0</validValue>
             <validValue name="TRUE">1</validValue>
         </enum>
+        <enum name="AddAuctionResult" encodingType="int32">
+            <validValue name="SUCCESS">0</validValue>
+            <validValue name="UNKNOWN_AUCTION">1</validValue>
+            <validValue name="UNKNOWN_PARTICIPANT">2</validValue>
+            <validValue name="INVALID_START_TIME">3</validValue>
+            <validValue name="INVALID_END_TIME">4</validValue>
+        </enum>
         <enum name="AddAuctionBidResult" encodingType="int32">
-            <validValue name="ACCEPTED">0</validValue>
+            <validValue name="SUCCESS">0</validValue>
             <validValue name="UNKNOWN_AUCTION">1</validValue>
             <validValue name="UNKNOWN_PARTICIPANT">2</validValue>
             <validValue name="CANNOT_SELF_BID">3</validValue>
@@ -78,6 +85,12 @@
                  description="Result from an AddAuctionBid">
         <field name="auctionId" id="1" type="int64"/>
         <field name="result" id="2" type="AddAuctionBidResult"/>
+    </sbe:message>
+
+    <sbe:message name="IdGeneratorSnapshot"
+                 id="20"
+                 description="Stores the state of the IdGenerators in a snapshot">
+        <field name="nextAuctionId" id="1" type="int64"/>
     </sbe:message>
 
 </sbe:messageSchema>

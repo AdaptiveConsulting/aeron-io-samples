@@ -4,9 +4,8 @@
 
 package io.aeron.samples.domain.participants;
 
-import io.aeron.samples.infra.SessionMessageContext;
+import org.agrona.collections.Long2ObjectHashMap;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,14 +13,7 @@ import java.util.List;
  */
 public class Participants
 {
-    /**
-     * Constructor
-     * @param context the session message context, used to send messages to participants
-     */
-    public Participants(final SessionMessageContext context)
-    {
-
-    }
+    private Long2ObjectHashMap<Participant> participants = new Long2ObjectHashMap<>();
 
     /**
      * Adds a participant to the cluster
@@ -30,7 +22,8 @@ public class Participants
      */
     public void addParticipant(final long participantId, final String name)
     {
-
+        final var participant = new Participant(participantId, name);
+        participants.put(participantId, participant);
     }
 
     /**
@@ -39,6 +32,16 @@ public class Participants
      */
     public List<Participant> getParticipants()
     {
-        return new ArrayList<>();
+        return participants.values().stream().toList();
+    }
+
+    /**
+     * Determines if a participant is known
+     * @param participantId the id of the participant to check
+     * @return true if known, false if not
+     */
+    public boolean isKnownParticipant(final long participantId)
+    {
+        return participants.containsKey(participantId);
     }
 }
