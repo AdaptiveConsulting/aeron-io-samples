@@ -7,7 +7,7 @@ package io.aeron.samples.domain.auctions;
 import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.participants.Participants;
 import io.aeron.samples.domaininfra.AuctionResponder;
-import io.aeron.samples.infra.SessionMessageContextImpl;
+import io.aeron.samples.infra.SessionMessageContext;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class Auctions
 {
-    private final SessionMessageContextImpl context;
+    private final SessionMessageContext context;
     private final AuctionResponder auctionResponder;
     private final Participants participants;
     private final IdGenerators idGenerators;
@@ -31,7 +31,7 @@ public class Auctions
      * @param idGenerators the idgenerator to use to generate new ids
      * @param auctionResponder the object used to respond to auction actions
      */
-    public Auctions(final SessionMessageContextImpl context, final Participants participants,
+    public Auctions(final SessionMessageContext context, final Participants participants,
         final IdGenerators idGenerators, final AuctionResponder auctionResponder)
     {
         this.context = context;
