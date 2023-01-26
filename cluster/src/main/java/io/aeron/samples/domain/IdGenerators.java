@@ -12,12 +12,12 @@ public class IdGenerators
     private long auctionId = 1;
 
     /**
-     * Gets the next auction id after incrementing
+     * Returns the next auction id after incrementing
      * @return an incremented auction id
      */
     public long incrementAndGetAuctionId()
     {
-        return auctionId += 1;
+        return ++auctionId;
     }
 
     /**

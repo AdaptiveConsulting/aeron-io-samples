@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
 public class AppClusteredService implements ClusteredService
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppClusteredService.class);
-    private final SessionMessageContextImpl context = new SessionMessageContextImpl();
+    private final ClientSessions clientSessions = new ClientSessions();
+    private final SessionMessageContextImpl context = new SessionMessageContextImpl(clientSessions);
     private final Participants participants = new Participants();
     private final IdGenerators idGenerators = new IdGenerators();
     private final AuctionResponder auctionResponder = new AuctionResponderImpl(context);
@@ -34,14 +35,12 @@ public class AppClusteredService implements ClusteredService
     private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, idGenerators);
     private final TimerManager timerManager = new TimerManager(auctions);
     private final SbeDemuxer sbeDemuxer = new SbeDemuxer(context, participants, auctions);
-    private ClientSessionEgress clientSessionEgress;
 
     @Override
     public void onStart(final Cluster cluster, final Image snapshotImage)
     {
-        clientSessionEgress = new ClientSessionEgress(cluster);
-        context.setClientSessionEgress(clientSessionEgress);
         snapshotManager.setIdleStrategy(cluster.idleStrategy());
+        context.setIdleStrategy(cluster.idleStrategy());
         if (snapshotImage != null)
         {
             snapshotManager.loadSnapshot(snapshotImage);
@@ -51,20 +50,20 @@ public class AppClusteredService implements ClusteredService
     @Override
     public void onSessionOpen(final ClientSession session, final long timestamp)
     {
-        clientSessionEgress.addSession(session);
+        clientSessions.addSession(session);
     }
 
     @Override
     public void onSessionClose(final ClientSession session, final long timestamp, final CloseReason closeReason)
     {
-        clientSessionEgress.removeSession(session);
+        clientSessions.removeSession(session);
     }
 
     @Override
     public void onSessionMessage(final ClientSession session, final long timestamp, final DirectBuffer buffer,
         final int offset, final int length, final Header header)
     {
-        context.setSessionContext(session, timestamp, header);
+        context.setSessionContext(session, timestamp);
         sbeDemuxer.dispatch(buffer, offset, length);
     }
 

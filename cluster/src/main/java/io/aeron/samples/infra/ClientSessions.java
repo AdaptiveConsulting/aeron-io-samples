@@ -5,25 +5,17 @@
 package io.aeron.samples.infra;
 
 import io.aeron.cluster.service.ClientSession;
-import io.aeron.cluster.service.Cluster;
-import org.agrona.collections.ObjectHashSet;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manages client sessions within the cluster
  */
-public class ClientSessionEgress
+public class ClientSessions
 {
-    private final Cluster cluster;
-    private final ObjectHashSet<ClientSession> allSessions = new ObjectHashSet<>();
+    private final List<ClientSession> allSessions = new ArrayList<>();
 
-    /**
-     * Constructor
-     * @param cluster the cluster to which the client sessions are connected
-     */
-    public ClientSessionEgress(final Cluster cluster)
-    {
-        this.cluster = cluster;
-    }
 
     /**
      * Adds a client session
@@ -31,7 +23,7 @@ public class ClientSessionEgress
      */
     public void addSession(final ClientSession session)
     {
-        //
+        allSessions.add(session);
     }
 
     /**
@@ -40,6 +32,15 @@ public class ClientSessionEgress
      */
     public void removeSession(final ClientSession session)
     {
-        //
+        allSessions.remove(session);
+    }
+
+    /**
+     * Gets all client sessions known
+     * @return the list of client sessions
+     */
+    public List<ClientSession> getAllSessions()
+    {
+        return allSessions;
     }
 }

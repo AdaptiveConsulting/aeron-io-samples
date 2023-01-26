@@ -21,7 +21,6 @@ public class Auctions
     private final AuctionResponder auctionResponder;
     private final Participants participants;
     private final IdGenerators idGenerators;
-
     private final List<Auction> auctionList;
 
     /**
@@ -67,6 +66,15 @@ public class Auctions
         auctionResponder.onAuctionAdded(auctionId, result);
     }
 
+    /**
+     * Validates the auction parameters
+     * @param createdByParticipantId the participant who created the auction
+     * @param startTime the start time of the auction which cannot be the current cluster time or earlier
+     * @param endTime the end time of the auction which must be after the start time
+     * @param name the name of the auction which must not be null or blank
+     * @param description the description which must not be null or blank
+     * @return the result of the validation
+     */
     private AddAuctionResult validate(final long createdByParticipantId, final long startTime, final long endTime,
         final String name, final String description)
     {
