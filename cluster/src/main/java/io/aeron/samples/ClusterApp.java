@@ -7,7 +7,7 @@ package io.aeron.samples;
 import io.aeron.cluster.ClusteredMediaDriver;
 import io.aeron.cluster.service.ClusteredServiceContainer;
 import io.aeron.samples.cluster.ClusterConfig;
-import io.aeron.samples.infra.AppClusteredService;
+import io.aeron.samples.domaininfra.AppClusteredService;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.ShutdownSignalBarrier;
 import org.slf4j.Logger;

@@ -9,6 +9,8 @@ import io.aeron.Image;
 import io.aeron.Publication;
 import io.aeron.logbuffer.FragmentHandler;
 import io.aeron.logbuffer.Header;
+import io.aeron.sample.cluster.protocol.AuctionSnapshotDecoder;
+import io.aeron.sample.cluster.protocol.AuctionSnapshotEncoder;
 import io.aeron.sample.cluster.protocol.IdGeneratorSnapshotDecoder;
 import io.aeron.sample.cluster.protocol.IdGeneratorSnapshotEncoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderDecoder;
@@ -41,6 +43,8 @@ public class SnapshotManager implements FragmentHandler
     private final ExpandableDirectByteBuffer buffer = new ExpandableDirectByteBuffer(1024);
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
+    private final AuctionSnapshotDecoder auctionDecoder = new AuctionSnapshotDecoder();
+    private final AuctionSnapshotEncoder auctionEncoder = new AuctionSnapshotEncoder();
     private final ParticipantSnapshotDecoder participantDecoder = new ParticipantSnapshotDecoder();
     private final ParticipantSnapshotEncoder participantEncoder = new ParticipantSnapshotEncoder();
     private final IdGeneratorSnapshotEncoder idGeneratorEncoder = new IdGeneratorSnapshotEncoder();
@@ -68,6 +72,7 @@ public class SnapshotManager implements FragmentHandler
         LOGGER.info("Starting snapshot...");
         offerParticipants(snapshotPublication);
         offerIdGenerators(snapshotPublication);
+        offerAuctions(snapshotPublication);
         LOGGER.info("Snapshot complete");
     }
 
@@ -128,6 +133,13 @@ public class SnapshotManager implements FragmentHandler
                 idGeneratorDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
                 idGenerators.initializeAuctionId(idGeneratorDecoder.nextAuctionId());
             }
+            case AuctionSnapshotDecoder.TEMPLATE_ID ->
+            {
+                auctionDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
+                auctions.restoreAuction(auctionDecoder.auctionId(), auctionDecoder.createdByParticipantId(),
+                    auctionDecoder.startTime(), auctionDecoder.endTime(),
+                    auctionDecoder.name(), auctionDecoder.description());
+            }
             default -> LOGGER.warn("Unknown snapshot message template id: {}", headerDecoder.templateId());
         }
     }
@@ -149,6 +161,26 @@ public class SnapshotManager implements FragmentHandler
         });
     }
 
+    /**
+     * Offers the auctions to the snapshot publication using the AuctionSnapshotEncoder
+     * @param snapshotPublication the publication to offer the snapshot data to
+     */
+    private void offerAuctions(final ExclusivePublication snapshotPublication)
+    {
+        headerEncoder.wrap(buffer, 0);
+        auctions.getAuctionList().forEach(auction ->
+        {
+            auctionEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
+            auctionEncoder.auctionId(auction.auctionId());
+            auctionEncoder.createdByParticipantId(auction.createdByParticipantId());
+            auctionEncoder.startTime(auction.startTime());
+            auctionEncoder.endTime(auction.endTime());
+            auctionEncoder.name(auction.name());
+            auctionEncoder.description(auction.description());
+            retryingOffer(snapshotPublication, buffer, 0,
+                headerEncoder.encodedLength() + auctionEncoder.encodedLength());
+        });
+    }
 
     /**
      * Offers the id generators to the snapshot publication using the IdGeneratorSnapshotEncoder

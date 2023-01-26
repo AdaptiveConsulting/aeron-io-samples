@@ -6,6 +6,7 @@ package io.aeron.samples.domain.participants;
 
 import org.agrona.collections.Long2ObjectHashMap;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -32,7 +33,11 @@ public class Participants
      */
     public List<Participant> getParticipants()
     {
-        return participants.values().stream().toList();
+        return participants
+            .values()
+            .stream()
+            .sorted(Comparator.comparingLong(Participant::participantId))
+            .toList();
     }
 
     /**

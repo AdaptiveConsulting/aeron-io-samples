@@ -1,2 +1,2 @@
 This package joins the domain and infrastructure layers in the cluster, allowing the domain layer to be free of any
-Aeron or SBE specific code.
+Aeron or SBE specific code, and the infra package to be free of any domain logic or types.

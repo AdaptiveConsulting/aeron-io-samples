@@ -10,6 +10,7 @@ import io.aeron.samples.domaininfra.AuctionResponder;
 import io.aeron.samples.infra.SessionMessageContextImpl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -64,6 +65,32 @@ public class Auctions
         auctionList.add(auction);
 
         auctionResponder.onAuctionAdded(auctionId, result);
+    }
+
+    /**
+     * Loads an auction from the snapshot
+     * @param auctionId the auction id
+     * @param createdByParticipantId the participant who created the auction
+     * @param startTime the start time of the auction
+     * @param endTime the end time of the auction
+     * @param name the name of the auction
+     * @param description the description
+     */
+    public void restoreAuction(final long auctionId, final long createdByParticipantId, final long startTime,
+        final long endTime, final String name, final String description)
+    {
+        final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
+        auctionList.add(auction);
+    }
+
+    /**
+     * Gets the list of auctions after sorting it by auction id
+     * @return the list of auctions
+     */
+    public List<Auction> getAuctionList()
+    {
+        auctionList.sort(Comparator.comparingLong(Auction::auctionId));
+        return auctionList;
     }
 
     /**
