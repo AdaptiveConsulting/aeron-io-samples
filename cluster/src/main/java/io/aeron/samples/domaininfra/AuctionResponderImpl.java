@@ -4,8 +4,9 @@
 
 package io.aeron.samples.domaininfra;
 
-import io.aeron.sample.cluster.protocol.AddAuctionResultEncoder;
+import io.aeron.sample.cluster.protocol.CreateAuctionCommandResultEncoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderEncoder;
+import io.aeron.sample.cluster.protocol.NewAuctionEventEncoder;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
 import io.aeron.samples.infra.SessionMessageContextImpl;
 import org.agrona.ExpandableDirectByteBuffer;
@@ -19,7 +20,9 @@ public class AuctionResponderImpl implements AuctionResponder
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuctionResponderImpl.class);
     private final SessionMessageContextImpl context;
-    private final AddAuctionResultEncoder addAuctionResultEncoder = new AddAuctionResultEncoder();
+    private final CreateAuctionCommandResultEncoder createAuctionResultEncoder =
+        new CreateAuctionCommandResultEncoder();
+    private final NewAuctionEventEncoder newAuctionEventEncoder = new NewAuctionEventEncoder();
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
     private final ExpandableDirectByteBuffer buffer = new ExpandableDirectByteBuffer(1024);
 
@@ -33,20 +36,37 @@ public class AuctionResponderImpl implements AuctionResponder
         this.context = context;
     }
 
+
     /**
-     * Broadcasts that an auction has been added
-     * @param auctionId the generated auction id
-     * @param result    the result code
+     * Responds to the client that an auction has been added with a result code and the auction id
+     * and broadcasts the new auction to all clients
+     * @param auctionId the id of the auction
+     * @param result the result code
+     * @param startTime the start time of the auction
+     * @param endTime the end time of the auction
+     * @param name the name of the auction
+     * @param description the description
      */
     @Override
-    public void onAuctionAdded(final long auctionId, final AddAuctionResult result)
+    public void onAuctionAdded(final long auctionId, final AddAuctionResult result, final long startTime,
+        final long endTime, final String name, final String description)
     {
         messageHeaderEncoder.wrap(buffer, 0);
-        addAuctionResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
+
+        createAuctionResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
             .auctionId(auctionId)
             .result(mapAddAuctionResult(result));
 
-        context.broadcast(buffer, 0, addAuctionResultEncoder.encodedLength());
+        context.reply(buffer, 0, createAuctionResultEncoder.encodedLength());
+
+        newAuctionEventEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
+            .auctionId(auctionId)
+            .startTime(startTime)
+            .endTime(endTime)
+            .name(name)
+            .description(description);
+
+        context.broadcast(buffer, 0, newAuctionEventEncoder.encodedLength());
     }
 
     /**
@@ -57,10 +77,10 @@ public class AuctionResponderImpl implements AuctionResponder
     public void rejectAddAuction(final AddAuctionResult result)
     {
         messageHeaderEncoder.wrap(buffer, 0);
-        addAuctionResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
+        createAuctionResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
             .auctionId(-1)
             .result(mapAddAuctionResult(result));
-        context.reply(buffer, 0, addAuctionResultEncoder.encodedLength());
+        context.reply(buffer, 0, createAuctionResultEncoder.encodedLength());
     }
 
     private io.aeron.sample.cluster.protocol.AddAuctionResult mapAddAuctionResult(final AddAuctionResult result)

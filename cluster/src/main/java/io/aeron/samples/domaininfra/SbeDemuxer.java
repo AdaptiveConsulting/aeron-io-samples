@@ -4,9 +4,9 @@
 
 package io.aeron.samples.domaininfra;
 
-import io.aeron.sample.cluster.protocol.AddAuctionBidDecoder;
-import io.aeron.sample.cluster.protocol.AddParticipantDecoder;
-import io.aeron.sample.cluster.protocol.CreateAuctionDecoder;
+import io.aeron.sample.cluster.protocol.AddAuctionBidCommandDecoder;
+import io.aeron.sample.cluster.protocol.AddParticipantCommandDecoder;
+import io.aeron.sample.cluster.protocol.CreateAuctionCommandDecoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderDecoder;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
@@ -26,8 +26,8 @@ public class SbeDemuxer
     private final Auctions auctions;
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
 
-    private final AddParticipantDecoder addParticipantDecoder = new AddParticipantDecoder();
-    private final CreateAuctionDecoder createAuctionDecoder = new CreateAuctionDecoder();
+    private final AddParticipantCommandDecoder addParticipantDecoder = new AddParticipantCommandDecoder();
+    private final CreateAuctionCommandDecoder createAuctionDecoder = new CreateAuctionCommandDecoder();
 
     /**
      * Dispatches ingress messages to domain logic.
@@ -62,13 +62,13 @@ public class SbeDemuxer
 
         switch (headerDecoder.templateId())
         {
-            case AddParticipantDecoder.TEMPLATE_ID ->
+            case AddParticipantCommandDecoder.TEMPLATE_ID ->
             {
                 addParticipantDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
                 participants.addParticipant(addParticipantDecoder.participantId(),
                     addParticipantDecoder.name());
             }
-            case CreateAuctionDecoder.TEMPLATE_ID ->
+            case CreateAuctionCommandDecoder.TEMPLATE_ID ->
             {
                 createAuctionDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
                 auctions.addAuction(createAuctionDecoder.createdByParticipantId(),
@@ -77,7 +77,7 @@ public class SbeDemuxer
                     createAuctionDecoder.name(),
                     createAuctionDecoder.description());
             }
-            case AddAuctionBidDecoder.TEMPLATE_ID ->
+            case AddAuctionBidCommandDecoder.TEMPLATE_ID ->
             {
                 //todo 1
             }

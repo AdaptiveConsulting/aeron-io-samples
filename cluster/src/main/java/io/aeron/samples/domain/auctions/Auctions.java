@@ -64,7 +64,7 @@ public class Auctions
         final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
         auctionList.add(auction);
 
-        auctionResponder.onAuctionAdded(auctionId, result);
+        auctionResponder.onAuctionAdded(auctionId, result, startTime, endTime, name, description);
     }
 
     /**
