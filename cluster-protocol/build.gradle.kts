@@ -1,7 +1,6 @@
 plugins {
     `java-library`
     checkstyle
-    `kotlin-dsl` apply false
 }
 
 val generatedDir = file("${buildDir}/generated/src/main/java")
@@ -9,7 +8,6 @@ val codecGeneration = configurations.create("codecGeneration")
 
 dependencies {
     "codecGeneration"(libs.sbe)
-    "codecGeneration"(libs.agrona)
     implementation(libs.agrona)
 }
 

@@ -29,7 +29,7 @@
     </module>
 
     <module name="Header">
-        <property name="header" value="/*\n * Copyright 2023 Adaptive Financial Consulting."/>
+        <property name="header" value="/*\n * Copyright (c) 2023 Adaptive Financial Consulting"/>
         <property name="fileExtensions" value="java"/>
     </module>
 

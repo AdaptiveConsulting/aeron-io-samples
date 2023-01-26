@@ -14,7 +14,6 @@ checkstyle {
     maxWarnings = 0
 }
 
-group = "io.aeron"
 version = "0.0.1-SNAPSHOT"
 
 defaultTasks("check", "build")

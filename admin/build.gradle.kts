@@ -1,14 +1,6 @@
-/*
- * Copyright (c) 2023 Adaptive Financial Consulting
- */
-
 plugins {
     application
     checkstyle
-}
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
@@ -17,6 +9,7 @@ dependencies {
     implementation(libs.aeron)
     implementation(libs.slf4j)
     implementation(libs.logback)
+    implementation(libs.picocli)
     implementation(project(":cluster-protocol"))
 }
 
@@ -29,4 +22,3 @@ testing {
         }
     }
 }
-
