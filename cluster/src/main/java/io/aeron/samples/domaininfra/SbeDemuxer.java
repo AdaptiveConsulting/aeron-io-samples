@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Adaptive Financial Consulting
  */
 
-package io.aeron.samples.infra;
+package io.aeron.samples.domaininfra;
 
 import io.aeron.sample.cluster.protocol.AddAuctionBidDecoder;
 import io.aeron.sample.cluster.protocol.AddParticipantDecoder;
@@ -10,6 +10,7 @@ import io.aeron.sample.cluster.protocol.CreateAuctionDecoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderDecoder;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
+import io.aeron.samples.infra.SessionMessageContextImpl;
 import org.agrona.DirectBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

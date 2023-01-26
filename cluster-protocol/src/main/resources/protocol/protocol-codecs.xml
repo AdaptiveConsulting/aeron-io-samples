@@ -89,6 +89,16 @@
         <field name="result" id="2" type="AddAuctionResult"/>
     </sbe:message>
 
+    <sbe:message name="AuctionSnapshot"
+                 id="14"
+                 description="Create a new Auction">
+        <field name="createdByParticipantId" id="1" type="int64"/>
+        <field name="startTime" id="2" type="time"/>
+        <field name="endTime" id="3" type="time"/>
+        <data name="name" id="4" type="varAsciiEncoding"/>
+        <data name="description" id="5" type="varAsciiEncoding"/>
+    </sbe:message>
+
     <sbe:message name="IdGeneratorSnapshot"
                  id="20"
                  description="Stores the state of the IdGenerators in a snapshot">

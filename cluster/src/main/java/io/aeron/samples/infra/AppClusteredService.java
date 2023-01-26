@@ -16,6 +16,8 @@ import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
 import io.aeron.samples.domaininfra.AuctionResponder;
 import io.aeron.samples.domaininfra.AuctionResponderImpl;
+import io.aeron.samples.domaininfra.SbeDemuxer;
+import io.aeron.samples.domaininfra.SnapshotManager;
 import org.agrona.DirectBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
