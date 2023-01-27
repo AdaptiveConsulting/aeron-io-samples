@@ -106,6 +106,7 @@ public class Auctions
         if (validationResult != AddAuctionBidResult.SUCCESS)
         {
             auctionResponder.rejectAddBid(correlationId, auctionId, validationResult);
+            return;
         }
 
         auction.setWinningBid(participantId, price, context.getClusterTime());
