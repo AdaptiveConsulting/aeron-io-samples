@@ -4,10 +4,14 @@
 
 package io.aeron.samples.domaininfra;
 
+import io.aeron.sample.cluster.protocol.AddAuctionBidCommandResultEncoder;
+import io.aeron.sample.cluster.protocol.AuctionUpdateEventEncoder;
 import io.aeron.sample.cluster.protocol.CreateAuctionCommandResultEncoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderEncoder;
 import io.aeron.sample.cluster.protocol.NewAuctionEventEncoder;
+import io.aeron.samples.domain.auctions.AddAuctionBidResult;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
+import io.aeron.samples.domain.auctions.AuctionStatus;
 import io.aeron.samples.infra.SessionMessageContextImpl;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.slf4j.Logger;
@@ -23,6 +27,10 @@ public class AuctionResponderImpl implements AuctionResponder
     private final CreateAuctionCommandResultEncoder createAuctionResultEncoder =
         new CreateAuctionCommandResultEncoder();
     private final NewAuctionEventEncoder newAuctionEventEncoder = new NewAuctionEventEncoder();
+    private final AddAuctionBidCommandResultEncoder addAuctionBidResultEncoder =
+        new AddAuctionBidCommandResultEncoder();
+
+    private final AuctionUpdateEventEncoder auctionUpdateEncoder = new AuctionUpdateEventEncoder();
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
     private final ExpandableDirectByteBuffer buffer = new ExpandableDirectByteBuffer(1024);
 
@@ -83,6 +91,100 @@ public class AuctionResponderImpl implements AuctionResponder
             .result(mapAddAuctionResult(result))
             .correlationId(correlationId);
         context.reply(buffer, 0, createAuctionResultEncoder.encodedLength());
+    }
+
+    /***
+     * Maps the domain bid rejection to the SBE AddAuctionBidCommandResult
+     * @param correlationId the correlation id for the original request
+     * @param auctionId the id of the auction provided in the original request
+     * @param resultCode the result code
+     */
+    @Override
+    public void rejectAddBid(final String correlationId, final long auctionId, final AddAuctionBidResult resultCode)
+    {
+        messageHeaderEncoder.wrap(buffer, 0);
+        addAuctionBidResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        addAuctionBidResultEncoder.auctionId(auctionId);
+        addAuctionBidResultEncoder.result(mapAddAuctionBidResult(resultCode));
+        addAuctionBidResultEncoder.correlationId(correlationId);
+        context.reply(buffer, 0, addAuctionBidResultEncoder.encodedLength());
+    }
+
+    @Override
+    public void onAuctionUpdated(final String correlationId, final long auctionId, final AuctionStatus auctionStatus,
+        final long currentPrice, final int bidCount, final long lastUpdateTime)
+    {
+        messageHeaderEncoder.wrap(buffer, 0);
+        addAuctionBidResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        addAuctionBidResultEncoder.auctionId(auctionId);
+        addAuctionBidResultEncoder.result(mapAddAuctionBidResult(AddAuctionBidResult.SUCCESS));
+        addAuctionBidResultEncoder.correlationId(correlationId);
+        context.reply(buffer, 0, addAuctionBidResultEncoder.encodedLength());
+
+        messageHeaderEncoder.wrap(buffer, 0);
+        auctionUpdateEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        auctionUpdateEncoder.auctionId(auctionId);
+        auctionUpdateEncoder.status(mapAuctionStatus(auctionStatus));
+        auctionUpdateEncoder.currentPrice(currentPrice);
+        auctionUpdateEncoder.bidCount(bidCount);
+        auctionUpdateEncoder.lastUpdate(lastUpdateTime);
+        context.broadcast(buffer, 0, auctionUpdateEncoder.encodedLength());
+    }
+
+    private io.aeron.sample.cluster.protocol.AuctionStatus mapAuctionStatus(final AuctionStatus status)
+    {
+        switch (status)
+        {
+            case OPEN ->
+            {
+                return io.aeron.sample.cluster.protocol.AuctionStatus.OPEN;
+            }
+            case CLOSED ->
+            {
+                return io.aeron.sample.cluster.protocol.AuctionStatus.CLOSED;
+            }
+            case PRE_OPEN ->
+            {
+                return io.aeron.sample.cluster.protocol.AuctionStatus.PRE_OPEN;
+            }
+            case CLOSED_NO_BIDDERS ->
+            {
+                return io.aeron.sample.cluster.protocol.AuctionStatus.CLOSED_NO_BIDDERS;
+            }
+            default -> LOGGER.error("Unknown status " + status);
+        }
+
+        return io.aeron.sample.cluster.protocol.AuctionStatus.UNKNOWN;
+    }
+
+    private io.aeron.sample.cluster.protocol.AddAuctionBidResult mapAddAuctionBidResult(
+        final AddAuctionBidResult result)
+    {
+        switch (result)
+        {
+            case SUCCESS ->
+            {
+                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.SUCCESS;
+            }
+            case PRICE_BELOW_CURRENT_WINNING_BID ->
+            {
+                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.PRICE_BELOW_CURRENT_WINNING_BID;
+            }
+            case INVALID_PRICE ->
+            {
+                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.INVALID_PRICE;
+            }
+            case UNKNOWN_AUCTION ->
+            {
+                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.UNKNOWN_AUCTION;
+            }
+            case UNKNOWN_PARTICIPANT ->
+            {
+                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.UNKNOWN_PARTICIPANT;
+            }
+            default -> LOGGER.error("Unknown AddAuctionBidResult: {}", result);
+        }
+        return io.aeron.sample.cluster.protocol.AddAuctionBidResult.UNKNOWN;
     }
 
     private io.aeron.sample.cluster.protocol.AddAuctionResult mapAddAuctionResult(final AddAuctionResult result)

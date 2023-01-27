@@ -41,6 +41,7 @@ public class AppClusteredService implements ClusteredService
     {
         snapshotManager.setIdleStrategy(cluster.idleStrategy());
         context.setIdleStrategy(cluster.idleStrategy());
+        context.setClusterTime(cluster.time());
         if (snapshotImage != null)
         {
             snapshotManager.loadSnapshot(snapshotImage);

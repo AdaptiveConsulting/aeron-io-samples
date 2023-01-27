@@ -25,6 +25,7 @@ public class SbeDemuxer
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
 
     private final AddParticipantCommandDecoder addParticipantDecoder = new AddParticipantCommandDecoder();
+    private final AddAuctionBidCommandDecoder addAuctionBidDecoder = new AddAuctionBidCommandDecoder();
     private final CreateAuctionCommandDecoder createAuctionDecoder = new CreateAuctionCommandDecoder();
 
     /**
@@ -75,7 +76,11 @@ public class SbeDemuxer
             }
             case AddAuctionBidCommandDecoder.TEMPLATE_ID ->
             {
-                //todo 1
+                addAuctionBidDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
+                auctions.addBid(addAuctionBidDecoder.auctionId(),
+                    addAuctionBidDecoder.addedByParticipantId(),
+                    addAuctionBidDecoder.price(),
+                    addAuctionBidDecoder.correlationId());
             }
             default -> LOGGER.error("Unknown message template {}, ignored.", headerDecoder.templateId());
         }
