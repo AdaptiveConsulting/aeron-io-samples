@@ -32,7 +32,7 @@ public class AppClusteredService implements ClusteredService
     private final IdGenerators idGenerators = new IdGenerators();
     private final AuctionResponder auctionResponder = new AuctionResponderImpl(context);
     private final Auctions auctions = new Auctions(context, participants, idGenerators, auctionResponder);
-    private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, idGenerators);
+    private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, idGenerators, context);
     private final TimerManager timerManager = new TimerManager(auctions);
     private final SbeDemuxer sbeDemuxer = new SbeDemuxer(participants, auctions);
 

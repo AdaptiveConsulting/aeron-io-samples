@@ -11,6 +11,8 @@ import io.aeron.logbuffer.FragmentHandler;
 import io.aeron.logbuffer.Header;
 import io.aeron.sample.cluster.protocol.AuctionSnapshotDecoder;
 import io.aeron.sample.cluster.protocol.AuctionSnapshotEncoder;
+import io.aeron.sample.cluster.protocol.EndOfSnapshotDecoder;
+import io.aeron.sample.cluster.protocol.EndOfSnapshotEncoder;
 import io.aeron.sample.cluster.protocol.IdGeneratorSnapshotDecoder;
 import io.aeron.sample.cluster.protocol.IdGeneratorSnapshotEncoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderDecoder;
@@ -20,6 +22,7 @@ import io.aeron.sample.cluster.protocol.ParticipantSnapshotEncoder;
 import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
+import io.aeron.samples.infra.SessionMessageContext;
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.concurrent.IdleStrategy;
@@ -35,9 +38,11 @@ public class SnapshotManager implements FragmentHandler
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SnapshotManager.class);
     private static final int RETRY_COUNT = 3;
+    private boolean snapshotFullyLoaded = false;
     private final Auctions auctions;
     private final Participants participants;
     private final IdGenerators idGenerators;
+    private final SessionMessageContext context;
     private IdleStrategy idleStrategy;
 
     private final ExpandableDirectByteBuffer buffer = new ExpandableDirectByteBuffer(1024);
@@ -49,18 +54,23 @@ public class SnapshotManager implements FragmentHandler
     private final ParticipantSnapshotEncoder participantEncoder = new ParticipantSnapshotEncoder();
     private final IdGeneratorSnapshotEncoder idGeneratorEncoder = new IdGeneratorSnapshotEncoder();
     private final IdGeneratorSnapshotDecoder idGeneratorDecoder = new IdGeneratorSnapshotDecoder();
+    private final EndOfSnapshotDecoder endOfSnapshotDecoder = new EndOfSnapshotDecoder();
+    private final EndOfSnapshotEncoder endOfSnapshotEncoder = new EndOfSnapshotEncoder();
     /**
      * Constructor
      *
      * @param auctions     the auction domain model to read and write with snapshot interactions
      * @param participants the participant domain model to read and write with snapshot interactions
      * @param idGenerators the id generator domain model to read and write with snapshot interactions
+     * @param context the session message context to use for snapshot interactions
      */
-    public SnapshotManager(final Auctions auctions, final Participants participants, final IdGenerators idGenerators)
+    public SnapshotManager(final Auctions auctions, final Participants participants, final IdGenerators idGenerators,
+        final SessionMessageContext context)
     {
         this.auctions = auctions;
         this.participants = participants;
         this.idGenerators = idGenerators;
+        this.context = context;
     }
 
     /**
@@ -73,23 +83,28 @@ public class SnapshotManager implements FragmentHandler
         offerParticipants(snapshotPublication);
         offerIdGenerators(snapshotPublication);
         offerAuctions(snapshotPublication);
+        offerEndOfSnapshotMarker(snapshotPublication);
         LOGGER.info("Snapshot complete");
     }
 
-
     /**
      * Called by the clustered service once a snapshot has been provided by the cluster
-     * todo: Question do we want to add in start/end markers to the snapshots?
      * @param snapshotImage the image to read snapshot data from
      */
     public void loadSnapshot(final Image snapshotImage)
     {
         LOGGER.info("Loading snapshot...");
+        snapshotFullyLoaded = false;
         Objects.requireNonNull(idleStrategy, "Idle strategy must be set before loading snapshot");
         idleStrategy.reset();
         while (!snapshotImage.isEndOfStream())
         {
             idleStrategy.idle(snapshotImage.poll(this, 20));
+        }
+
+        if (!snapshotFullyLoaded)
+        {
+            LOGGER.warn("Snapshot load not completed; no end of snapshot marker found");
         }
         LOGGER.info("Snapshot load complete.");
     }
@@ -139,6 +154,10 @@ public class SnapshotManager implements FragmentHandler
                 auctions.restoreAuction(auctionDecoder.auctionId(), auctionDecoder.createdByParticipantId(),
                     auctionDecoder.startTime(), auctionDecoder.endTime(),
                     auctionDecoder.name(), auctionDecoder.description());
+            }
+            case EndOfSnapshotDecoder.TEMPLATE_ID ->
+            {
+                snapshotFullyLoaded = true;
             }
             default -> LOGGER.warn("Unknown snapshot message template id: {}", headerDecoder.templateId());
         }
@@ -195,6 +214,14 @@ public class SnapshotManager implements FragmentHandler
             headerEncoder.encodedLength() + idGeneratorEncoder.encodedLength());
     }
 
+    private void offerEndOfSnapshotMarker(final ExclusivePublication snapshotPublication)
+    {
+        headerEncoder.wrap(buffer, 0);
+        endOfSnapshotEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
+        endOfSnapshotEncoder.snapshotWriteTime(context.getClusterTime()); //todo fix time source
+        retryingOffer(snapshotPublication, buffer, 0,
+            headerEncoder.encodedLength() + endOfSnapshotEncoder.encodedLength());
+    }
 
     /**
      * Retries the offer to the publication if it fails on back pressure or admin action
