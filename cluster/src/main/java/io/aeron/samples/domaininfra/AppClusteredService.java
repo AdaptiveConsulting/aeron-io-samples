@@ -50,12 +50,14 @@ public class AppClusteredService implements ClusteredService
     @Override
     public void onSessionOpen(final ClientSession session, final long timestamp)
     {
+        context.setClusterTime(timestamp);
         clientSessions.addSession(session);
     }
 
     @Override
     public void onSessionClose(final ClientSession session, final long timestamp, final CloseReason closeReason)
     {
+        context.setClusterTime(timestamp);
         clientSessions.removeSession(session);
     }
 
@@ -70,6 +72,7 @@ public class AppClusteredService implements ClusteredService
     @Override
     public void onTimerEvent(final long correlationId, final long timestamp)
     {
+        context.setClusterTime(timestamp);
         timerManager.onTimerEvent(correlationId, timestamp);
     }
 

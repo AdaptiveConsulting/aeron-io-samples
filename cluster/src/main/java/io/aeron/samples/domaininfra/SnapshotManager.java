@@ -147,6 +147,7 @@ public class SnapshotManager implements FragmentHandler
             {
                 idGeneratorDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
                 idGenerators.initializeAuctionId(idGeneratorDecoder.nextAuctionId());
+                idGenerators.initializeAuctionBidId(idGeneratorDecoder.nextAuctionBidId());
             }
             case AuctionSnapshotDecoder.TEMPLATE_ID ->
             {
@@ -210,6 +211,7 @@ public class SnapshotManager implements FragmentHandler
         headerEncoder.wrap(buffer, 0);
         idGeneratorEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
         idGeneratorEncoder.nextAuctionId(idGenerators.getAuctionId());
+        idGeneratorEncoder.nextAuctionBidId(idGenerators.getAuctionBidId());
         retryingOffer(snapshotPublication, buffer, 0,
             headerEncoder.encodedLength() + idGeneratorEncoder.encodedLength());
     }
@@ -218,7 +220,7 @@ public class SnapshotManager implements FragmentHandler
     {
         headerEncoder.wrap(buffer, 0);
         endOfSnapshotEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
-        endOfSnapshotEncoder.snapshotWriteTime(context.getClusterTime()); //todo fix time source
+        endOfSnapshotEncoder.snapshotWriteTime(context.getClusterTime());
         retryingOffer(snapshotPublication, buffer, 0,
             headerEncoder.encodedLength() + endOfSnapshotEncoder.encodedLength());
     }

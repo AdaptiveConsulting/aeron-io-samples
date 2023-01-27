@@ -47,6 +47,15 @@ public class SessionMessageContextImpl implements SessionMessageContext
     }
 
     /**
+     * Sets the cluster timestamp for the current context
+     * @param timestamp
+     */
+    public void setClusterTime(final long timestamp)
+    {
+        this.timestamp = timestamp;
+    }
+
+    /**
      * Gets the current cluster time, as provided by the cluster
      *
      * @return the cluster time at the time this message was received
