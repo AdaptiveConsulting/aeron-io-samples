@@ -19,14 +19,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-public class AuctionsTests
+class AuctionsTests
 {
     private final SessionMessageContext sessionMessageContext = mock(SessionMessageContext.class);
     private final AuctionResponder auctionResponder = mock(AuctionResponder.class);
     private final Participants participants = mock(Participants.class);
 
     @Test
-    public void testAuctionsCanBeAdded()
+    void testAuctionsCanBeAdded()
     {
         final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
@@ -53,7 +53,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testAuctionBidCanBeAdded()
+    void testAuctionBidCanBeAdded()
     {
         final String correlationId1 = UUID.randomUUID().toString();
         final String correlationId2 = UUID.randomUUID().toString();
@@ -76,7 +76,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testAuctionsCanBeRehydratedAndAreSortedOnList()
+    void testAuctionsCanBeRehydratedAndAreSortedOnList()
     {
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
         when(participants.isKnownParticipant(1000L)).thenReturn(true);
@@ -108,7 +108,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testThatParticipantMustBeKnown()
+    void testThatParticipantMustBeKnown()
     {
         final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
@@ -122,7 +122,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testThatStartTimeMustBeAfterClusterTime()
+    void testThatStartTimeMustBeAfterClusterTime()
     {
         final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
@@ -136,7 +136,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testThatEndTimeMustBeAfterStartTime()
+    void testThatEndTimeMustBeAfterStartTime()
     {
         final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
@@ -150,7 +150,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testThatNameCannotBeNull()
+    void testThatNameCannotBeNull()
     {
         final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
@@ -164,7 +164,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testThatDescriptionCannotBeNull()
+    void testThatDescriptionCannotBeNull()
     {
         final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
@@ -178,7 +178,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testThatNameCannotBeBlank()
+    void testThatNameCannotBeBlank()
     {
         final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
@@ -192,7 +192,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testThatDescriptionCannotBeBlank()
+    void testThatDescriptionCannotBeBlank()
     {
         final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
@@ -206,7 +206,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testAuctionRejectedIfAuctionNotOpenYet()
+    void testAuctionRejectedIfAuctionNotOpenYet()
     {
         final String correlationId1 = UUID.randomUUID().toString();
         final String correlationId2 = UUID.randomUUID().toString();
@@ -227,7 +227,29 @@ public class AuctionsTests
     }
 
     @Test
-    public void testAuctionRejectedIfAuctionUnknown()
+    void testAuctionRejectedIfTimeAfterAuctionEnd()
+    {
+        final String correlationId1 = UUID.randomUUID().toString();
+        final String correlationId2 = UUID.randomUUID().toString();
+        when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
+        when(participants.isKnownParticipant(1000L)).thenReturn(true);
+        when(participants.isKnownParticipant(1001L)).thenReturn(true);
+
+        final Auctions auctions =
+            new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
+        auctions.addAuction(correlationId1, 1000L, 1002L, 1004L, "name", "description");
+
+        verify(auctionResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 1004L,
+            "name", "description");
+
+        when(sessionMessageContext.getClusterTime()).thenReturn(1011L);
+        auctions.addBid(1L, 1011L, 99L, correlationId2);
+
+        verify(auctionResponder).rejectAddBid(correlationId2, 1L, AddAuctionBidResult.AUCTION_NOT_OPEN);
+    }
+
+    @Test
+    void testAuctionRejectedIfAuctionUnknown()
     {
         final String correlationId1 = UUID.randomUUID().toString();
         final String correlationId2 = UUID.randomUUID().toString();
@@ -248,7 +270,7 @@ public class AuctionsTests
     }
 
     @Test
-    public void testAuctionRejectedIfBidderUnknown()
+    void testAuctionRejectedIfBidderUnknown()
     {
         final String correlationId1 = UUID.randomUUID().toString();
         final String correlationId2 = UUID.randomUUID().toString();
@@ -270,7 +292,28 @@ public class AuctionsTests
     }
 
     @Test
-    public void testAuctionRejectedIfNoPriceImprovement()
+    void testAuctionRejectedIfSelfBidding()
+    {
+        final String correlationId1 = UUID.randomUUID().toString();
+        final String correlationId2 = UUID.randomUUID().toString();
+        when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
+        when(participants.isKnownParticipant(1000L)).thenReturn(true);
+
+        final Auctions auctions =
+            new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
+        auctions.addAuction(correlationId1, 1000L, 1002L, 1004L, "name", "description");
+
+        verify(auctionResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 1004L,
+            "name", "description");
+
+        when(sessionMessageContext.getClusterTime()).thenReturn(1003L);
+        auctions.addBid(1L, 1000L, 99L, correlationId2);
+
+        verify(auctionResponder).rejectAddBid(correlationId2, 1L, AddAuctionBidResult.CANNOT_SELF_BID);
+    }
+
+    @Test
+    void testAuctionRejectedIfNoPriceImprovement()
     {
         final String correlationId1 = UUID.randomUUID().toString();
         final String correlationId2 = UUID.randomUUID().toString();

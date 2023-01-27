@@ -151,7 +151,7 @@ public class AuctionResponderImpl implements AuctionResponder
             {
                 return io.aeron.sample.cluster.protocol.AuctionStatus.CLOSED_NO_BIDDERS;
             }
-            default -> LOGGER.error("Unknown status " + status);
+            default -> LOGGER.error("Unknown status {}", status);
         }
 
         return io.aeron.sample.cluster.protocol.AuctionStatus.UNKNOWN;
