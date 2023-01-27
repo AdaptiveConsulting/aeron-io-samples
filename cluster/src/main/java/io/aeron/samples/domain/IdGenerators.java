@@ -9,8 +9,8 @@ package io.aeron.samples.domain;
  */
 public class IdGenerators
 {
-    private long auctionId = 1;
-    private long auctionBidId = 1;
+    private long auctionId = 0;
+    private long auctionBidId = 0;
 
     /**
      * Returns the next auction id after incrementing

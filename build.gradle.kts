@@ -16,7 +16,7 @@ checkstyle {
 
 version = "0.0.1-SNAPSHOT"
 
-defaultTasks("check", "build")
+defaultTasks("check", "build", "test")
 
 allprojects {
     repositories {

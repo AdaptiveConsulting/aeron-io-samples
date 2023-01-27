@@ -16,7 +16,6 @@ public class ClientSessions
 {
     private final List<ClientSession> allSessions = new ArrayList<>();
 
-
     /**
      * Adds a client session
      * @param session the session to add

@@ -21,7 +21,7 @@ public class SessionMessageContextImpl implements SessionMessageContext
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionMessageContextImpl.class);
     private static final long RETRY_COUNT = 3;
     private IdleStrategy idleStrategy;
-    private ClientSessions clientSessions;
+    private final ClientSessions clientSessions;
     private long timestamp;
     private ClientSession session;
 

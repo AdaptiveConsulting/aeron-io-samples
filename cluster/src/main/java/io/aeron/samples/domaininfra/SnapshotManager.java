@@ -220,15 +220,16 @@ public class SnapshotManager implements FragmentHandler
     }
 
     /**
-     * Retries the offer to the publication if it fails on back pressure or admin action
+     * Retries the offer to the publication if it fails on back pressure or admin action.
+     * Buffer is assumed to always start at offset 0
      * @param publication the publication to offer data to
      * @param buffer the buffer holding the source data
      * @param length the length to write
      */
     private void retryingOffer(final ExclusivePublication publication, final DirectBuffer buffer, final int length)
     {
-        int retries = 0;
         final int offset = 0;
+        int retries = 0;
         do
         {
             final long result = publication.offer(buffer, offset, length);

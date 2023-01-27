@@ -49,8 +49,8 @@ public class Auctions
      * @param name the name of the auction
      * @param description the description
      */
-    public void addAuction(final long createdByParticipantId, final long startTime,
-        final long endTime, final String name, final String description)
+    public void addAuction(final long createdByParticipantId, final long startTime, final long endTime,
+        final String name, final String description)
     {
         final var result = validate(createdByParticipantId, startTime, endTime, name, description);
 

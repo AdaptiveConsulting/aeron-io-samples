@@ -8,6 +8,7 @@ slf4jVersion = "2.0.6"
 logbackVersion = "1.4.5"
 jmhVersion = "1.36"
 picocliVersion = "4.7.0"
+mockitoVersion = "5.0.0"
 
 [libraries]
 aeron = { group = "io.aeron", name = "aeron-all", version.ref = "aeronVersion" }
@@ -21,6 +22,8 @@ logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "l
 jmhCore = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmhVersion" }
 jmhAnnotationProcessor = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmhVersion" }
 picocli = { group = "info.picocli", name = "picocli", version.ref = "picocliVersion" }
+mockito-core = { group = "org.mockito", name="mockito-core", version.ref = "mockitoVersion"}
+mockito-junit = { group = "org.mockito", name="mockito-junit-jupiter", version.ref = "mockitoVersion"}
 
 [bundles]
-
+testing = [ "jupiterApi", "jupiterEngine", "mockito-core", "mockito-junit"]
