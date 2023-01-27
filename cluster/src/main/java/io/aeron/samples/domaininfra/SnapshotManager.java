@@ -54,7 +54,6 @@ public class SnapshotManager implements FragmentHandler
     private final ParticipantSnapshotEncoder participantEncoder = new ParticipantSnapshotEncoder();
     private final IdGeneratorSnapshotEncoder idGeneratorEncoder = new IdGeneratorSnapshotEncoder();
     private final IdGeneratorSnapshotDecoder idGeneratorDecoder = new IdGeneratorSnapshotDecoder();
-    private final EndOfSnapshotDecoder endOfSnapshotDecoder = new EndOfSnapshotDecoder();
     private final EndOfSnapshotEncoder endOfSnapshotEncoder = new EndOfSnapshotEncoder();
     /**
      * Constructor
@@ -156,10 +155,7 @@ public class SnapshotManager implements FragmentHandler
                     auctionDecoder.startTime(), auctionDecoder.endTime(),
                     auctionDecoder.name(), auctionDecoder.description());
             }
-            case EndOfSnapshotDecoder.TEMPLATE_ID ->
-            {
-                snapshotFullyLoaded = true;
-            }
+            case EndOfSnapshotDecoder.TEMPLATE_ID -> snapshotFullyLoaded = true;
             default -> LOGGER.warn("Unknown snapshot message template id: {}", headerDecoder.templateId());
         }
     }
@@ -176,7 +172,7 @@ public class SnapshotManager implements FragmentHandler
             participantEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
             participantEncoder.participantId(participant.participantId());
             participantEncoder.name(participant.name());
-            retryingOffer(snapshotPublication, buffer, 0,
+            retryingOffer(snapshotPublication, buffer,
                 headerEncoder.encodedLength() + participantEncoder.encodedLength());
         });
     }
@@ -197,8 +193,7 @@ public class SnapshotManager implements FragmentHandler
             auctionEncoder.endTime(auction.endTime());
             auctionEncoder.name(auction.name());
             auctionEncoder.description(auction.description());
-            retryingOffer(snapshotPublication, buffer, 0,
-                headerEncoder.encodedLength() + auctionEncoder.encodedLength());
+            retryingOffer(snapshotPublication, buffer, headerEncoder.encodedLength() + auctionEncoder.encodedLength());
         });
     }
 
@@ -212,8 +207,7 @@ public class SnapshotManager implements FragmentHandler
         idGeneratorEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
         idGeneratorEncoder.nextAuctionId(idGenerators.getAuctionId());
         idGeneratorEncoder.nextAuctionBidId(idGenerators.getAuctionBidId());
-        retryingOffer(snapshotPublication, buffer, 0,
-            headerEncoder.encodedLength() + idGeneratorEncoder.encodedLength());
+        retryingOffer(snapshotPublication, buffer, headerEncoder.encodedLength() + idGeneratorEncoder.encodedLength());
     }
 
     private void offerEndOfSnapshotMarker(final ExclusivePublication snapshotPublication)
@@ -221,7 +215,7 @@ public class SnapshotManager implements FragmentHandler
         headerEncoder.wrap(buffer, 0);
         endOfSnapshotEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
         endOfSnapshotEncoder.snapshotWriteTime(context.getClusterTime());
-        retryingOffer(snapshotPublication, buffer, 0,
+        retryingOffer(snapshotPublication, buffer,
             headerEncoder.encodedLength() + endOfSnapshotEncoder.encodedLength());
     }
 
@@ -229,13 +223,12 @@ public class SnapshotManager implements FragmentHandler
      * Retries the offer to the publication if it fails on back pressure or admin action
      * @param publication the publication to offer data to
      * @param buffer the buffer holding the source data
-     * @param offset the offset to write from
      * @param length the length to write
      */
-    private void retryingOffer(final ExclusivePublication publication, final DirectBuffer buffer,
-        final int offset, final int length)
+    private void retryingOffer(final ExclusivePublication publication, final DirectBuffer buffer, final int length)
     {
         int retries = 0;
+        final int offset = 0;
         do
         {
             final long result = publication.offer(buffer, offset, length);
