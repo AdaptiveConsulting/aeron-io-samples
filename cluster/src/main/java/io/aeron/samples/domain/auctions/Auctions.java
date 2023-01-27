@@ -43,20 +43,21 @@ public class Auctions
 
     /**
      * Creates an auction
+     * @param correlationId the correlation id for this request
      * @param createdByParticipantId the participant who created the auction
      * @param startTime the start time of the auction. Bids cannot be added before this time.
      * @param endTime the end time of the auction, at which time no more bids can be added and the result is computed
      * @param name the name of the auction
      * @param description the description
      */
-    public void addAuction(final long createdByParticipantId, final long startTime, final long endTime,
-        final String name, final String description)
+    public void addAuction(final String correlationId, final long createdByParticipantId, final long startTime,
+        final long endTime, final String name, final String description)
     {
         final var result = validate(createdByParticipantId, startTime, endTime, name, description);
 
         if (result != AddAuctionResult.SUCCESS)
         {
-            auctionResponder.rejectAddAuction(result);
+            auctionResponder.rejectAddAuction(correlationId, result);
             return;
         }
 
@@ -64,7 +65,7 @@ public class Auctions
         final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
         auctionList.add(auction);
 
-        auctionResponder.onAuctionAdded(auctionId, result, startTime, endTime, name, description);
+        auctionResponder.onAuctionAdded(correlationId, auctionId, result, startTime, endTime, name, description);
     }
 
     /**

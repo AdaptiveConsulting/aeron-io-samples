@@ -10,6 +10,8 @@ import io.aeron.samples.domaininfra.AuctionResponder;
 import io.aeron.samples.infra.SessionMessageContext;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
@@ -26,14 +28,16 @@ public class AuctionsTests
     @Test
     public void testAuctionsCanBeAdded()
     {
+        final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
         when(participants.isKnownParticipant(1000L)).thenReturn(true);
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
-        auctions.addAuction(1000L, 1002L, 1003L, "name", "description");
+        auctions.addAuction(correlationId, 1000L, 1002L, 1003L, "name", "description");
 
-        verify(auctionResponder).onAuctionAdded(1L, AddAuctionResult.SUCCESS, 1002L, 1003L, "name", "description");
+        verify(auctionResponder).onAuctionAdded(correlationId, 1L, AddAuctionResult.SUCCESS, 1002L, 1003L,
+            "name", "description");
 
         assertFalse(auctions.getAuctionList().isEmpty());
         assertEquals(1L, auctions.getAuctionList().get(0).auctionId());
@@ -78,91 +82,98 @@ public class AuctionsTests
     @Test
     public void testThatParticipantMustBeKnown()
     {
+        final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
         when(participants.isKnownParticipant(1000L)).thenReturn(false);
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
-        auctions.addAuction(1000L, 1001L, 1002L, "name", "description");
+        auctions.addAuction(correlationId, 1000L, 1001L, 1002L, "name", "description");
 
-        verify(auctionResponder).rejectAddAuction(AddAuctionResult.UNKNOWN_PARTICIPANT);
+        verify(auctionResponder).rejectAddAuction(correlationId, AddAuctionResult.UNKNOWN_PARTICIPANT);
     }
 
     @Test
     public void testThatStartTimeMustBeAfterClusterTime()
     {
+        final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
         when(participants.isKnownParticipant(1000L)).thenReturn(true);
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
-        auctions.addAuction(1000L, 999L, 1002L, "name", "description");
+        auctions.addAuction(correlationId, 1000L, 999L, 1002L, "name", "description");
 
-        verify(auctionResponder).rejectAddAuction(AddAuctionResult.INVALID_START_TIME);
+        verify(auctionResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_START_TIME);
     }
 
     @Test
     public void testThatEndTimeMustBeAfterStartTime()
     {
+        final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
         when(participants.isKnownParticipant(1000L)).thenReturn(true);
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
-        auctions.addAuction(1000L, 1002L, 999L, "name", "description");
+        auctions.addAuction(correlationId, 1000L, 1002L, 999L, "name", "description");
 
-        verify(auctionResponder).rejectAddAuction(AddAuctionResult.INVALID_END_TIME);
+        verify(auctionResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_END_TIME);
     }
 
     @Test
     public void testThatNameCannotBeNull()
     {
+        final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
         when(participants.isKnownParticipant(1000L)).thenReturn(true);
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
-        auctions.addAuction(1000L, 1002L, 1003L, null, "description");
+        auctions.addAuction(correlationId, 1000L, 1002L, 1003L, null, "description");
 
-        verify(auctionResponder).rejectAddAuction(AddAuctionResult.INVALID_NAME);
+        verify(auctionResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_NAME);
     }
 
     @Test
     public void testThatDescriptionCannotBeNull()
     {
+        final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
         when(participants.isKnownParticipant(1000L)).thenReturn(true);
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
-        auctions.addAuction(1000L, 1002L, 1003L, "name", null);
+        auctions.addAuction(correlationId, 1000L, 1002L, 1003L, "name", null);
 
-        verify(auctionResponder).rejectAddAuction(AddAuctionResult.INVALID_DESCRIPTION);
+        verify(auctionResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_DESCRIPTION);
     }
 
     @Test
     public void testThatNameCannotBeBlank()
     {
+        final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
         when(participants.isKnownParticipant(1000L)).thenReturn(true);
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
-        auctions.addAuction(1000L, 1002L, 1003L, "", "description");
+        auctions.addAuction(correlationId, 1000L, 1002L, 1003L, "", "description");
 
-        verify(auctionResponder).rejectAddAuction(AddAuctionResult.INVALID_NAME);
+        verify(auctionResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_NAME);
     }
 
     @Test
     public void testThatDescriptionCannotBeBlank()
     {
+        final String correlationId = UUID.randomUUID().toString();
         when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
         when(participants.isKnownParticipant(1000L)).thenReturn(true);
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
-        auctions.addAuction(1000L, 1002L, 1003L, "name", "");
+        auctions.addAuction(correlationId, 1000L, 1002L, 1003L, "name", "");
 
-        verify(auctionResponder).rejectAddAuction(AddAuctionResult.INVALID_DESCRIPTION);
+        verify(auctionResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_DESCRIPTION);
     }
 }

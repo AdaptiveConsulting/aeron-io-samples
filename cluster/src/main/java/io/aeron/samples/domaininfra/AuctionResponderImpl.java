@@ -48,14 +48,15 @@ public class AuctionResponderImpl implements AuctionResponder
      * @param description the description
      */
     @Override
-    public void onAuctionAdded(final long auctionId, final AddAuctionResult result, final long startTime,
-        final long endTime, final String name, final String description)
+    public void onAuctionAdded(final String correlationId, final long auctionId, final AddAuctionResult result,
+        final long startTime, final long endTime, final String name, final String description)
     {
         messageHeaderEncoder.wrap(buffer, 0);
 
         createAuctionResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
             .auctionId(auctionId)
-            .result(mapAddAuctionResult(result));
+            .result(mapAddAuctionResult(result))
+            .correlationId(correlationId);
 
         context.reply(buffer, 0, createAuctionResultEncoder.encodedLength());
 
@@ -74,12 +75,13 @@ public class AuctionResponderImpl implements AuctionResponder
      * @param result the result code
      */
     @Override
-    public void rejectAddAuction(final AddAuctionResult result)
+    public void rejectAddAuction(final String correlationId, final AddAuctionResult result)
     {
         messageHeaderEncoder.wrap(buffer, 0);
         createAuctionResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
             .auctionId(-1)
-            .result(mapAddAuctionResult(result));
+            .result(mapAddAuctionResult(result))
+            .correlationId(correlationId);
         context.reply(buffer, 0, createAuctionResultEncoder.encodedLength());
     }
 

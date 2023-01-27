@@ -66,7 +66,8 @@ public class SbeDemuxer
             case CreateAuctionCommandDecoder.TEMPLATE_ID ->
             {
                 createAuctionDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
-                auctions.addAuction(createAuctionDecoder.createdByParticipantId(),
+                auctions.addAuction(createAuctionDecoder.correlationId(),
+                    createAuctionDecoder.createdByParticipantId(),
                     createAuctionDecoder.startTime(),
                     createAuctionDecoder.endTime(),
                     createAuctionDecoder.name(),
