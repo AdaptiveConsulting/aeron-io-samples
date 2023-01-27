@@ -10,7 +10,6 @@ import io.aeron.sample.cluster.protocol.CreateAuctionCommandDecoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderDecoder;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
-import io.aeron.samples.infra.SessionMessageContextImpl;
 import org.agrona.DirectBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ import org.slf4j.LoggerFactory;
 public class SbeDemuxer
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SbeDemuxer.class);
-    private final SessionMessageContextImpl sessionMessageContext;
     private final Participants participants;
     private final Auctions auctions;
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
@@ -32,14 +30,11 @@ public class SbeDemuxer
     /**
      * Dispatches ingress messages to domain logic.
      *
-     * @param sessionMessageContext the message context
      * @param participants          the participants domain model to which commands are dispatched
      * @param auctions              the auction domain model to which commands are dispatched
      */
-    public SbeDemuxer(final SessionMessageContextImpl sessionMessageContext, final Participants participants,
-        final Auctions auctions)
+    public SbeDemuxer(final Participants participants, final Auctions auctions)
     {
-        this.sessionMessageContext = sessionMessageContext;
         this.participants = participants;
         this.auctions = auctions;
     }

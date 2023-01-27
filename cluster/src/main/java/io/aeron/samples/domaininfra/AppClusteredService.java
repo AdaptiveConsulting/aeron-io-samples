@@ -34,7 +34,7 @@ public class AppClusteredService implements ClusteredService
     private final Auctions auctions = new Auctions(context, participants, idGenerators, auctionResponder);
     private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, idGenerators);
     private final TimerManager timerManager = new TimerManager(auctions);
-    private final SbeDemuxer sbeDemuxer = new SbeDemuxer(context, participants, auctions);
+    private final SbeDemuxer sbeDemuxer = new SbeDemuxer(participants, auctions);
 
     @Override
     public void onStart(final Cluster cluster, final Image snapshotImage)
