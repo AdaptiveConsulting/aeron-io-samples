@@ -40,11 +40,39 @@ public class AuctionsTests
             "name", "description");
 
         assertFalse(auctions.getAuctionList().isEmpty());
-        assertEquals(1L, auctions.getAuctionList().get(0).auctionId());
-        assertEquals(1002L, auctions.getAuctionList().get(0).startTime());
-        assertEquals(1003L, auctions.getAuctionList().get(0).endTime());
-        assertEquals("name", auctions.getAuctionList().get(0).name());
-        assertEquals("description", auctions.getAuctionList().get(0).description());
+        assertEquals(1L, auctions.getAuctionList().get(0).getAuctionId());
+        assertEquals(1002L, auctions.getAuctionList().get(0).getStartTime());
+        assertEquals(1003L, auctions.getAuctionList().get(0).getEndTime());
+        assertEquals("name", auctions.getAuctionList().get(0).getName());
+        assertEquals("description", auctions.getAuctionList().get(0).getDescription());
+        assertEquals(0, auctions.getAuctionList().get(0).getBidCount());
+        assertEquals(Long.MIN_VALUE, auctions.getAuctionList().get(0).getCurrentPrice());
+        assertEquals(Long.MIN_VALUE, auctions.getAuctionList().get(0).getLastUpdateTime());
+        assertEquals(Long.MIN_VALUE, auctions.getAuctionList().get(0).getWinningParticipantId());
+        assertEquals(AuctionStatus.PRE_OPEN, auctions.getAuctionList().get(0).getAuctionStatus());
+    }
+
+    @Test
+    public void testAuctionBidCanBeAdded()
+    {
+        final String correlationId1 = UUID.randomUUID().toString();
+        final String correlationId2 = UUID.randomUUID().toString();
+        when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
+        when(participants.isKnownParticipant(1000L)).thenReturn(true);
+        when(participants.isKnownParticipant(1001L)).thenReturn(true);
+
+        final Auctions auctions =
+            new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
+        auctions.addAuction(correlationId1, 1000L, 1002L, 1004L, "name", "description");
+
+        verify(auctionResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 1004L,
+            "name", "description");
+
+        when(sessionMessageContext.getClusterTime()).thenReturn(1003L);
+        auctions.addBid(1L, 1001L, 99L, correlationId2);
+
+        //todo timer to manage the auction state
+        verify(auctionResponder).onAuctionUpdated(correlationId2, 1L, AuctionStatus.PRE_OPEN, 99L, 1, 1003L);
     }
 
     @Test
@@ -64,19 +92,19 @@ public class AuctionsTests
         assertFalse(auctions.getAuctionList().isEmpty());
         assertEquals(2L, auctions.getAuctionList().size());
 
-        assertEquals(1L, auctions.getAuctionList().get(0).auctionId());
-        assertEquals(1000L, auctions.getAuctionList().get(0).createdByParticipantId());
-        assertEquals(1002L, auctions.getAuctionList().get(0).startTime());
-        assertEquals(1003L, auctions.getAuctionList().get(0).endTime());
-        assertEquals("name0", auctions.getAuctionList().get(0).name());
-        assertEquals("description0", auctions.getAuctionList().get(0).description());
+        assertEquals(1L, auctions.getAuctionList().get(0).getAuctionId());
+        assertEquals(1000L, auctions.getAuctionList().get(0).getCreatedByParticipantId());
+        assertEquals(1002L, auctions.getAuctionList().get(0).getStartTime());
+        assertEquals(1003L, auctions.getAuctionList().get(0).getEndTime());
+        assertEquals("name0", auctions.getAuctionList().get(0).getName());
+        assertEquals("description0", auctions.getAuctionList().get(0).getDescription());
 
-        assertEquals(2L, auctions.getAuctionList().get(1).auctionId());
-        assertEquals(1000L, auctions.getAuctionList().get(1).createdByParticipantId());
-        assertEquals(1003L, auctions.getAuctionList().get(1).startTime());
-        assertEquals(1004L, auctions.getAuctionList().get(1).endTime());
-        assertEquals("name1", auctions.getAuctionList().get(1).name());
-        assertEquals("description1", auctions.getAuctionList().get(1).description());
+        assertEquals(2L, auctions.getAuctionList().get(1).getAuctionId());
+        assertEquals(1000L, auctions.getAuctionList().get(1).getCreatedByParticipantId());
+        assertEquals(1003L, auctions.getAuctionList().get(1).getStartTime());
+        assertEquals(1004L, auctions.getAuctionList().get(1).getEndTime());
+        assertEquals("name1", auctions.getAuctionList().get(1).getName());
+        assertEquals("description1", auctions.getAuctionList().get(1).getDescription());
     }
 
     @Test
@@ -175,5 +203,99 @@ public class AuctionsTests
         auctions.addAuction(correlationId, 1000L, 1002L, 1003L, "name", "");
 
         verify(auctionResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_DESCRIPTION);
+    }
+
+    @Test
+    public void testAuctionRejectedIfAuctionNotOpenYet()
+    {
+        final String correlationId1 = UUID.randomUUID().toString();
+        final String correlationId2 = UUID.randomUUID().toString();
+        when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
+        when(participants.isKnownParticipant(1000L)).thenReturn(true);
+        when(participants.isKnownParticipant(1001L)).thenReturn(true);
+
+        final Auctions auctions =
+            new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
+        auctions.addAuction(correlationId1, 1000L, 1002L, 1004L, "name", "description");
+
+        verify(auctionResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 1004L,
+            "name", "description");
+
+        auctions.addBid(1L, 1001L, 99L, correlationId2);
+
+        verify(auctionResponder).rejectAddBid(correlationId2, 1L, AddAuctionBidResult.AUCTION_NOT_OPEN);
+    }
+
+    @Test
+    public void testAuctionRejectedIfAuctionUnknown()
+    {
+        final String correlationId1 = UUID.randomUUID().toString();
+        final String correlationId2 = UUID.randomUUID().toString();
+        when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
+        when(participants.isKnownParticipant(1000L)).thenReturn(true);
+        when(participants.isKnownParticipant(1001L)).thenReturn(true);
+
+        final Auctions auctions =
+            new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
+        auctions.addAuction(correlationId1, 1000L, 1002L, 1004L, "name", "description");
+
+        verify(auctionResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 1004L,
+            "name", "description");
+
+        auctions.addBid(42L, 1001L, 99L, correlationId2);
+
+        verify(auctionResponder).rejectAddBid(correlationId2, 42L, AddAuctionBidResult.UNKNOWN_AUCTION);
+    }
+
+    @Test
+    public void testAuctionRejectedIfBidderUnknown()
+    {
+        final String correlationId1 = UUID.randomUUID().toString();
+        final String correlationId2 = UUID.randomUUID().toString();
+        when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
+        when(participants.isKnownParticipant(1000L)).thenReturn(true);
+        when(participants.isKnownParticipant(1001L)).thenReturn(false);
+
+        final Auctions auctions =
+            new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
+        auctions.addAuction(correlationId1, 1000L, 1002L, 1004L, "name", "description");
+
+        verify(auctionResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 1004L,
+            "name", "description");
+
+        when(sessionMessageContext.getClusterTime()).thenReturn(1003L);
+        auctions.addBid(1L, 1001L, 99L, correlationId2);
+
+        verify(auctionResponder).rejectAddBid(correlationId2, 1L, AddAuctionBidResult.UNKNOWN_PARTICIPANT);
+    }
+
+    @Test
+    public void testAuctionRejectedIfNoPriceImprovement()
+    {
+        final String correlationId1 = UUID.randomUUID().toString();
+        final String correlationId2 = UUID.randomUUID().toString();
+        final String correlationId3 = UUID.randomUUID().toString();
+        when(sessionMessageContext.getClusterTime()).thenReturn(1000L);
+        when(participants.isKnownParticipant(1000L)).thenReturn(true);
+        when(participants.isKnownParticipant(1001L)).thenReturn(true);
+
+        final Auctions auctions =
+            new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder);
+        auctions.addAuction(correlationId1, 1000L, 1002L, 1005L, "name", "description");
+
+        //add first bid at 99L
+        verify(auctionResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 1005L,
+            "name", "description");
+
+        when(sessionMessageContext.getClusterTime()).thenReturn(1003L);
+        auctions.addBid(1L, 1001L, 99L, correlationId2);
+
+        verify(auctionResponder).onAuctionUpdated(correlationId2, 1L, AuctionStatus.PRE_OPEN, 99L, 1, 1003L);
+
+        //add a second bid at 90L
+        when(sessionMessageContext.getClusterTime()).thenReturn(1004L);
+        auctions.addBid(1L, 1001L, 90L, correlationId3);
+
+        verify(auctionResponder).rejectAddBid(correlationId3, 1L, AddAuctionBidResult.INVALID_PRICE);
     }
 }

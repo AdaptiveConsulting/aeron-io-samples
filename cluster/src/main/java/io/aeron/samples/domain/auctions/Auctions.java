@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+
 /**
  * Domain model for the auctions in the cluster
  */
@@ -85,12 +86,42 @@ public class Auctions
     }
 
     /**
+     * Adds a bid to an existing auction
+     * @param auctionId the auction id
+     * @param participantId the participant who is bidding
+     * @param price the price of the bid, in whole cents
+     * @param correlationId the correlation id for this request
+     */
+    public void addBid(final long auctionId, final long participantId, final long price, final String correlationId)
+    {
+        final var optionalAuction = auctionList.stream().filter(a -> a.getAuctionId() == auctionId).findFirst();
+        if (optionalAuction.isEmpty())
+        {
+            auctionResponder.rejectAddBid(correlationId, auctionId, AddAuctionBidResult.UNKNOWN_AUCTION);
+            return;
+        }
+
+        final var auction = optionalAuction.get();
+        final var validationResult = validateBid(auction, participantId, price);
+        if (validationResult != AddAuctionBidResult.SUCCESS)
+        {
+            auctionResponder.rejectAddBid(correlationId, auctionId, validationResult);
+        }
+
+        auction.setWinningBid(participantId, price, context.getClusterTime());
+
+        auctionResponder.onAuctionUpdated(correlationId, auction.getAuctionId(), auction.getAuctionStatus(),
+            auction.getCurrentPrice(), auction.getBidCount(), auction.getLastUpdateTime());
+    }
+
+
+    /**
      * Gets the list of auctions after sorting it by auction id
      * @return the list of auctions
      */
     public List<Auction> getAuctionList()
     {
-        auctionList.sort(Comparator.comparingLong(Auction::auctionId));
+        auctionList.sort(Comparator.comparingLong(Auction::getAuctionId));
         return auctionList;
     }
 
@@ -129,4 +160,38 @@ public class Auctions
         return AddAuctionResult.SUCCESS;
     }
 
+    /**
+     * Validates the bid parameters.
+     * The auction must be open at this time.
+     * The bidding participant must be known and cannot be the creator.
+     * The price must be over zero, and a price improvement on the current price.
+     * @param auction the auction
+     * @param participantId the participant who is bidding
+     * @param price the price of the bid
+     * @return the result of the validation
+     */
+    private AddAuctionBidResult validateBid(final Auction auction, final long participantId, final long price)
+    {
+        if (auction.getStartTime() > context.getClusterTime())
+        {
+            return AddAuctionBidResult.AUCTION_NOT_OPEN;
+        }
+        if (auction.getEndTime() <= context.getClusterTime())
+        {
+            return AddAuctionBidResult.AUCTION_NOT_OPEN;
+        }
+        if (!participants.isKnownParticipant(participantId))
+        {
+            return AddAuctionBidResult.UNKNOWN_PARTICIPANT;
+        }
+        if (price <= 0 || price <= auction.currentPrice())
+        {
+            return AddAuctionBidResult.INVALID_PRICE;
+        }
+        if (auction.getCreatedByParticipantId() == participantId)
+        {
+            return AddAuctionBidResult.CANNOT_SELF_BID;
+        }
+        return AddAuctionBidResult.SUCCESS;
+    }
 }

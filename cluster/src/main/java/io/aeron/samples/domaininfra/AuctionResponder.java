@@ -4,7 +4,9 @@
 
 package io.aeron.samples.domaininfra;
 
+import io.aeron.samples.domain.auctions.AddAuctionBidResult;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
+import io.aeron.samples.domain.auctions.AuctionStatus;
 
 /**
  * Interface for responding to auction requests, encapsulating the SBE encoding and Aeron interactions
@@ -32,4 +34,24 @@ public interface AuctionResponder
      * @param result the result code
      */
     void rejectAddAuction(String correlationId, AddAuctionResult result);
+
+    /**
+     * Responds to the client that a bid has been rejected with a result code and the auction id
+     * @param correlationId the correlation id for the original request
+     * @param auctionId the id of the auction provided in the original request
+     * @param resultCode the result code
+     */
+    void rejectAddBid(String correlationId, long auctionId, AddAuctionBidResult resultCode);
+
+    /**
+     * Pushes an update to the state of an auction
+     * @param correlationId the correlation id for the original request
+     * @param auctionId the id of the auction
+     * @param auctionStatus the status of the auction
+     * @param currentPrice the current price of the auction
+     * @param bidCount the number of bids
+     * @param lastUpdateTime the time of the last update
+     */
+    void onAuctionUpdated(String correlationId, long auctionId, AuctionStatus auctionStatus, long currentPrice,
+        int bidCount, long lastUpdateTime);
 }

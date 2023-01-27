@@ -151,9 +151,16 @@ public class SnapshotManager implements FragmentHandler
             case AuctionSnapshotDecoder.TEMPLATE_ID ->
             {
                 auctionDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
-                auctions.restoreAuction(auctionDecoder.auctionId(), auctionDecoder.createdByParticipantId(),
-                    auctionDecoder.startTime(), auctionDecoder.endTime(),
-                    auctionDecoder.name(), auctionDecoder.description());
+                if (auctionDecoder.startTime() > context.getClusterTime())
+                {
+                    auctions.restoreAuction(auctionDecoder.auctionId(), auctionDecoder.createdByParticipantId(),
+                        auctionDecoder.startTime(), auctionDecoder.endTime(),
+                        auctionDecoder.name(), auctionDecoder.description());
+                }
+                else
+                {
+                    LOGGER.warn("Auction {} has already started; not restoring", auctionDecoder.auctionId());
+                }
             }
             case EndOfSnapshotDecoder.TEMPLATE_ID -> snapshotFullyLoaded = true;
             default -> LOGGER.warn("Unknown snapshot message template id: {}", headerDecoder.templateId());
@@ -179,6 +186,7 @@ public class SnapshotManager implements FragmentHandler
 
     /**
      * Offers the auctions to the snapshot publication using the AuctionSnapshotEncoder
+     * Only auctions that start after the last observed cluster time will be written to the snapshot.
      * @param snapshotPublication the publication to offer the snapshot data to
      */
     private void offerAuctions(final ExclusivePublication snapshotPublication)
@@ -186,14 +194,18 @@ public class SnapshotManager implements FragmentHandler
         headerEncoder.wrap(buffer, 0);
         auctions.getAuctionList().forEach(auction ->
         {
-            auctionEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
-            auctionEncoder.auctionId(auction.auctionId());
-            auctionEncoder.createdByParticipantId(auction.createdByParticipantId());
-            auctionEncoder.startTime(auction.startTime());
-            auctionEncoder.endTime(auction.endTime());
-            auctionEncoder.name(auction.name());
-            auctionEncoder.description(auction.description());
-            retryingOffer(snapshotPublication, buffer, headerEncoder.encodedLength() + auctionEncoder.encodedLength());
+            if (auction.getStartTime() > context.getClusterTime())
+            {
+                auctionEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
+                auctionEncoder.auctionId(auction.getAuctionId());
+                auctionEncoder.createdByParticipantId(auction.getCreatedByParticipantId());
+                auctionEncoder.startTime(auction.getStartTime());
+                auctionEncoder.endTime(auction.getEndTime());
+                auctionEncoder.name(auction.getName());
+                auctionEncoder.description(auction.getDescription());
+                retryingOffer(snapshotPublication, buffer,
+                    headerEncoder.encodedLength() + auctionEncoder.encodedLength());
+            }
         });
     }
 
