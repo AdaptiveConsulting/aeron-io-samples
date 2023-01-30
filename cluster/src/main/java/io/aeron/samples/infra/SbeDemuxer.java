@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Adaptive Financial Consulting
  */
 
-package io.aeron.samples.domaininfra;
+package io.aeron.samples.infra;
 
 import io.aeron.sample.cluster.protocol.AddAuctionBidCommandDecoder;
 import io.aeron.sample.cluster.protocol.AddParticipantCommandDecoder;

@@ -7,7 +7,7 @@ package io.aeron.samples;
 import io.aeron.cluster.ClusteredMediaDriver;
 import io.aeron.cluster.service.ClusteredServiceContainer;
 import io.aeron.samples.cluster.ClusterConfig;
-import io.aeron.samples.domaininfra.AppClusteredService;
+import io.aeron.samples.infra.AppClusteredService;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.ShutdownSignalBarrier;
 import org.slf4j.Logger;
@@ -16,14 +16,14 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /***
- * App. Empty. Pointless comment due to checkstyle.
+ * Sample cluster application
  */
 public class ClusterApp
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterApp.class);
 
     /***
-     * Checkstyle appeasement.
+     * The main method.
      * @param args command line args
      */
     public static void main(final String[] args)

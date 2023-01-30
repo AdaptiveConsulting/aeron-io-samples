@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Adaptive Financial Consulting
  */
 
-package io.aeron.samples.domaininfra;
+package io.aeron.samples.infra;
 
 import io.aeron.samples.domain.auctions.AddAuctionBidResult;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
@@ -54,4 +54,15 @@ public interface AuctionResponder
      */
     void onAuctionUpdated(String correlationId, long auctionId, AuctionStatus auctionStatus, long currentPrice,
         int bidCount, long lastUpdateTime);
+
+    /***
+     * Broadcasts an update for an auction once the state has been updated
+     * @param auctionId the id of the auction
+     * @param auctionStatus the status of the auction
+     * @param currentPrice the current price of the auction
+     * @param bidCount the number of bids
+     * @param lastUpdateTime the time of the last update
+     */
+    void onAuctionStateUpdate(long auctionId, AuctionStatus auctionStatus, long currentPrice, int bidCount,
+        long lastUpdateTime);
 }
