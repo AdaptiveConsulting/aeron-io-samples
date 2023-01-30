@@ -72,15 +72,17 @@ public class Auctions
             return;
         }
 
-        final long auctionId = idGenerators.incrementAndGetAuctionId();
+        final var auctionId = idGenerators.incrementAndGetAuctionId();
         final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
         auctionList.add(auction);
 
         auctionResponder.onAuctionAdded(correlationId, auctionId, result, startTime, endTime, name, description);
 
+        final var startCorrelationId = timerManager.scheduleTimer(startTime, () -> openAuction(auctionId));
+        final var endCorrelationId = timerManager.scheduleTimer(endTime, () -> closeAuction(auctionId));
 
-        timerManager.scheduleTimer(startTime, () -> openAuction(auctionId));
-        timerManager.scheduleTimer(endTime, () -> closeAuction(auctionId));
+        auction.setStartTimerCorrelationId(startCorrelationId);
+        auction.setEndTimerCorrelationId(endCorrelationId);
     }
 
     /**
