@@ -4,11 +4,11 @@
 
 package io.aeron.samples.domain.auctions;
 
-import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.participants.Participants;
 import io.aeron.samples.infra.AuctionResponder;
 import io.aeron.samples.infra.SessionMessageContext;
 import io.aeron.samples.infra.TimerManager;
+import org.agrona.concurrent.SnowflakeIdGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,27 +28,26 @@ public class Auctions
     private final AuctionResponder auctionResponder;
     private final TimerManager timerManager;
     private final Participants participants;
-    private final IdGenerators idGenerators;
     private final List<Auction> auctionList;
+    private final SnowflakeIdGenerator idGenerator;
 
     /**
      * Constructor
      *
      * @param context          the session message context
      * @param participants     the participant data
-     * @param idGenerators     the idgenerator to use to generate new ids
      * @param auctionResponder the object used to respond to auction actions
      * @param timerManager     the timer manager
      */
     public Auctions(final SessionMessageContext context, final Participants participants,
-        final IdGenerators idGenerators, final AuctionResponder auctionResponder, final TimerManager timerManager)
+        final AuctionResponder auctionResponder, final TimerManager timerManager)
     {
         this.context = context;
         this.auctionResponder = auctionResponder;
         this.timerManager = timerManager;
         this.auctionList = new ArrayList<>();
         this.participants = participants;
-        this.idGenerators = idGenerators;
+        this.idGenerator = new SnowflakeIdGenerator(10, 12, 0L, 0L, context::getClusterTime);
     }
 
     /**
@@ -72,7 +71,7 @@ public class Auctions
             return;
         }
 
-        final var auctionId = idGenerators.incrementAndGetAuctionId();
+        final var auctionId = idGenerator.nextId();
         final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
         auctionList.add(auction);
 
