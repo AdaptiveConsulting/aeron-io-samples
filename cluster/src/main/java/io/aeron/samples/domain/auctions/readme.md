@@ -76,4 +76,3 @@ The add auction bid flow operates as follows:
 
 Auction data are written to snapshot only if the startTime is in the future.
 Open and already closed auctions will not be written to the snapshot.
-On snapshot load, only auctions with a startTime after current cluster time will be loaded.

@@ -21,6 +21,12 @@ public class Auction
     private int bidCount = 0;
     private AuctionStatus auctionStatus = AuctionStatus.PRE_OPEN;
 
+    private long startTimerCorrelationId = Long.MIN_VALUE;
+
+
+
+    private long endTimerCorrelationId = Long.MIN_VALUE;
+
     /**
      * Constructor
      * @param auctionId the id of the auction
@@ -172,5 +178,42 @@ public class Auction
     public void setAuctionStatus(final AuctionStatus newStatus)
     {
         auctionStatus = newStatus;
+    }
+
+    /**
+     * Gets the timerCorrelationId for the start timer
+     * @return the timerCorrelationId
+     */
+    public long getStartTimerCorrelationId()
+    {
+        return startTimerCorrelationId;
+    }
+
+    /**
+     * Sets the timerCorrelationId for the start timer
+     * @param startTimerCorrelationId the timerCorrelationId
+     */
+    public void setStartTimerCorrelationId(final long startTimerCorrelationId)
+    {
+        this.startTimerCorrelationId = startTimerCorrelationId;
+    }
+
+
+    /**
+     * Gets the timerCorrelationId for the end timer
+     * @return the timerCorrelationId
+     */
+    public long getEndTimerCorrelationId()
+    {
+        return endTimerCorrelationId;
+    }
+
+    /**
+     * Sets the timerCorrelationId for the end timer
+     * @param endTimerCorrelationId the timerCorrelationId
+     */
+    public void setEndTimerCorrelationId(final long endTimerCorrelationId)
+    {
+        this.endTimerCorrelationId = endTimerCorrelationId;
     }
 }

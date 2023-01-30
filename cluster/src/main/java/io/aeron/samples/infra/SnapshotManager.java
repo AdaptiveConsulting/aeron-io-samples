@@ -154,8 +154,9 @@ public class SnapshotManager implements FragmentHandler
                 if (auctionDecoder.startTime() > context.getClusterTime())
                 {
                     auctions.restoreAuction(auctionDecoder.auctionId(), auctionDecoder.createdByParticipantId(),
-                        auctionDecoder.startTime(), auctionDecoder.endTime(),
-                        auctionDecoder.name(), auctionDecoder.description());
+                        auctionDecoder.startTime(), auctionDecoder.startTimeTimerCorrelation(),
+                        auctionDecoder.endTime(), auctionDecoder.endTimeTimerCorrelation(), auctionDecoder.name(),
+                        auctionDecoder.description());
                 }
                 else
                 {
@@ -200,7 +201,9 @@ public class SnapshotManager implements FragmentHandler
                 auctionEncoder.auctionId(auction.getAuctionId());
                 auctionEncoder.createdByParticipantId(auction.getCreatedByParticipantId());
                 auctionEncoder.startTime(auction.getStartTime());
+                auctionEncoder.startTimeTimerCorrelation(auction.getStartTimerCorrelationId());
                 auctionEncoder.endTime(auction.getEndTime());
+                auctionEncoder.endTimeTimerCorrelation(auction.getEndTimerCorrelationId());
                 auctionEncoder.name(auction.getName());
                 auctionEncoder.description(auction.getDescription());
                 retryingOffer(snapshotPublication, buffer,
@@ -226,7 +229,6 @@ public class SnapshotManager implements FragmentHandler
     {
         headerEncoder.wrap(buffer, 0);
         endOfSnapshotEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
-        endOfSnapshotEncoder.snapshotWriteTime(context.getClusterTime());
         retryingOffer(snapshotPublication, buffer,
             headerEncoder.encodedLength() + endOfSnapshotEncoder.encodedLength());
     }

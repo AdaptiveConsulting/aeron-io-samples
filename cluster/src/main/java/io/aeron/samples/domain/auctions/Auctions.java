@@ -78,7 +78,7 @@ public class Auctions
 
         auctionResponder.onAuctionAdded(correlationId, auctionId, result, startTime, endTime, name, description);
 
-        //schedule the auction start and end timers
+
         timerManager.scheduleTimer(startTime, () -> openAuction(auctionId));
         timerManager.scheduleTimer(endTime, () -> closeAuction(auctionId));
     }
@@ -89,18 +89,23 @@ public class Auctions
      * @param auctionId              the auction id
      * @param createdByParticipantId the participant who created the auction
      * @param startTime              the start time of the auction
+     * @param startTimerTimerCorrelationId the timer correlation id for the start timer
      * @param endTime                the end time of the auction
+     * @param endTimerTimerCorrelationId the timer correlation id for the end timer
      * @param name                   the name of the auction
      * @param description            the description
      */
     public void restoreAuction(final long auctionId, final long createdByParticipantId, final long startTime,
-        final long endTime, final String name, final String description)
+        final long startTimerTimerCorrelationId, final long endTime, final long endTimerTimerCorrelationId,
+        final String name, final String description)
     {
         final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
         auctionList.add(auction);
 
-        timerManager.scheduleTimer(startTime, () -> openAuction(auctionId));
-        timerManager.scheduleTimer(endTime, () -> closeAuction(auctionId));
+        //Aeron Cluster is already snapshotting the cluster timer state, so we just need to rehydrate the internal
+        //state of the TimerManager on snapshot restore.
+        timerManager.restoreTimer(startTimerTimerCorrelationId, () -> openAuction(auctionId));
+        timerManager.restoreTimer(endTimerTimerCorrelationId, () -> closeAuction(auctionId));
     }
 
     /**
