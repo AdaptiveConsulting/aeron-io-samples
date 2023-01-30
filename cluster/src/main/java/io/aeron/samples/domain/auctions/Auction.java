@@ -23,8 +23,6 @@ public class Auction
 
     private long startTimerCorrelationId = Long.MIN_VALUE;
 
-
-
     private long endTimerCorrelationId = Long.MIN_VALUE;
 
     /**
