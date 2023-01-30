@@ -39,8 +39,9 @@ public class TimerManager
      *
      * @param deadline the deadline of the timer
      * @param timerRunnable the timerRunnable to perform when the timer fires
+     * @return the correlation id of the timer
      */
-    public void scheduleTimer(final long deadline, final Runnable timerRunnable)
+    public long scheduleTimer(final long deadline, final Runnable timerRunnable)
     {
         correlationId++;
         int count = 0;
@@ -59,6 +60,17 @@ public class TimerManager
                 break;
             }
         }
+        return correlationId;
+    }
+
+    /**
+     * Restores a timer that the cluster has snapshotted the timer state, but not the timer manager internal state
+     * @param timerCorrelationId the correlation id of the timer
+     * @param task the task to perform when the timer fires
+     */
+    public void restoreTimer(final long timerCorrelationId, final Runnable task)
+    {
+        correlationIdToRunnable.put(timerCorrelationId, task);
     }
 
     /**
@@ -88,4 +100,6 @@ public class TimerManager
     {
         this.cluster = cluster;
     }
+
+
 }

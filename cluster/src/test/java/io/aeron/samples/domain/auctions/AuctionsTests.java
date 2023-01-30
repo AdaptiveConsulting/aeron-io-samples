@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -93,13 +92,14 @@ class AuctionsTests
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, new IdGenerators(), auctionResponder, timerManager);
 
-        auctions.restoreAuction(2L, 1000L, 1003L, 1004L, "name1", "description1");
-        auctions.restoreAuction(1L, 1000L, 1002L, 1003L, "name0", "description0");
+        auctions.restoreAuction(2L, 1000L, 1003L, 1L, 1004L, 2L, "name1", "description1");
+        auctions.restoreAuction(1L, 1000L, 1002L, 3L, 1003L, 4L, "name0", "description0");
 
         verifyNoInteractions(auctionResponder);
-        verify(timerManager, times(2)).scheduleTimer(eq(1003L), any());
-        verify(timerManager).scheduleTimer(eq(1004L), any());
-        verify(timerManager).scheduleTimer(eq(1002L), any());
+        verify(timerManager).restoreTimer(eq(1L), any());
+        verify(timerManager).restoreTimer(eq(2L), any());
+        verify(timerManager).restoreTimer(eq(3L), any());
+        verify(timerManager).restoreTimer(eq(4L), any());
 
         assertFalse(auctions.getAuctionList().isEmpty());
         assertEquals(2L, auctions.getAuctionList().size());

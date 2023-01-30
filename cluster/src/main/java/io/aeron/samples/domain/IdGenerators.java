@@ -5,7 +5,10 @@
 package io.aeron.samples.domain;
 
 /**
- * Generates ids for the domain objects
+ * Generates ids for the domain objects.
+ * Todo: is this really necessary? Could be either:
+ * - internalized to the auctions and snapshotted there
+ * - moved to a snowflake like generator, removing any need to snapshot the data.
  */
 public class IdGenerators
 {
