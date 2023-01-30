@@ -6,12 +6,16 @@ package io.aeron.samples.domain.auctions;
 
 import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.participants.Participants;
-import io.aeron.samples.domaininfra.AuctionResponder;
+import io.aeron.samples.infra.AuctionResponder;
 import io.aeron.samples.infra.SessionMessageContext;
+import io.aeron.samples.infra.TimerManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -19,37 +23,43 @@ import java.util.List;
  */
 public class Auctions
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Auctions.class);
     private final SessionMessageContext context;
     private final AuctionResponder auctionResponder;
+    private final TimerManager timerManager;
     private final Participants participants;
     private final IdGenerators idGenerators;
     private final List<Auction> auctionList;
 
     /**
      * Constructor
-     * @param context the session message context
-     * @param participants the participant data
-     * @param idGenerators the idgenerator to use to generate new ids
+     *
+     * @param context          the session message context
+     * @param participants     the participant data
+     * @param idGenerators     the idgenerator to use to generate new ids
      * @param auctionResponder the object used to respond to auction actions
+     * @param timerManager     the timer manager
      */
     public Auctions(final SessionMessageContext context, final Participants participants,
-        final IdGenerators idGenerators, final AuctionResponder auctionResponder)
+        final IdGenerators idGenerators, final AuctionResponder auctionResponder, final TimerManager timerManager)
     {
         this.context = context;
         this.auctionResponder = auctionResponder;
+        this.timerManager = timerManager;
         this.auctionList = new ArrayList<>();
         this.participants = participants;
         this.idGenerators = idGenerators;
     }
 
     /**
-     * Creates an auction
-     * @param correlationId the correlation id for this request
+     * Creates an auction if the parameters are validated successfully
+     *
+     * @param correlationId          the correlation id for this request
      * @param createdByParticipantId the participant who created the auction
-     * @param startTime the start time of the auction. Bids cannot be added before this time.
-     * @param endTime the end time of the auction, at which time no more bids can be added and the result is computed
-     * @param name the name of the auction
-     * @param description the description
+     * @param startTime              the start time of the auction. Bids cannot be added before this time.
+     * @param endTime                the end time of the auction, at which time no more bids can be added and the result is computed
+     * @param name                   the name of the auction
+     * @param description            the description
      */
     public void addAuction(final String correlationId, final long createdByParticipantId, final long startTime,
         final long endTime, final String name, final String description)
@@ -67,34 +77,118 @@ public class Auctions
         auctionList.add(auction);
 
         auctionResponder.onAuctionAdded(correlationId, auctionId, result, startTime, endTime, name, description);
+
+        //schedule the auction start and end timers
+        timerManager.scheduleTimer(startTime, () -> openAuction(auctionId));
+        timerManager.scheduleTimer(endTime, () -> closeAuction(auctionId));
     }
 
     /**
      * Loads an auction from the snapshot
-     * @param auctionId the auction id
+     *
+     * @param auctionId              the auction id
      * @param createdByParticipantId the participant who created the auction
-     * @param startTime the start time of the auction
-     * @param endTime the end time of the auction
-     * @param name the name of the auction
-     * @param description the description
+     * @param startTime              the start time of the auction
+     * @param endTime                the end time of the auction
+     * @param name                   the name of the auction
+     * @param description            the description
      */
     public void restoreAuction(final long auctionId, final long createdByParticipantId, final long startTime,
         final long endTime, final String name, final String description)
     {
         final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
         auctionList.add(auction);
+
+        timerManager.scheduleTimer(startTime, () -> openAuction(auctionId));
+        timerManager.scheduleTimer(endTime, () -> closeAuction(auctionId));
+    }
+
+    /**
+     * Opens an auction if it was in the PRE_OPEN state and is known.
+     * @param auctionId the auction id
+     */
+    public void openAuction(final long auctionId)
+    {
+        final var optionalAuction = getAuctionById(auctionId);
+        if (optionalAuction.isEmpty())
+        {
+            LOGGER.error("Unknown auction id {}, cannot transition from PRE_OPEN to OPEN", auctionId);
+            return;
+        }
+
+        final var auction = optionalAuction.get();
+
+        if (auction.getStartTime() > context.getClusterTime())
+        {
+            LOGGER.error("Auction {} start time is not yet reached, cannot transition to closed", auctionId);
+            return;
+        }
+
+        if (transitionAuction(auction, AuctionStatus.PRE_OPEN, AuctionStatus.OPEN))
+        {
+            broadcastStateUpdate(auctionId);
+        }
+    }
+
+    /**
+     * Closes an auction if it was in the OPEN state and is known.
+     * @param auctionId the auction id
+     */
+    public void closeAuction(final long auctionId)
+    {
+        final var optionalAuction = getAuctionById(auctionId);
+        if (optionalAuction.isEmpty())
+        {
+            LOGGER.error("Unknown auction id {}, cannot transition from OPEN to CLOSED", auctionId);
+            return;
+        }
+
+        final var auction = optionalAuction.get();
+
+        if (auction.getEndTime() > context.getClusterTime())
+        {
+            LOGGER.error("Auction {} end time is not yet reached, cannot transition to closed", auctionId);
+            return;
+        }
+
+        if (transitionAuction(auction, AuctionStatus.OPEN, AuctionStatus.CLOSED))
+        {
+            broadcastStateUpdate(auctionId);
+        }
+    }
+
+    /***
+     * Transitions an auction to the next state, if known and in the previously expected state
+     * @param auction the auction to transition
+     * @param expectedStatus the expected status
+     * @param newStatus the new status
+     * @return true, if the transition was successful, false otherwise
+     */
+    private boolean transitionAuction(final Auction auction, final AuctionStatus expectedStatus,
+        final AuctionStatus newStatus)
+    {
+
+        if (auction.getAuctionStatus() != expectedStatus)
+        {
+            LOGGER.error("Unknown auction id {}, cannot transition from {} to {}", auction.getAuctionId(),
+                expectedStatus, newStatus);
+            return false;
+        }
+        auction.setAuctionStatus(newStatus);
+        return true;
     }
 
     /**
      * Adds a bid to an existing auction
-     * @param auctionId the auction id
+     *
+     * @param auctionId     the auction id
      * @param participantId the participant who is bidding
-     * @param price the price of the bid, in whole cents
+     * @param price         the price of the bid, in whole cents
      * @param correlationId the correlation id for this request
      */
     public void addBid(final long auctionId, final long participantId, final long price, final String correlationId)
     {
-        final var optionalAuction = auctionList.stream().filter(a -> a.getAuctionId() == auctionId).findFirst();
+        final var optionalAuction = getAuctionById(auctionId);
         if (optionalAuction.isEmpty())
         {
             auctionResponder.rejectAddBid(correlationId, auctionId, AddAuctionBidResult.UNKNOWN_AUCTION);
@@ -118,6 +212,7 @@ public class Auctions
 
     /**
      * Gets the list of auctions after sorting it by auction id
+     *
      * @return the list of auctions
      */
     public List<Auction> getAuctionList()
@@ -128,11 +223,12 @@ public class Auctions
 
     /**
      * Validates the auction parameters
+     *
      * @param createdByParticipantId the participant who created the auction
-     * @param startTime the start time of the auction which cannot be the current cluster time or earlier
-     * @param endTime the end time of the auction which must be after the start time
-     * @param name the name of the auction which must not be null or blank
-     * @param description the description which must not be null or blank
+     * @param startTime              the start time of the auction which cannot be the current cluster time or earlier
+     * @param endTime                the end time of the auction which must be after the start time
+     * @param name                   the name of the auction which must not be null or blank
+     * @param description            the description which must not be null or blank
      * @return the result of the validation
      */
     private AddAuctionResult validate(final long createdByParticipantId, final long startTime, final long endTime,
@@ -166,9 +262,10 @@ public class Auctions
      * The auction must be open at this time.
      * The bidding participant must be known and cannot be the creator.
      * The price must be over zero, and a price improvement on the current price.
-     * @param auction the auction
+     *
+     * @param auction       the auction
      * @param participantId the participant who is bidding
-     * @param price the price of the bid
+     * @param price         the price of the bid
      * @return the result of the validation
      */
     private AddAuctionBidResult validateBid(final Auction auction, final long participantId, final long price)
@@ -194,5 +291,30 @@ public class Auctions
             return AddAuctionBidResult.CANNOT_SELF_BID;
         }
         return AddAuctionBidResult.SUCCESS;
+    }
+
+    /***
+     * Gets an auction by id
+     * @param auctionId the auction id
+     * @return the auction within an Optional
+     */
+    private Optional<Auction> getAuctionById(final long auctionId)
+    {
+        return auctionList.stream().filter(a -> a.getAuctionId() == auctionId).findFirst();
+    }
+
+    /**
+     * Broadcasts the state update to all cluster clients
+     * @param auctionId the auction id
+     */
+    private void broadcastStateUpdate(final long auctionId)
+    {
+        final var optionalAuction = getAuctionById(auctionId);
+        if (optionalAuction.isPresent())
+        {
+            final var auction = optionalAuction.get();
+            auctionResponder.onAuctionStateUpdate(auction.getAuctionId(), auction.getAuctionStatus(),
+                auction.getCurrentPrice(), auction.getBidCount(), auction.getLastUpdateTime());
+        }
     }
 }

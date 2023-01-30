@@ -164,4 +164,13 @@ public class Auction
     {
         return auctionStatus;
     }
+
+    /**
+     * Sets the auction status to the new value
+     * @param newStatus the new auction status
+     */
+    public void setAuctionStatus(final AuctionStatus newStatus)
+    {
+        auctionStatus = newStatus;
+    }
 }

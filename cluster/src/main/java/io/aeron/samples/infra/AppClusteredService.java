@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Adaptive Financial Consulting
  */
 
-package io.aeron.samples.domaininfra;
+package io.aeron.samples.infra;
 
 import io.aeron.ExclusivePublication;
 import io.aeron.Image;
@@ -14,8 +14,6 @@ import io.aeron.logbuffer.Header;
 import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
-import io.aeron.samples.infra.ClientSessions;
-import io.aeron.samples.infra.SessionMessageContextImpl;
 import org.agrona.DirectBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +29,10 @@ public class AppClusteredService implements ClusteredService
     private final Participants participants = new Participants();
     private final IdGenerators idGenerators = new IdGenerators();
     private final AuctionResponder auctionResponder = new AuctionResponderImpl(context);
-    private final Auctions auctions = new Auctions(context, participants, idGenerators, auctionResponder);
+    private TimerManager timerManager = new TimerManager(context);
+    private final Auctions auctions = new Auctions(context, participants, idGenerators, auctionResponder,
+        timerManager);
     private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, idGenerators, context);
-    private final TimerManager timerManager = new TimerManager(auctions);
     private final SbeDemuxer sbeDemuxer = new SbeDemuxer(participants, auctions);
 
     @Override
@@ -41,7 +40,7 @@ public class AppClusteredService implements ClusteredService
     {
         snapshotManager.setIdleStrategy(cluster.idleStrategy());
         context.setIdleStrategy(cluster.idleStrategy());
-        context.setClusterTime(cluster.time());
+        timerManager.setCluster(cluster);
         if (snapshotImage != null)
         {
             snapshotManager.loadSnapshot(snapshotImage);

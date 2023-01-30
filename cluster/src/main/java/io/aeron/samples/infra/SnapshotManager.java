@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Adaptive Financial Consulting
  */
 
-package io.aeron.samples.domaininfra;
+package io.aeron.samples.infra;
 
 import io.aeron.ExclusivePublication;
 import io.aeron.Image;
@@ -22,7 +22,6 @@ import io.aeron.sample.cluster.protocol.ParticipantSnapshotEncoder;
 import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
-import io.aeron.samples.infra.SessionMessageContext;
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.concurrent.IdleStrategy;
@@ -55,13 +54,14 @@ public class SnapshotManager implements FragmentHandler
     private final IdGeneratorSnapshotEncoder idGeneratorEncoder = new IdGeneratorSnapshotEncoder();
     private final IdGeneratorSnapshotDecoder idGeneratorDecoder = new IdGeneratorSnapshotDecoder();
     private final EndOfSnapshotEncoder endOfSnapshotEncoder = new EndOfSnapshotEncoder();
+
     /**
      * Constructor
      *
      * @param auctions     the auction domain model to read and write with snapshot interactions
      * @param participants the participant domain model to read and write with snapshot interactions
      * @param idGenerators the id generator domain model to read and write with snapshot interactions
-     * @param context the session message context to use for snapshot interactions
+     * @param context      the session message context to use for snapshot interactions
      */
     public SnapshotManager(final Auctions auctions, final Participants participants, final IdGenerators idGenerators,
         final SessionMessageContext context)

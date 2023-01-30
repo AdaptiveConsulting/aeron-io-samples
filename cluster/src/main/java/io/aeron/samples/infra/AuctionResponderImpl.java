@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Adaptive Financial Consulting
  */
 
-package io.aeron.samples.domaininfra;
+package io.aeron.samples.infra;
 
 import io.aeron.sample.cluster.protocol.AddAuctionBidCommandResultEncoder;
 import io.aeron.sample.cluster.protocol.AuctionUpdateEventEncoder;
@@ -12,7 +12,6 @@ import io.aeron.sample.cluster.protocol.NewAuctionEventEncoder;
 import io.aeron.samples.domain.auctions.AddAuctionBidResult;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
 import io.aeron.samples.domain.auctions.AuctionStatus;
-import io.aeron.samples.infra.SessionMessageContextImpl;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,6 +120,13 @@ public class AuctionResponderImpl implements AuctionResponder
         addAuctionBidResultEncoder.correlationId(correlationId);
         context.reply(buffer, 0, addAuctionBidResultEncoder.encodedLength());
 
+        onAuctionStateUpdate(auctionId, auctionStatus, currentPrice, bidCount, lastUpdateTime);
+    }
+
+    @Override
+    public void onAuctionStateUpdate(final long auctionId, final AuctionStatus auctionStatus, final long currentPrice,
+        final int bidCount, final long lastUpdateTime)
+    {
         messageHeaderEncoder.wrap(buffer, 0);
         auctionUpdateEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         auctionUpdateEncoder.auctionId(auctionId);
