@@ -13,13 +13,10 @@ import io.aeron.sample.cluster.protocol.AuctionSnapshotDecoder;
 import io.aeron.sample.cluster.protocol.AuctionSnapshotEncoder;
 import io.aeron.sample.cluster.protocol.EndOfSnapshotDecoder;
 import io.aeron.sample.cluster.protocol.EndOfSnapshotEncoder;
-import io.aeron.sample.cluster.protocol.IdGeneratorSnapshotDecoder;
-import io.aeron.sample.cluster.protocol.IdGeneratorSnapshotEncoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderDecoder;
 import io.aeron.sample.cluster.protocol.MessageHeaderEncoder;
 import io.aeron.sample.cluster.protocol.ParticipantSnapshotDecoder;
 import io.aeron.sample.cluster.protocol.ParticipantSnapshotEncoder;
-import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
 import org.agrona.DirectBuffer;
@@ -40,7 +37,6 @@ public class SnapshotManager implements FragmentHandler
     private boolean snapshotFullyLoaded = false;
     private final Auctions auctions;
     private final Participants participants;
-    private final IdGenerators idGenerators;
     private final SessionMessageContext context;
     private IdleStrategy idleStrategy;
 
@@ -51,8 +47,6 @@ public class SnapshotManager implements FragmentHandler
     private final AuctionSnapshotEncoder auctionEncoder = new AuctionSnapshotEncoder();
     private final ParticipantSnapshotDecoder participantDecoder = new ParticipantSnapshotDecoder();
     private final ParticipantSnapshotEncoder participantEncoder = new ParticipantSnapshotEncoder();
-    private final IdGeneratorSnapshotEncoder idGeneratorEncoder = new IdGeneratorSnapshotEncoder();
-    private final IdGeneratorSnapshotDecoder idGeneratorDecoder = new IdGeneratorSnapshotDecoder();
     private final EndOfSnapshotEncoder endOfSnapshotEncoder = new EndOfSnapshotEncoder();
 
     /**
@@ -60,15 +54,13 @@ public class SnapshotManager implements FragmentHandler
      *
      * @param auctions     the auction domain model to read and write with snapshot interactions
      * @param participants the participant domain model to read and write with snapshot interactions
-     * @param idGenerators the id generator domain model to read and write with snapshot interactions
      * @param context      the session message context to use for snapshot interactions
      */
-    public SnapshotManager(final Auctions auctions, final Participants participants, final IdGenerators idGenerators,
+    public SnapshotManager(final Auctions auctions, final Participants participants,
         final SessionMessageContext context)
     {
         this.auctions = auctions;
         this.participants = participants;
-        this.idGenerators = idGenerators;
         this.context = context;
     }
 
@@ -80,7 +72,6 @@ public class SnapshotManager implements FragmentHandler
     {
         LOGGER.info("Starting snapshot...");
         offerParticipants(snapshotPublication);
-        offerIdGenerators(snapshotPublication);
         offerAuctions(snapshotPublication);
         offerEndOfSnapshotMarker(snapshotPublication);
         LOGGER.info("Snapshot complete");
@@ -141,12 +132,6 @@ public class SnapshotManager implements FragmentHandler
                 participantDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
                 participants.addParticipant(participantDecoder.participantId(),
                     participantDecoder.name());
-            }
-            case IdGeneratorSnapshotDecoder.TEMPLATE_ID ->
-            {
-                idGeneratorDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
-                idGenerators.initializeAuctionId(idGeneratorDecoder.nextAuctionId());
-                idGenerators.initializeAuctionBidId(idGeneratorDecoder.nextAuctionBidId());
             }
             case AuctionSnapshotDecoder.TEMPLATE_ID ->
             {
@@ -212,18 +197,6 @@ public class SnapshotManager implements FragmentHandler
         });
     }
 
-    /**
-     * Offers the id generators to the snapshot publication using the IdGeneratorSnapshotEncoder
-     * @param snapshotPublication the publication to offer the snapshot data to
-     */
-    private void offerIdGenerators(final ExclusivePublication snapshotPublication)
-    {
-        headerEncoder.wrap(buffer, 0);
-        idGeneratorEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
-        idGeneratorEncoder.nextAuctionId(idGenerators.getAuctionId());
-        idGeneratorEncoder.nextAuctionBidId(idGenerators.getAuctionBidId());
-        retryingOffer(snapshotPublication, buffer, headerEncoder.encodedLength() + idGeneratorEncoder.encodedLength());
-    }
 
     private void offerEndOfSnapshotMarker(final ExclusivePublication snapshotPublication)
     {

@@ -11,7 +11,6 @@ import io.aeron.cluster.service.ClientSession;
 import io.aeron.cluster.service.Cluster;
 import io.aeron.cluster.service.ClusteredService;
 import io.aeron.logbuffer.Header;
-import io.aeron.samples.domain.IdGenerators;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
 import org.agrona.DirectBuffer;
@@ -27,12 +26,11 @@ public class AppClusteredService implements ClusteredService
     private final ClientSessions clientSessions = new ClientSessions();
     private final SessionMessageContextImpl context = new SessionMessageContextImpl(clientSessions);
     private final Participants participants = new Participants();
-    private final IdGenerators idGenerators = new IdGenerators();
     private final AuctionResponder auctionResponder = new AuctionResponderImpl(context);
     private TimerManager timerManager = new TimerManager(context);
-    private final Auctions auctions = new Auctions(context, participants, idGenerators, auctionResponder,
+    private final Auctions auctions = new Auctions(context, participants, auctionResponder,
         timerManager);
-    private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, idGenerators, context);
+    private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, context);
     private final SbeDemuxer sbeDemuxer = new SbeDemuxer(participants, auctions);
 
     @Override

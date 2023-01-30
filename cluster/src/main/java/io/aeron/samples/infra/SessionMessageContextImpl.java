@@ -7,6 +7,7 @@ package io.aeron.samples.infra;
 import io.aeron.Publication;
 import io.aeron.cluster.service.ClientSession;
 import org.agrona.DirectBuffer;
+import org.agrona.concurrent.EpochClock;
 import org.agrona.concurrent.IdleStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +99,12 @@ public class SessionMessageContextImpl implements SessionMessageContext
     public void broadcast(final DirectBuffer buffer, final int offset, final int length)
     {
         clientSessions.getAllSessions().forEach(clientSession -> offerToSession(clientSession, buffer, offset, length));
+    }
+
+    @Override
+    public EpochClock getClockSupplier()
+    {
+        return this::getClusterTime;
     }
 
     /**
