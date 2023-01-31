@@ -161,6 +161,8 @@ public class Auctions
         {
             broadcastStateUpdate(auctionId);
         }
+
+        //todo schedule removal +1min
     }
 
     /**
@@ -228,7 +230,7 @@ public class Auctions
 
     /**
      * Validates the auction parameters
-     *
+     * //todo add min time between auction start/end
      * @param createdByParticipantId the participant who created the auction
      * @param startTime              the start time of the auction which cannot be the current cluster time or earlier
      * @param endTime                the end time of the auction which must be after the start time

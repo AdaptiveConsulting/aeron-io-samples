@@ -33,7 +33,7 @@ testing {
 
 tasks {
     task("runSingleNodeCluster", JavaExec::class) {
-        group = "ide"
+        group = "run"
         classpath = sourceSets.main.get().runtimeClasspath
         mainClass.set("io.aeron.samples.ClusterApp")
         jvmArgs("--add-opens=java.base/sun.nio.ch=ALL-UNNAMED")
