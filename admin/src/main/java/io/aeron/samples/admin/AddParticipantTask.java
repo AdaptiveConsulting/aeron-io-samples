@@ -7,14 +7,12 @@ package io.aeron.samples.admin;
 
 import picocli.CommandLine;
 
-import java.util.concurrent.Callable;
-
 /**
  * Command line arguments for adding a participant
  */
 @CommandLine.Command(name = "participant", mixinStandardHelpOptions = true,
     description = "Adds a participant to the cluster")
-public class AddParticipantTask implements Callable<Integer>
+class AddParticipantTask implements Runnable
 {
     @SuppressWarnings("all")
     @CommandLine.Option(names = "-participant-id", description = "Participant id")
@@ -28,12 +26,10 @@ public class AddParticipantTask implements Callable<Integer>
 
     /**
      * Determines if a participant should be added
-     * @return zero.
      */
-    public Integer call()
+    public void run()
     {
         adminClient.addParticipant(participantId, participantName);
-        return 0;
     }
 
     /**
