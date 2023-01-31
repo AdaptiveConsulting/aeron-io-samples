@@ -26,7 +26,7 @@
         </composite>
         <composite name="varUtf8Encoding" description="Variable length UTF8 string.">
             <type name="length" primitiveType="uint32" maxValue="1073741824"/>
-            <type name="varData"     primitiveType="uint8" length="0" characterEncoding="UTF-8"/>
+            <type name="varData" primitiveType="uint8" length="0" characterEncoding="UTF-8"/>
         </composite>
         <enum name="BooleanType" encodingType="int32">
             <validValue name="FALSE">0</validValue>

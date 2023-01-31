@@ -65,7 +65,7 @@ public class AuctionResponderImpl implements AuctionResponder
             .result(mapAddAuctionResult(result))
             .correlationId(correlationId);
 
-        context.reply(buffer, 0, createAuctionResultEncoder.encodedLength());
+        context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + createAuctionResultEncoder.encodedLength());
 
         newAuctionEventEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
             .auctionId(auctionId)
@@ -74,7 +74,7 @@ public class AuctionResponderImpl implements AuctionResponder
             .name(name)
             .description(description);
 
-        context.broadcast(buffer, 0, newAuctionEventEncoder.encodedLength());
+        context.broadcast(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + newAuctionEventEncoder.encodedLength());
     }
 
     /**
@@ -89,7 +89,7 @@ public class AuctionResponderImpl implements AuctionResponder
             .auctionId(-1)
             .result(mapAddAuctionResult(result))
             .correlationId(correlationId);
-        context.reply(buffer, 0, createAuctionResultEncoder.encodedLength());
+        context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + createAuctionResultEncoder.encodedLength());
     }
 
     /***
@@ -106,7 +106,7 @@ public class AuctionResponderImpl implements AuctionResponder
         addAuctionBidResultEncoder.auctionId(auctionId);
         addAuctionBidResultEncoder.result(mapAddAuctionBidResult(resultCode));
         addAuctionBidResultEncoder.correlationId(correlationId);
-        context.reply(buffer, 0, addAuctionBidResultEncoder.encodedLength());
+        context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + addAuctionBidResultEncoder.encodedLength());
     }
 
     @Override
@@ -118,7 +118,7 @@ public class AuctionResponderImpl implements AuctionResponder
         addAuctionBidResultEncoder.auctionId(auctionId);
         addAuctionBidResultEncoder.result(mapAddAuctionBidResult(AddAuctionBidResult.SUCCESS));
         addAuctionBidResultEncoder.correlationId(correlationId);
-        context.reply(buffer, 0, addAuctionBidResultEncoder.encodedLength());
+        context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + addAuctionBidResultEncoder.encodedLength());
 
         onAuctionStateUpdate(auctionId, auctionStatus, currentPrice, bidCount, lastUpdateTime);
     }
@@ -134,7 +134,7 @@ public class AuctionResponderImpl implements AuctionResponder
         auctionUpdateEncoder.currentPrice(currentPrice);
         auctionUpdateEncoder.bidCount(bidCount);
         auctionUpdateEncoder.lastUpdate(lastUpdateTime);
-        context.broadcast(buffer, 0, auctionUpdateEncoder.encodedLength());
+        context.broadcast(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + auctionUpdateEncoder.encodedLength());
     }
 
     private io.aeron.samples.cluster.protocol.AuctionStatus mapAuctionStatus(final AuctionStatus status)

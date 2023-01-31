@@ -180,20 +180,17 @@ public class SnapshotManager implements FragmentHandler
         headerEncoder.wrap(buffer, 0);
         auctions.getAuctionList().forEach(auction ->
         {
-            if (auction.getStartTime() > context.getClusterTime())
-            {
-                auctionEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
-                auctionEncoder.auctionId(auction.getAuctionId());
-                auctionEncoder.createdByParticipantId(auction.getCreatedByParticipantId());
-                auctionEncoder.startTime(auction.getStartTime());
-                auctionEncoder.startTimeTimerCorrelation(auction.getStartTimerCorrelationId());
-                auctionEncoder.endTime(auction.getEndTime());
-                auctionEncoder.endTimeTimerCorrelation(auction.getEndTimerCorrelationId());
-                auctionEncoder.name(auction.getName());
-                auctionEncoder.description(auction.getDescription());
-                retryingOffer(snapshotPublication, buffer,
-                    headerEncoder.encodedLength() + auctionEncoder.encodedLength());
-            }
+            auctionEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
+            auctionEncoder.auctionId(auction.getAuctionId());
+            auctionEncoder.createdByParticipantId(auction.getCreatedByParticipantId());
+            auctionEncoder.startTime(auction.getStartTime());
+            auctionEncoder.startTimeTimerCorrelation(auction.getStartTimerCorrelationId());
+            auctionEncoder.endTime(auction.getEndTime());
+            auctionEncoder.endTimeTimerCorrelation(auction.getEndTimerCorrelationId());
+            auctionEncoder.name(auction.getName());
+            auctionEncoder.description(auction.getDescription());
+            retryingOffer(snapshotPublication, buffer,
+                headerEncoder.encodedLength() + auctionEncoder.encodedLength());
         });
     }
 

@@ -68,6 +68,7 @@ public class AdminClientEgressListener implements EgressListener
         addParticipantCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         addParticipantCommandEncoder.participantId(participantId);
         addParticipantCommandEncoder.name(participantName);
-        offer(buffer, 0, addParticipantCommandEncoder.encodedLength());
+        offer(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
+            addParticipantCommandEncoder.encodedLength());
     }
 }
