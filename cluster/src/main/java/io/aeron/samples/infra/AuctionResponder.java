@@ -55,7 +55,7 @@ public interface AuctionResponder
     void onAuctionUpdated(String correlationId, long auctionId, AuctionStatus auctionStatus, long currentPrice,
         int bidCount, long lastUpdateTime);
 
-    /***
+    /**
      * Broadcasts an update for an auction once the state has been updated
      * @param auctionId the id of the auction
      * @param auctionStatus the status of the auction

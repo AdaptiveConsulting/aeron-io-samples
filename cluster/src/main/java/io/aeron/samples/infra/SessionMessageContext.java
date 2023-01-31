@@ -5,7 +5,6 @@
 package io.aeron.samples.infra;
 
 import org.agrona.DirectBuffer;
-import org.agrona.concurrent.EpochClock;
 
 /**
  * Interface to session context data
@@ -33,11 +32,5 @@ public interface SessionMessageContext
      * @param length the length to read
      */
     void broadcast(DirectBuffer buffer, int offset, int length);
-
-    /**
-     * Epoch clock as required by the Snowflake ID generator
-     * @return the epoch clock to use
-     */
-    EpochClock getClockSupplier();
 }
 

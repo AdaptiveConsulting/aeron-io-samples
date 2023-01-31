@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
-                   package="io.aeron.sample.cluster.protocol"
+                   package="io.aeron.samples.cluster.protocol"
                    id="101"
                    version="1"
                    semanticVersion="1"
-                   description="Message Codecs for communicating with sample Aeron Cluster."
-                   byteOrder="littleEndian">
+                   description="Message Codecs for communicating with sample Aeron Cluster.">
     <types>
         <composite name="messageHeader" description="Message identifiers and length of message root.">
             <type name="blockLength" primitiveType="uint16"/>
@@ -55,9 +54,8 @@
         <enum name="AuctionStatus" encodingType="int32">
             <validValue name="PRE_OPEN">0</validValue>
             <validValue name="OPEN">1</validValue>
-            <validValue name="CLOSED_NO_BIDDERS">2</validValue>
-            <validValue name="CLOSED">3</validValue>
-            <validValue name="UNKNOWN">4</validValue>
+            <validValue name="CLOSED">2</validValue>
+            <validValue name="UNKNOWN">3</validValue>
         </enum>
         <type name="time" primitiveType="int64" description="Epoch time in milliseconds since 1 Jan 1970 UTC."/>
         <type name="price" primitiveType="int64" description="Price in whole cents."/>

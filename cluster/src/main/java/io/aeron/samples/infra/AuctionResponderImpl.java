@@ -4,11 +4,11 @@
 
 package io.aeron.samples.infra;
 
-import io.aeron.sample.cluster.protocol.AddAuctionBidCommandResultEncoder;
-import io.aeron.sample.cluster.protocol.AuctionUpdateEventEncoder;
-import io.aeron.sample.cluster.protocol.CreateAuctionCommandResultEncoder;
-import io.aeron.sample.cluster.protocol.MessageHeaderEncoder;
-import io.aeron.sample.cluster.protocol.NewAuctionEventEncoder;
+import io.aeron.samples.cluster.protocol.AddAuctionBidCommandResultEncoder;
+import io.aeron.samples.cluster.protocol.AuctionUpdateEventEncoder;
+import io.aeron.samples.cluster.protocol.CreateAuctionCommandResultEncoder;
+import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
+import io.aeron.samples.cluster.protocol.NewAuctionEventEncoder;
 import io.aeron.samples.domain.auctions.AddAuctionBidResult;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
 import io.aeron.samples.domain.auctions.AuctionStatus;
@@ -137,93 +137,89 @@ public class AuctionResponderImpl implements AuctionResponder
         context.broadcast(buffer, 0, auctionUpdateEncoder.encodedLength());
     }
 
-    private io.aeron.sample.cluster.protocol.AuctionStatus mapAuctionStatus(final AuctionStatus status)
+    private io.aeron.samples.cluster.protocol.AuctionStatus mapAuctionStatus(final AuctionStatus status)
     {
         switch (status)
         {
             case OPEN ->
             {
-                return io.aeron.sample.cluster.protocol.AuctionStatus.OPEN;
+                return io.aeron.samples.cluster.protocol.AuctionStatus.OPEN;
             }
             case CLOSED ->
             {
-                return io.aeron.sample.cluster.protocol.AuctionStatus.CLOSED;
+                return io.aeron.samples.cluster.protocol.AuctionStatus.CLOSED;
             }
             case PRE_OPEN ->
             {
-                return io.aeron.sample.cluster.protocol.AuctionStatus.PRE_OPEN;
-            }
-            case CLOSED_NO_BIDDERS ->
-            {
-                return io.aeron.sample.cluster.protocol.AuctionStatus.CLOSED_NO_BIDDERS;
+                return io.aeron.samples.cluster.protocol.AuctionStatus.PRE_OPEN;
             }
             default -> LOGGER.error("Unknown status {}", status);
         }
 
-        return io.aeron.sample.cluster.protocol.AuctionStatus.UNKNOWN;
+        return io.aeron.samples.cluster.protocol.AuctionStatus.UNKNOWN;
     }
 
-    private io.aeron.sample.cluster.protocol.AddAuctionBidResult mapAddAuctionBidResult(
+    private io.aeron.samples.cluster.protocol.AddAuctionBidResult mapAddAuctionBidResult(
         final AddAuctionBidResult result)
     {
         switch (result)
         {
             case SUCCESS ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.SUCCESS;
+                return io.aeron.samples.cluster.protocol.AddAuctionBidResult.SUCCESS;
             }
             case PRICE_BELOW_CURRENT_WINNING_BID ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.PRICE_BELOW_CURRENT_WINNING_BID;
+                return io.aeron.samples.cluster.protocol.AddAuctionBidResult.PRICE_BELOW_CURRENT_WINNING_BID;
             }
             case INVALID_PRICE ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.INVALID_PRICE;
+                return io.aeron.samples.cluster.protocol.AddAuctionBidResult.INVALID_PRICE;
             }
             case UNKNOWN_AUCTION ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.UNKNOWN_AUCTION;
+                return io.aeron.samples.cluster.protocol.AddAuctionBidResult.UNKNOWN_AUCTION;
             }
             case UNKNOWN_PARTICIPANT ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionBidResult.UNKNOWN_PARTICIPANT;
+                return io.aeron.samples.cluster.protocol.AddAuctionBidResult.UNKNOWN_PARTICIPANT;
             }
             default -> LOGGER.error("Unknown AddAuctionBidResult: {}", result);
         }
-        return io.aeron.sample.cluster.protocol.AddAuctionBidResult.UNKNOWN;
+        return io.aeron.samples.cluster.protocol.AddAuctionBidResult.UNKNOWN;
     }
 
-    private io.aeron.sample.cluster.protocol.AddAuctionResult mapAddAuctionResult(final AddAuctionResult result)
+    private io.aeron.samples.cluster.protocol.AddAuctionResult mapAddAuctionResult(final AddAuctionResult result)
     {
         switch (result)
         {
             case INVALID_START_TIME ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionResult.INVALID_START_TIME;
+                return io.aeron.samples.cluster.protocol.AddAuctionResult.INVALID_START_TIME;
             }
             case SUCCESS ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionResult.SUCCESS;
+                return io.aeron.samples.cluster.protocol.AddAuctionResult.SUCCESS;
             }
             case INVALID_END_TIME ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionResult.INVALID_END_TIME;
+                return io.aeron.samples.cluster.protocol.AddAuctionResult.INVALID_END_TIME;
             }
             case UNKNOWN_PARTICIPANT ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionResult.UNKNOWN_PARTICIPANT;
+                return io.aeron.samples.cluster.protocol.AddAuctionResult.UNKNOWN_PARTICIPANT;
             }
             case INVALID_NAME ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionResult.INVALID_NAME;
+                return io.aeron.samples.cluster.protocol.AddAuctionResult.INVALID_NAME;
             }
             case INVALID_DESCRIPTION ->
             {
-                return io.aeron.sample.cluster.protocol.AddAuctionResult.INVALID_DESCRIPTION;
+                return io.aeron.samples.cluster.protocol.AddAuctionResult.INVALID_DESCRIPTION;
             }
             default -> LOGGER.error("Unknown AddAuctionResult: {}", result);
         }
-        return io.aeron.sample.cluster.protocol.AddAuctionResult.UNKNOWN;
+        return io.aeron.samples.cluster.protocol.AddAuctionResult.UNKNOWN;
     }
 
 }

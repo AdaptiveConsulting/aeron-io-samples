@@ -15,14 +15,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-/***
+/**
  * Sample cluster application
  */
 public class ClusterApp
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterApp.class);
 
-    /***
+    /**
      * The main method.
      * @param args command line args
      */

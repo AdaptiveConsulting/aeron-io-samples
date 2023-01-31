@@ -4,10 +4,10 @@
 
 package io.aeron.samples.infra;
 
-import io.aeron.sample.cluster.protocol.AddAuctionBidCommandDecoder;
-import io.aeron.sample.cluster.protocol.AddParticipantCommandDecoder;
-import io.aeron.sample.cluster.protocol.CreateAuctionCommandDecoder;
-import io.aeron.sample.cluster.protocol.MessageHeaderDecoder;
+import io.aeron.samples.cluster.protocol.AddAuctionBidCommandDecoder;
+import io.aeron.samples.cluster.protocol.AddParticipantCommandDecoder;
+import io.aeron.samples.cluster.protocol.CreateAuctionCommandDecoder;
+import io.aeron.samples.cluster.protocol.MessageHeaderDecoder;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
 import org.agrona.DirectBuffer;

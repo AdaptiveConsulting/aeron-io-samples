@@ -17,7 +17,6 @@ import java.util.Objects;
 public class TimerManager
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(TimerManager.class);
-    private static final int SCHEDULE_RETRY_LIMIT = 100;
     private final SessionMessageContextImpl context;
     private Cluster cluster;
 
@@ -44,7 +43,6 @@ public class TimerManager
     public long scheduleTimer(final long deadline, final Runnable timerRunnable)
     {
         correlationId++;
-        int count = 0;
         Objects.requireNonNull(cluster, "Cluster must be set before scheduling timers");
         correlationIdToRunnable.put(correlationId, timerRunnable);
 
@@ -52,13 +50,6 @@ public class TimerManager
         while (!cluster.scheduleTimer(correlationId, deadline))
         {
             cluster.idleStrategy().idle();
-            count++;
-
-            if (count > SCHEDULE_RETRY_LIMIT)
-            {
-                LOGGER.warn("Failed to schedule timer for deadline {}", deadline);
-                break;
-            }
         }
         return correlationId;
     }
