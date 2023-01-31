@@ -16,8 +16,8 @@
             <type name="blockLength" primitiveType="uint16"/>
             <type name="numInGroup" primitiveType="uint16"/>
         </composite>
-        <composite name="varAsciiEncoding" description="Variable length (up to 512 char) ASCII string.">
-            <type name="length"      primitiveType="uint32" maxValue="512"/>
+        <composite name="varAsciiEncoding" description="Variable length ASCII string.">
+            <type name="length"      primitiveType="uint32" maxValue="1073741824"/>
             <type name="varData"     primitiveType="uint8" length="0" characterEncoding="US-ASCII"/>
         </composite>
         <composite name="uuidString" description="36 char UUID held within an ASCII string.">
@@ -25,7 +25,7 @@
             <type name="varData"     primitiveType="uint8" length="0" characterEncoding="US-ASCII"/>
         </composite>
         <composite name="varUtf8Encoding" description="Variable length UTF8 string.">
-            <type name="length"      primitiveType="uint32" maxValue="512"/>
+            <type name="length" primitiveType="uint32" maxValue="1073741824"/>
             <type name="varData"     primitiveType="uint8" length="0" characterEncoding="UTF-8"/>
         </composite>
         <enum name="BooleanType" encodingType="int32">
@@ -65,14 +65,14 @@
                  id="1"
                  description="Add a new Auction Participant">
         <field name="participantId" id="1" type="int64"/>
-        <data name="name" id="2" type="varAsciiEncoding"/>
+        <data name="name" id="2" type="varUtf8Encoding"/>
     </sbe:message>
 
     <sbe:message name="ParticipantSnapshot"
                  id="2"
                  description="Snapshot storage for Participants in the system">
         <field name="participantId" id="1" type="int64"/>
-        <data name="name" id="2" type="varAsciiEncoding"/>
+        <data name="name" id="2" type="varUtf8Encoding"/>
     </sbe:message>
 
     <sbe:message name="CreateAuctionCommand"
@@ -82,8 +82,8 @@
         <field name="startTime" id="2" type="time"/>
         <field name="endTime" id="3" type="time"/>
         <data name="correlationId" id="4" type="uuidString"/>
-        <data name="name" id="5" type="varAsciiEncoding"/>
-        <data name="description" id="6" type="varAsciiEncoding"/>
+        <data name="name" id="5" type="varUtf8Encoding"/>
+        <data name="description" id="6" type="varUtf8Encoding"/>
     </sbe:message>
 
     <sbe:message name="CreateAuctionCommandResult"
@@ -100,8 +100,8 @@
         <field name="auctionId" id="1" type="int64"/>
         <field name="startTime" id="2" type="time"/>
         <field name="endTime" id="3" type="time"/>
-        <data name="name" id="4" type="varAsciiEncoding"/>
-        <data name="description" id="5" type="varAsciiEncoding"/>
+        <data name="name" id="4" type="varUtf8Encoding"/>
+        <data name="description" id="5" type="varUtf8Encoding"/>
     </sbe:message>
 
     <sbe:message name="AddAuctionBidCommand"

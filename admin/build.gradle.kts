@@ -22,3 +22,13 @@ testing {
         }
     }
 }
+
+tasks {
+    task("createParticipant", JavaExec::class) {
+        group = "run"
+        classpath = sourceSets.main.get().runtimeClasspath
+        mainClass.set("io.aeron.samples.admin.Admin")
+        args("-participant-id=1", "-participant-name=adaptive1")
+        jvmArgs("--add-opens=java.base/sun.nio.ch=ALL-UNNAMED")
+    }
+}
