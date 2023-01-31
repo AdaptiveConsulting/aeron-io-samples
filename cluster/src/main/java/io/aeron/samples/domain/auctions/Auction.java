@@ -150,7 +150,6 @@ public class Auction
         return lastUpdateTime;
     }
 
-
     /**
      * Gets the number of bids for this auction
      * @return the number of bids
@@ -195,7 +194,6 @@ public class Auction
     {
         this.startTimerCorrelationId = startTimerCorrelationId;
     }
-
 
     /**
      * Gets the timerCorrelationId for the end timer

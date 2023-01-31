@@ -163,7 +163,7 @@ public class Auctions
         }
     }
 
-    /***
+    /**
      * Transitions an auction to the next state, if known and in the previously expected state
      * @param auction the auction to transition
      * @param expectedStatus the expected status
@@ -214,7 +214,6 @@ public class Auctions
         auctionResponder.onAuctionUpdated(correlationId, auction.getAuctionId(), auction.getAuctionStatus(),
             auction.getCurrentPrice(), auction.getBidCount(), auction.getLastUpdateTime());
     }
-
 
     /**
      * Gets the list of auctions after sorting it by auction id
@@ -299,7 +298,7 @@ public class Auctions
         return AddAuctionBidResult.SUCCESS;
     }
 
-    /***
+    /**
      * Gets an auction by id
      * @param auctionId the auction id
      * @return the auction within an Optional

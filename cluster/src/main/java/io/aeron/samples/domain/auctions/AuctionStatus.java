@@ -11,6 +11,5 @@ public enum AuctionStatus
 {
     PRE_OPEN,
     OPEN,
-    CLOSED_NO_BIDDERS,
     CLOSED
 }
