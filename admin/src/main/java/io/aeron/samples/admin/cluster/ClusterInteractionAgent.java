@@ -137,8 +137,14 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     private void disconnectCluster()
     {
         adminClientEgressListener = null;
-        aeronCluster.close();
-        mediaDriver.close();
+        if (aeronCluster != null)
+        {
+            aeronCluster.close();
+        }
+        if (mediaDriver != null)
+        {
+            mediaDriver.close();
+        }
     }
 
     /**

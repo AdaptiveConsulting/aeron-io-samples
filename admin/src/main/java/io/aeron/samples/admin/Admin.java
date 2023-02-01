@@ -89,7 +89,8 @@ public class Admin
             terminal.writer().println("-------------------------------------------------");
             terminal.writer().println("Welcome to the Aeron Cluster Sample Admin Console");
             terminal.writer().println("-------------------------------------------------");
-            terminal.writer().println(" useful commands: help, exit");
+            terminal.writer().println("Useful commands: help, exit");
+            terminal.writer().println("");
             while (true)
             {
                 try
