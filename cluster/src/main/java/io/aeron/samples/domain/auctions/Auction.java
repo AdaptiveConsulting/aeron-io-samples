@@ -22,8 +22,8 @@ public class Auction
     private AuctionStatus auctionStatus = AuctionStatus.PRE_OPEN;
 
     private long startTimerCorrelationId = Long.MIN_VALUE;
-
     private long endTimerCorrelationId = Long.MIN_VALUE;
+    private long removalTimerCorrelationId = Long.MIN_VALUE;
 
     /**
      * Constructor
@@ -211,5 +211,23 @@ public class Auction
     public void setEndTimerCorrelationId(final long endTimerCorrelationId)
     {
         this.endTimerCorrelationId = endTimerCorrelationId;
+    }
+
+    /**
+     * Gets the timerCorrelationId for the removal timer
+     * @return the timerCorrelationId
+     */
+    public long getRemovalTimerCorrelationId()
+    {
+        return removalTimerCorrelationId;
+    }
+
+    /**
+     * Sets the timerCorrelationId for the removal timer
+     * @param removalTimerCorrelationId the timerCorrelationId
+     */
+    public void setRemovalTimerCorrelationId(final long removalTimerCorrelationId)
+    {
+        this.removalTimerCorrelationId = removalTimerCorrelationId;
     }
 }

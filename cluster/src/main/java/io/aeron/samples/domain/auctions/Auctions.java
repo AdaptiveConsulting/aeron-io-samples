@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -24,6 +25,8 @@ import java.util.Optional;
 public class Auctions
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Auctions.class);
+    private static final long MINIMUM_DURATION = TimeUnit.SECONDS.toMillis(30);
+    private static final long REMOVAL_TIMER_DURATION = TimeUnit.SECONDS.toMillis(60);
     private final SessionMessageContext context;
     private final AuctionResponder auctionResponder;
     private final TimerManager timerManager;
@@ -79,9 +82,12 @@ public class Auctions
 
         final var startCorrelationId = timerManager.scheduleTimer(startTime, () -> openAuction(auctionId));
         final var endCorrelationId = timerManager.scheduleTimer(endTime, () -> closeAuction(auctionId));
+        final var removeCorrelationId = timerManager.scheduleTimer(endTime + REMOVAL_TIMER_DURATION,
+            () -> removeAuction(auctionId));
 
         auction.setStartTimerCorrelationId(startCorrelationId);
         auction.setEndTimerCorrelationId(endCorrelationId);
+        auction.setRemovalTimerCorrelationId(removeCorrelationId);
     }
 
     /**
@@ -93,12 +99,13 @@ public class Auctions
      * @param startTimerTimerCorrelationId the timer correlation id for the start timer
      * @param endTime                the end time of the auction
      * @param endTimerTimerCorrelationId the timer correlation id for the end timer
+     * @param removeTimerTimerCorrelationId the timer correlation id for the removal timer
      * @param name                   the name of the auction
      * @param description            the description
      */
     public void restoreAuction(final long auctionId, final long createdByParticipantId, final long startTime,
         final long startTimerTimerCorrelationId, final long endTime, final long endTimerTimerCorrelationId,
-        final String name, final String description)
+        final long removeTimerTimerCorrelationId, final String name, final String description)
     {
         final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
         auctionList.add(auction);
@@ -107,6 +114,7 @@ public class Auctions
         //state of the TimerManager on snapshot restore.
         timerManager.restoreTimer(startTimerTimerCorrelationId, () -> openAuction(auctionId));
         timerManager.restoreTimer(endTimerTimerCorrelationId, () -> closeAuction(auctionId));
+        timerManager.restoreTimer(removeTimerTimerCorrelationId, () -> removeAuction(auctionId));
     }
 
     /**
@@ -162,7 +170,15 @@ public class Auctions
             broadcastStateUpdate(auctionId);
         }
 
-        //todo schedule removal +1min
+    }
+
+    /**
+     * Removes an auction if it is known
+     * @param auctionId the auction id
+     */
+    public void removeAuction(final long auctionId)
+    {
+        auctionList.removeIf(auction -> auction.getAuctionId() == auctionId);
     }
 
     /**
@@ -230,7 +246,6 @@ public class Auctions
 
     /**
      * Validates the auction parameters
-     * //todo add min time between auction start/end
      * @param createdByParticipantId the participant who created the auction
      * @param startTime              the start time of the auction which cannot be the current cluster time or earlier
      * @param endTime                the end time of the auction which must be after the start time
@@ -248,6 +263,10 @@ public class Auctions
         if (endTime <= startTime)
         {
             return AddAuctionResult.INVALID_END_TIME;
+        }
+        if (startTime + MINIMUM_DURATION > endTime)
+        {
+            return AddAuctionResult.INVALID_DURATION;
         }
         if (!participants.isKnownParticipant(createdByParticipantId))
         {
