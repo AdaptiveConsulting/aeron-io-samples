@@ -24,8 +24,6 @@ import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.shell.jline3.PicocliCommands;
 
@@ -42,9 +40,6 @@ import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENG
  */
 public class Admin
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Admin.class);
-    private static final int PORT_BASE = 9000;
-
     /**
      * Main method
      *
@@ -55,12 +50,9 @@ public class Admin
         //start the agent used for cluster interaction
         final IdleStrategy idleStrategy = new SleepingMillisIdleStrategy();
         final UnsafeBuffer adminClusterBuffer = new UnsafeBuffer(ByteBuffer.allocate(8192 + TRAILER_LENGTH));
-        final UnsafeBuffer clusterAdminBuffer = new UnsafeBuffer(ByteBuffer.allocate(8192 + TRAILER_LENGTH));
         final OneToOneRingBuffer adminClusterChannel = new OneToOneRingBuffer(adminClusterBuffer);
-        final OneToOneRingBuffer clusterAdminChannel = new OneToOneRingBuffer(clusterAdminBuffer);
 
-        final ClusterInteractionAgent clusterInteractionAgent = new ClusterInteractionAgent(adminClusterChannel,
-            clusterAdminChannel);
+        final ClusterInteractionAgent clusterInteractionAgent = new ClusterInteractionAgent(adminClusterChannel);
         final AgentRunner clusterInteractionAgentRunner = new AgentRunner(idleStrategy, Throwable::printStackTrace,
             null, clusterInteractionAgent);
         AgentRunner.startOnThread(clusterInteractionAgentRunner);

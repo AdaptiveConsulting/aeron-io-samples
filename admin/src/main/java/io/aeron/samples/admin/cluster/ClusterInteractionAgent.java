@@ -18,8 +18,6 @@ import org.agrona.concurrent.SystemEpochClock;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,9 +30,7 @@ import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
  */
 public class ClusterInteractionAgent implements Agent, MessageHandler
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClusterInteractionAgent.class);
     private static final long HEARTBEAT_INTERVAL = 250;
-    private final OneToOneRingBuffer clusterAdminComms;
     private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
     private long lastHeartbeatTime = Long.MIN_VALUE;
     private final OneToOneRingBuffer adminClusterComms;
@@ -48,14 +44,11 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     /**
      * Creates a new agent to interact with the cluster
      * @param adminClusterChannel the channel to send messages to the cluster from the REPL
-     * @param clusterAdminChannel the channel to receive messages from the cluster to the REPL
      */
-    public ClusterInteractionAgent(final OneToOneRingBuffer adminClusterChannel,
-        final OneToOneRingBuffer clusterAdminChannel)
+    public ClusterInteractionAgent(final OneToOneRingBuffer adminClusterChannel)
     {
 
         this.adminClusterComms = adminClusterChannel;
-        this.clusterAdminComms = clusterAdminChannel;
     }
 
     @Override
@@ -90,14 +83,14 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     @Override
     public void onMessage(final int msgTypeId, final MutableDirectBuffer buffer, final int offset, final int length)
     {
-        if (length < MessageHeaderDecoder.ENCODED_LENGTH)
-        {
-            log("Invalid message length", AttributedStyle.RED);
-        }
-
-        messageHeaderDecoder.wrap(buffer, offset);
         if (msgTypeId == CLIENT_ONLY)
         {
+            if (length < MessageHeaderDecoder.ENCODED_LENGTH)
+            {
+                log("Invalid message length", AttributedStyle.RED);
+            }
+
+            messageHeaderDecoder.wrap(buffer, offset);
             processInternalMessage(messageHeaderDecoder, buffer, offset);
         }
         else if (msgTypeId == CLUSTER_PASSTHROUGH)
