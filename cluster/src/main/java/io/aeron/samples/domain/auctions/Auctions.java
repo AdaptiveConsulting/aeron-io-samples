@@ -75,6 +75,9 @@ public class Auctions
         }
 
         final var auctionId = idGenerator.nextId();
+
+        LOGGER.info("Creating new Auction {} with ID {}", name, auctionId);
+
         final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
         auctionList.add(auction);
 
@@ -123,6 +126,7 @@ public class Auctions
      */
     public void openAuction(final long auctionId)
     {
+        LOGGER.info("Opening Auction {}", auctionId);
         final var optionalAuction = getAuctionById(auctionId);
         if (optionalAuction.isEmpty())
         {
@@ -150,6 +154,7 @@ public class Auctions
      */
     public void closeAuction(final long auctionId)
     {
+        LOGGER.info("Closing Auction {}", auctionId);
         final var optionalAuction = getAuctionById(auctionId);
         if (optionalAuction.isEmpty())
         {
@@ -178,6 +183,7 @@ public class Auctions
      */
     public void removeAuction(final long auctionId)
     {
+        LOGGER.info("Removing Auction {}", auctionId);
         auctionList.removeIf(auction -> auction.getAuctionId() == auctionId);
     }
 
