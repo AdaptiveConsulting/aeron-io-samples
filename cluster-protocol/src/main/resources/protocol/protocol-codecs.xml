@@ -39,7 +39,8 @@
             <validValue name="INVALID_END_TIME">3</validValue>
             <validValue name="INVALID_NAME">4</validValue>
             <validValue name="INVALID_DESCRIPTION">5</validValue>
-            <validValue name="UNKNOWN">6</validValue>
+            <validValue name="INVALID_DURATION">6</validValue>
+            <validValue name="UNKNOWN">7</validValue>
         </enum>
         <enum name="AddAuctionBidResult" encodingType="int32">
             <validValue name="SUCCESS">0</validValue>
@@ -140,8 +141,9 @@
         <field name="startTimeTimerCorrelation" id="4" type="int64"/>
         <field name="endTime" id="5" type="time"/>
         <field name="endTimeTimerCorrelation" id="6" type="int64"/>
-        <data name="name" id="7" type="varAsciiEncoding"/>
-        <data name="description" id="8" type="varAsciiEncoding"/>
+        <field name="removalTimeTimerCorrelation" id="7" type="int64"/>
+        <data name="name" id="8" type="varAsciiEncoding"/>
+        <data name="description" id="9" type="varAsciiEncoding"/>
     </sbe:message>
 
     <sbe:message name="EndOfSnapshot"

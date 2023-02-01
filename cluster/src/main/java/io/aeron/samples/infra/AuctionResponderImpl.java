@@ -217,6 +217,10 @@ public class AuctionResponderImpl implements AuctionResponder
             {
                 return io.aeron.samples.cluster.protocol.AddAuctionResult.INVALID_DESCRIPTION;
             }
+            case INVALID_DURATION ->
+            {
+                return io.aeron.samples.cluster.protocol.AddAuctionResult.INVALID_DURATION;
+            }
             default -> LOGGER.error("Unknown AddAuctionResult: {}", result);
         }
         return io.aeron.samples.cluster.protocol.AddAuctionResult.UNKNOWN;

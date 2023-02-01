@@ -11,6 +11,7 @@ public enum AddAuctionResult
 {
     SUCCESS,
     INVALID_START_TIME,
+    INVALID_DURATION,
     INVALID_END_TIME,
     INVALID_NAME,
     INVALID_DESCRIPTION,
