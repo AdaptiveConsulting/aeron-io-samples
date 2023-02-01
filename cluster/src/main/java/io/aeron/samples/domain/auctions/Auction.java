@@ -15,7 +15,7 @@ public class Auction
     private final long endTime;
     private final String name;
     private final String description;
-    private long currentPrice = Long.MIN_VALUE;
+    private long currentPrice = 0;
     private long winningParticipantId = Long.MIN_VALUE;
     private long lastUpdateTime = Long.MIN_VALUE;
     private int bidCount = 0;
@@ -33,9 +33,10 @@ public class Auction
      * @param endTime the end time of the auction
      * @param name the name of the auction
      * @param description the description of the auction
+     * @param winningParticipantId the id of the winning participant
      */
     public Auction(final long auctionId, final long createdByParticipantId, final long startTime, final long endTime,
-        final String name, final String description)
+        final String name, final String description, final long winningParticipantId)
     {
         this.auctionId = auctionId;
         this.createdByParticipantId = createdByParticipantId;
@@ -43,6 +44,7 @@ public class Auction
         this.endTime = endTime;
         this.name = name;
         this.description = description;
+        this.winningParticipantId = winningParticipantId;
     }
 
     /**

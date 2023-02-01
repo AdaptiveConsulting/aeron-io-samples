@@ -141,8 +141,8 @@ public class SnapshotManager implements FragmentHandler
                     auctions.restoreAuction(auctionDecoder.auctionId(), auctionDecoder.createdByParticipantId(),
                         auctionDecoder.startTime(), auctionDecoder.startTimeTimerCorrelation(),
                         auctionDecoder.endTime(), auctionDecoder.endTimeTimerCorrelation(),
-                        auctionDecoder.removalTimeTimerCorrelation(), auctionDecoder.name(),
-                        auctionDecoder.description());
+                        auctionDecoder.removalTimeTimerCorrelation(), auctionDecoder.winningParticipantId(),
+                        auctionDecoder.name(), auctionDecoder.description());
                 }
                 else
                 {
@@ -188,6 +188,7 @@ public class SnapshotManager implements FragmentHandler
             auctionEncoder.endTime(auction.getEndTime());
             auctionEncoder.endTimeTimerCorrelation(auction.getEndTimerCorrelationId());
             auctionEncoder.removalTimeTimerCorrelation(auction.getRemovalTimerCorrelationId());
+            auctionEncoder.winningParticipantId(auction.getWinningParticipantId());
             auctionEncoder.name(auction.getName());
             auctionEncoder.description(auction.getDescription());
             retryingOffer(snapshotPublication, buffer,

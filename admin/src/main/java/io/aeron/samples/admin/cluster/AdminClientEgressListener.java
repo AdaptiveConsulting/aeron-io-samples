@@ -7,6 +7,8 @@ package io.aeron.samples.admin.cluster;
 import io.aeron.cluster.client.EgressListener;
 import io.aeron.cluster.codecs.EventCode;
 import io.aeron.logbuffer.Header;
+import io.aeron.samples.cluster.protocol.AddAuctionBidCommandResultDecoder;
+import io.aeron.samples.cluster.protocol.AddAuctionBidResult;
 import io.aeron.samples.cluster.protocol.AddAuctionResult;
 import io.aeron.samples.cluster.protocol.AuctionUpdateEventDecoder;
 import io.aeron.samples.cluster.protocol.CreateAuctionCommandResultDecoder;
@@ -30,6 +32,7 @@ public class AdminClientEgressListener implements EgressListener
     private final CreateAuctionCommandResultDecoder createAuctionResultDecoder =
         new CreateAuctionCommandResultDecoder();
     private final NewAuctionEventDecoder newAuctionEventDecoder = new NewAuctionEventDecoder();
+    private final AddAuctionBidCommandResultDecoder addBidResultDecoder = new AddAuctionBidCommandResultDecoder();
     private LineReader lineReader;
 
     @Override
@@ -54,7 +57,10 @@ public class AdminClientEgressListener implements EgressListener
             {
                 auctionUpdateEventDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
                 log("Auction update event: " + auctionUpdateEventDecoder.auctionId() + " now in state " +
-                    auctionUpdateEventDecoder.status().name(), AttributedStyle.YELLOW);
+                    auctionUpdateEventDecoder.status().name() + ". There have been " +
+                    auctionUpdateEventDecoder.bidCount() + " bids. The current price is " +
+                    auctionUpdateEventDecoder.currentPrice() + ". The winning bidder participant id is " +
+                    auctionUpdateEventDecoder.winningParticipantId(), AttributedStyle.YELLOW);
             }
             case CreateAuctionCommandResultDecoder.TEMPLATE_ID ->
             {
@@ -75,6 +81,18 @@ public class AdminClientEgressListener implements EgressListener
                 newAuctionEventDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
                 log("New auction event: " + newAuctionEventDecoder.auctionId() + " with name " +
                     newAuctionEventDecoder.name(), AttributedStyle.CYAN);
+            }
+            case AddAuctionBidCommandResultDecoder.TEMPLATE_ID ->
+            {
+                addBidResultDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
+                if (addBidResultDecoder.result().equals(AddAuctionBidResult.SUCCESS))
+                {
+                    log("Bid added to auction " + addBidResultDecoder.auctionId(), AttributedStyle.GREEN);
+                }
+                else
+                {
+                    log("Bid rejected with reason: " + addBidResultDecoder.result().name(), AttributedStyle.RED);
+                }
             }
             default ->
             {

@@ -130,6 +130,7 @@
         <field name="currentPrice" id="3" type="price"/>
         <field name="bidCount" id="4" type="int32"/>
         <field name="lastUpdate" id="5" type="time"/>
+        <field name="winningParticipantId" id="6" type="int64"/>
     </sbe:message>
 
     <sbe:message name="AuctionSnapshot"
@@ -142,8 +143,9 @@
         <field name="endTime" id="5" type="time"/>
         <field name="endTimeTimerCorrelation" id="6" type="int64"/>
         <field name="removalTimeTimerCorrelation" id="7" type="int64"/>
-        <data name="name" id="8" type="varAsciiEncoding"/>
-        <data name="description" id="9" type="varAsciiEncoding"/>
+        <field name="winningParticipantId" id="8" type="int64"/>
+        <data name="name" id="9" type="varAsciiEncoding"/>
+        <data name="description" id="10" type="varAsciiEncoding"/>
     </sbe:message>
 
     <sbe:message name="EndOfSnapshot"

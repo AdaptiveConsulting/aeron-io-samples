@@ -51,9 +51,10 @@ public interface AuctionResponder
      * @param currentPrice the current price of the auction
      * @param bidCount the number of bids
      * @param lastUpdateTime the time of the last update
+     * @param winningParticipantId the id of the winning participant
      */
     void onAuctionUpdated(String correlationId, long auctionId, AuctionStatus auctionStatus, long currentPrice,
-        int bidCount, long lastUpdateTime);
+        int bidCount, long lastUpdateTime, long winningParticipantId);
 
     /**
      * Broadcasts an update for an auction once the state has been updated
@@ -62,7 +63,8 @@ public interface AuctionResponder
      * @param currentPrice the current price of the auction
      * @param bidCount the number of bids
      * @param lastUpdateTime the time of the last update
+     * @param winningParticipantId the id of the winning participant
      */
     void onAuctionStateUpdate(long auctionId, AuctionStatus auctionStatus, long currentPrice, int bidCount,
-        long lastUpdateTime);
+        long lastUpdateTime, long winningParticipantId);
 }

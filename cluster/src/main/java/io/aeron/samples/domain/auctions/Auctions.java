@@ -42,8 +42,11 @@ public class Auctions
      * @param auctionResponder the object used to respond to auction actions
      * @param timerManager     the timer manager
      */
-    public Auctions(final SessionMessageContext context, final Participants participants,
-        final AuctionResponder auctionResponder, final TimerManager timerManager)
+    public Auctions(
+        final SessionMessageContext context,
+        final Participants participants,
+        final AuctionResponder auctionResponder,
+        final TimerManager timerManager)
     {
         this.context = context;
         this.auctionResponder = auctionResponder;
@@ -63,8 +66,13 @@ public class Auctions
      * @param name                   the name of the auction
      * @param description            the description
      */
-    public void addAuction(final String correlationId, final long createdByParticipantId, final long startTime,
-        final long endTime, final String name, final String description)
+    public void addAuction(
+        final String correlationId,
+        final long createdByParticipantId,
+        final long startTime,
+        final long endTime,
+        final String name,
+        final String description)
     {
         final var result = validate(createdByParticipantId, startTime, endTime, name, description);
 
@@ -78,7 +86,8 @@ public class Auctions
 
         LOGGER.info("Creating new Auction {} with ID {}", name, auctionId);
 
-        final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
+        final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description,
+            -1L);
         auctionList.add(auction);
 
         auctionResponder.onAuctionAdded(correlationId, auctionId, result, startTime, endTime, name, description);
@@ -103,14 +112,24 @@ public class Auctions
      * @param endTime                the end time of the auction
      * @param endTimerTimerCorrelationId the timer correlation id for the end timer
      * @param removeTimerTimerCorrelationId the timer correlation id for the removal timer
+     * @param winningParticipantId   the winning participant id
      * @param name                   the name of the auction
      * @param description            the description
      */
-    public void restoreAuction(final long auctionId, final long createdByParticipantId, final long startTime,
-        final long startTimerTimerCorrelationId, final long endTime, final long endTimerTimerCorrelationId,
-        final long removeTimerTimerCorrelationId, final String name, final String description)
+    public void restoreAuction(
+        final long auctionId,
+        final long createdByParticipantId,
+        final long startTime,
+        final long startTimerTimerCorrelationId,
+        final long endTime,
+        final long endTimerTimerCorrelationId,
+        final long removeTimerTimerCorrelationId,
+        final long winningParticipantId,
+        final String name,
+        final String description)
     {
-        final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description);
+        final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description,
+            winningParticipantId);
         auctionList.add(auction);
 
         //Aeron Cluster is already snapshotting the cluster timer state, so we just need to rehydrate the internal
@@ -236,7 +255,8 @@ public class Auctions
         auction.setWinningBid(participantId, price, context.getClusterTime());
 
         auctionResponder.onAuctionUpdated(correlationId, auction.getAuctionId(), auction.getAuctionStatus(),
-            auction.getCurrentPrice(), auction.getBidCount(), auction.getLastUpdateTime());
+            auction.getCurrentPrice(), auction.getBidCount(), auction.getLastUpdateTime(),
+            auction.getWinningParticipantId());
     }
 
     /**
@@ -259,8 +279,12 @@ public class Auctions
      * @param description            the description which must not be null or blank
      * @return the result of the validation
      */
-    private AddAuctionResult validate(final long createdByParticipantId, final long startTime, final long endTime,
-        final String name, final String description)
+    private AddAuctionResult validate(
+        final long createdByParticipantId,
+        final long startTime,
+        final long endTime,
+        final String name,
+        final String description)
     {
         if (startTime <= context.getClusterTime())
         {
@@ -346,7 +370,8 @@ public class Auctions
         {
             final var auction = optionalAuction.get();
             auctionResponder.onAuctionStateUpdate(auction.getAuctionId(), auction.getAuctionStatus(),
-                auction.getCurrentPrice(), auction.getBidCount(), auction.getLastUpdateTime());
+                auction.getCurrentPrice(), auction.getBidCount(), auction.getLastUpdateTime(),
+                auction.getWinningParticipantId());
         }
     }
 }
