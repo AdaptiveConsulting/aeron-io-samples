@@ -53,7 +53,7 @@ class AuctionsTests
         assertEquals(0, auctions.getAuctionList().get(0).getBidCount());
         assertEquals(Long.MIN_VALUE, auctions.getAuctionList().get(0).getCurrentPrice());
         assertEquals(Long.MIN_VALUE, auctions.getAuctionList().get(0).getLastUpdateTime());
-        assertEquals(Long.MIN_VALUE, auctions.getAuctionList().get(0).getWinningParticipantId());
+        assertEquals(-1L, auctions.getAuctionList().get(0).getWinningParticipantId());
         assertEquals(AuctionStatus.PRE_OPEN, auctions.getAuctionList().get(0).getAuctionStatus());
     }
 
@@ -78,7 +78,8 @@ class AuctionsTests
         when(sessionMessageContext.getClusterTime()).thenReturn(31003L);
         auctions.addBid(4194304000L, 1001L, 99L, correlationId2);
 
-        verify(auctionResponder).onAuctionUpdated(correlationId2, 4194304000L, AuctionStatus.PRE_OPEN, 99L, 1, 31003L);
+        verify(auctionResponder).onAuctionUpdated(correlationId2, 4194304000L, AuctionStatus.PRE_OPEN,
+            99L, 1, 31003L, 1001L);
     }
 
     @Test
@@ -90,8 +91,10 @@ class AuctionsTests
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, auctionResponder, timerManager);
 
-        auctions.restoreAuction(2L, 1000L, 1003L, 1L, 31004L, 2L, 3L, "name1", "description1");
-        auctions.restoreAuction(1L, 1000L, 1002L, 4L, 31003L, 5L, 6L, "name0", "description0");
+        auctions.restoreAuction(2L, 1000L, 1003L, 1L, 31004L,
+            2L, 3L, -1L, "name1", "description1");
+        auctions.restoreAuction(1L, 1000L, 1002L, 4L, 31003L,
+            5L, 6L, -1L, "name0", "description0");
 
         verifyNoInteractions(auctionResponder);
         verify(timerManager).restoreTimer(eq(1L), any());
@@ -339,7 +342,8 @@ class AuctionsTests
         when(sessionMessageContext.getClusterTime()).thenReturn(31003L);
         auctions.addBid(4194304000L, 1001L, 99L, correlationId2);
 
-        verify(auctionResponder).onAuctionUpdated(correlationId2, 4194304000L, AuctionStatus.PRE_OPEN, 99L, 1, 31003L);
+        verify(auctionResponder).onAuctionUpdated(correlationId2, 4194304000L, AuctionStatus.PRE_OPEN, 99L,
+            1, 31003L, 1001L);
 
         //add a second bid at 90L
         when(sessionMessageContext.getClusterTime()).thenReturn(31004L);

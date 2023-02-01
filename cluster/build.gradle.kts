@@ -38,4 +38,20 @@ tasks {
         mainClass.set("io.aeron.samples.ClusterApp")
         jvmArgs("--add-opens=java.base/sun.nio.ch=ALL-UNNAMED")
     }
+
+
+    task ("uberJar", Jar::class) {
+        group = "uber"
+        manifest {
+            attributes["Main-Class"]="io.aeron.samples.ClusterApp"
+        }
+        archiveClassifier.set("uber")
+        from(sourceSets.main.get().output)
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        dependsOn(configurations.runtimeClasspath)
+        from({
+            configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+        })
+    }
+
 }

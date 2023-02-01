@@ -59,7 +59,8 @@ public class AdminClientEgressListener implements EgressListener
                 log("Auction update event: " + auctionUpdateEventDecoder.auctionId() + " now in state " +
                     auctionUpdateEventDecoder.status().name() + ". There have been " +
                     auctionUpdateEventDecoder.bidCount() + " bids. The current price is " +
-                    auctionUpdateEventDecoder.currentPrice(), AttributedStyle.YELLOW);
+                    auctionUpdateEventDecoder.currentPrice() + ". The winning bidder participant id is " +
+                    auctionUpdateEventDecoder.winningParticipantId(), AttributedStyle.YELLOW);
             }
             case CreateAuctionCommandResultDecoder.TEMPLATE_ID ->
             {

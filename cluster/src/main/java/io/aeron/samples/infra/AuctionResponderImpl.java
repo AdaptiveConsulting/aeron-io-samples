@@ -110,8 +110,14 @@ public class AuctionResponderImpl implements AuctionResponder
     }
 
     @Override
-    public void onAuctionUpdated(final String correlationId, final long auctionId, final AuctionStatus auctionStatus,
-        final long currentPrice, final int bidCount, final long lastUpdateTime)
+    public void onAuctionUpdated(
+        final String correlationId,
+        final long auctionId,
+        final AuctionStatus auctionStatus,
+        final long currentPrice,
+        final int bidCount,
+        final long lastUpdateTime,
+        final long winningParticipantId)
     {
         messageHeaderEncoder.wrap(buffer, 0);
         addAuctionBidResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
@@ -120,12 +126,17 @@ public class AuctionResponderImpl implements AuctionResponder
         addAuctionBidResultEncoder.correlationId(correlationId);
         context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + addAuctionBidResultEncoder.encodedLength());
 
-        onAuctionStateUpdate(auctionId, auctionStatus, currentPrice, bidCount, lastUpdateTime);
+        onAuctionStateUpdate(auctionId, auctionStatus, currentPrice, bidCount, lastUpdateTime, winningParticipantId);
     }
 
     @Override
-    public void onAuctionStateUpdate(final long auctionId, final AuctionStatus auctionStatus, final long currentPrice,
-        final int bidCount, final long lastUpdateTime)
+    public void onAuctionStateUpdate(
+        final long auctionId,
+        final AuctionStatus auctionStatus,
+        final long currentPrice,
+        final int bidCount,
+        final long lastUpdateTime,
+        final long winningParticipantId)
     {
         messageHeaderEncoder.wrap(buffer, 0);
         auctionUpdateEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
@@ -134,6 +145,7 @@ public class AuctionResponderImpl implements AuctionResponder
         auctionUpdateEncoder.currentPrice(currentPrice);
         auctionUpdateEncoder.bidCount(bidCount);
         auctionUpdateEncoder.lastUpdate(lastUpdateTime);
+        auctionUpdateEncoder.winningParticipantId(winningParticipantId);
         context.broadcast(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + auctionUpdateEncoder.encodedLength());
     }
 
@@ -183,6 +195,14 @@ public class AuctionResponderImpl implements AuctionResponder
             case UNKNOWN_PARTICIPANT ->
             {
                 return io.aeron.samples.cluster.protocol.AddAuctionBidResult.UNKNOWN_PARTICIPANT;
+            }
+            case AUCTION_NOT_OPEN ->
+            {
+                return io.aeron.samples.cluster.protocol.AddAuctionBidResult.AUCTION_NOT_OPEN;
+            }
+            case CANNOT_SELF_BID ->
+            {
+                return io.aeron.samples.cluster.protocol.AddAuctionBidResult.CANNOT_SELF_BID;
             }
             default -> LOGGER.error("Unknown AddAuctionBidResult: {}", result);
         }
