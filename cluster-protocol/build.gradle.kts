@@ -1,6 +1,5 @@
 plugins {
     `java-library`
-    checkstyle
 }
 
 val generatedDir = file("${buildDir}/generated/src/main/java")

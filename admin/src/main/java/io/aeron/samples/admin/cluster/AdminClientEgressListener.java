@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Adaptive Financial Consulting
  */
 
-package io.aeron.samples.admin;
+package io.aeron.samples.admin.cluster;
 
 import io.aeron.cluster.client.AeronCluster;
 import io.aeron.cluster.client.EgressListener;
