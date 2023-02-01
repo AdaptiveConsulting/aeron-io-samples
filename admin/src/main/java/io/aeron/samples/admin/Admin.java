@@ -4,6 +4,7 @@
 
 package io.aeron.samples.admin;
 
+import io.aeron.samples.admin.cli.CliCommands;
 import io.aeron.samples.admin.cluster.ClusterInteractionAgent;
 import org.agrona.concurrent.AgentRunner;
 import org.agrona.concurrent.IdleStrategy;
@@ -23,8 +24,6 @@ import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.utils.AttributedStringBuilder;
-import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -88,16 +87,17 @@ public class Admin
                 .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
                 .build();
             builtins.setLineReader(reader);
+            commands.setReader(reader);
             factory.setTerminal(terminal);
             clusterInteractionAgent.setLineReader(reader);
 
             final String prompt = "admin > ";
 
             String line;
-            terminal.writer().println("Welcome to the Aeron Cluster Admin Console");
-            final String s = new AttributedStringBuilder().style(AttributedStyle.BOLD.foreground(AttributedStyle.GREEN))
-                .append("Cluster connected").toAnsi(terminal);
-            terminal.writer().println(s);
+            terminal.writer().println("-------------------------------------------------");
+            terminal.writer().println("Welcome to the Aeron Cluster Sample Admin Console");
+            terminal.writer().println("-------------------------------------------------");
+            terminal.writer().println(" useful commands: help, exit");
             while (true)
             {
                 try

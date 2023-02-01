@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Adaptive Financial Consulting
  */
 
-package io.aeron.samples.admin;
+package io.aeron.samples.admin.cli;
 
 import io.aeron.samples.cluster.admin.protocol.ConnectClusterEncoder;
 import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
@@ -40,7 +40,7 @@ public class ConnectCluster implements Runnable
         connectClusterEncoder.baseport(baseport);
         connectClusterEncoder.clusterHosts(hostnames);
 
-        parent.offer(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
+        parent.offerClusterClientMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
             connectClusterEncoder.encodedLength());
     }
 

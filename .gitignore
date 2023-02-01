@@ -57,6 +57,7 @@
 build-cache/
 
 # Aeron Stuff
+aeron-cluster-0/
 cluster-data/
 archive-mark.dat
 archive.catalog

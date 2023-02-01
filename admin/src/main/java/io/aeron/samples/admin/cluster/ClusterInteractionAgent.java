@@ -9,6 +9,7 @@ import io.aeron.driver.MediaDriver;
 import io.aeron.driver.ThreadingMode;
 import io.aeron.samples.cluster.ClusterConfig;
 import io.aeron.samples.cluster.admin.protocol.ConnectClusterDecoder;
+import io.aeron.samples.cluster.admin.protocol.DisconnectClusterDecoder;
 import io.aeron.samples.cluster.admin.protocol.MessageHeaderDecoder;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.Agent;
@@ -16,13 +17,15 @@ import org.agrona.concurrent.MessageHandler;
 import org.agrona.concurrent.SystemEpochClock;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.jline.reader.LineReader;
-import org.jline.terminal.Terminal;
-import org.jline.utils.InfoCmp;
+import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static io.aeron.samples.admin.cluster.MessageTypes.CLIENT_ONLY;
+import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
 
 /**
  * Agent to interact with the cluster
@@ -37,7 +40,6 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     private final OneToOneRingBuffer adminClusterComms;
     private MessageHeaderDecoder messageHeaderDecoder = new MessageHeaderDecoder();
     private ConnectClusterDecoder connectClusterDecoder = new ConnectClusterDecoder();
-    private Terminal terminal;
     private MediaDriver mediaDriver;
     private AeronCluster aeronCluster;
     private AdminClientEgressListener adminClientEgressListener;
@@ -45,8 +47,8 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
 
     /**
      * Creates a new agent to interact with the cluster
-     * @param adminClusterChannel
-     * @param clusterAdminChannel
+     * @param adminClusterChannel the channel to send messages to the cluster from the REPL
+     * @param clusterAdminChannel the channel to receive messages from the cluster to the REPL
      */
     public ClusterInteractionAgent(final OneToOneRingBuffer adminClusterChannel,
         final OneToOneRingBuffer clusterAdminChannel)
@@ -71,6 +73,11 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
 
         adminClusterComms.read(this);
 
+        if (null != aeronCluster && !aeronCluster.isClosed())
+        {
+            aeronCluster.pollEgress();
+        }
+
         return 0; //always sleep
     }
 
@@ -85,32 +92,73 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     {
         if (length < MessageHeaderDecoder.ENCODED_LENGTH)
         {
-            log("Invalid message length");
+            log("Invalid message length", AttributedStyle.RED);
         }
 
         messageHeaderDecoder.wrap(buffer, offset);
-        if (messageHeaderDecoder.templateId() == ConnectClusterDecoder.TEMPLATE_ID)
+        if (msgTypeId == CLIENT_ONLY)
         {
-            connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
-            if (connectionState == ConnectionState.NOT_CONNECTED)
+            processInternalMessage(messageHeaderDecoder, buffer, offset);
+        }
+        else if (msgTypeId == CLUSTER_PASSTHROUGH)
+        {
+            if (connectionState == ConnectionState.CONNECTED)
             {
-                log("Connecting to cluster");
+                aeronCluster.offer(buffer, offset, length);
+            }
+            else
+            {
+                log("Not connected to cluster. Connect first", AttributedStyle.RED);
+            }
+        }
+    }
+
+    private void processInternalMessage(
+        final MessageHeaderDecoder messageHeaderDecoder,
+        final MutableDirectBuffer buffer,
+        final int offset)
+    {
+        switch (messageHeaderDecoder.templateId())
+        {
+            case ConnectClusterDecoder.TEMPLATE_ID ->
+            {
+                connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
+                log("Connecting to cluster", AttributedStyle.WHITE);
                 connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.clusterHosts());
                 connectionState = ConnectionState.CONNECTED;
+                log("Cluster connected", AttributedStyle.GREEN);
+            }
+            case DisconnectClusterDecoder.TEMPLATE_ID ->
+            {
+                log("Disconnecting from cluster", AttributedStyle.WHITE);
+                disconnectCluster();
+                connectionState = ConnectionState.NOT_CONNECTED;
+                log("Cluster disconnected", AttributedStyle.GREEN);
             }
         }
     }
 
     /**
+     * Disconnects from the cluster
+     */
+    private void disconnectCluster()
+    {
+        adminClientEgressListener = null;
+        aeronCluster.close();
+        mediaDriver.close();
+    }
+
+    /**
      * Connects to the cluster
      *
-     * @param baseport base port to use
+     * @param basePort base port to use
      * @param clusterHosts list of cluster hosts
      */
-    private void connectCluster(final int baseport, final String clusterHosts)
+    private void connectCluster(final int basePort, final String clusterHosts)
     {
-        final String ingressEndpoints = ingressEndpoints(baseport, Arrays.asList(clusterHosts));
+        final String ingressEndpoints = ingressEndpoints(basePort, Arrays.asList(clusterHosts));
         adminClientEgressListener = new AdminClientEgressListener();
+        adminClientEgressListener.setLineReader(lineReader);
         mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context()
             .threadingMode(ThreadingMode.SHARED)
             .dirDeleteOnStart(true)
@@ -164,20 +212,23 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
      * Logs a message to the terminal if available or to the logger if not
      *
      * @param message message to log
+     * @param color message color to use
      */
-    private void log(final String message)
+    private void log(final String message, final int color)
     {
-        if (lineReader == null)
+        LineReaderHelper.log(lineReader, message, color);
+    }
+
+    @Override
+    public void onClose()
+    {
+        if (aeronCluster != null)
         {
-            LOGGER.info(message);
+            aeronCluster.close();
         }
-        else
+        if (mediaDriver != null)
         {
-            lineReader.getTerminal().puts(InfoCmp.Capability.carriage_return);
-            lineReader.getTerminal().writer().println(message);
-            lineReader.callWidget(LineReader.REDRAW_LINE);
-            lineReader.callWidget(LineReader.REDISPLAY);
-            lineReader.getTerminal().writer().flush();
+            mediaDriver.close();
         }
     }
 }
