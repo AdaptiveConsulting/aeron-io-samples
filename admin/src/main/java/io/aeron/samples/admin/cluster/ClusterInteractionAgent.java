@@ -19,6 +19,7 @@ import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedStyle;
 
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
 public class ClusterInteractionAgent implements Agent, MessageHandler
 {
     private static final long HEARTBEAT_INTERVAL = 250;
+    public static final String INGRESS_CHANNEL = "aeron:udp?term-length=64k";
     private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
     private long lastHeartbeatTime = Long.MIN_VALUE;
     private final OneToOneRingBuffer adminClusterComms;
@@ -155,7 +157,24 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
      */
     private void connectCluster(final int basePort, final String clusterHosts)
     {
-        final String ingressEndpoints = ingressEndpoints(basePort, Arrays.asList(clusterHosts));
+        final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
+        final String ingressEndpoints = ClusterConfig.ingressEndpoints(
+            hostnames, basePort, ClusterConfig.CLIENT_FACING_PORT_OFFSET);
+        log("Connecting to cluster hosts using ingress: " + ingressEndpoints, AttributedStyle.WHITE);
+        log("Using base port: " + basePort, AttributedStyle.WHITE);
+        String hostName = "localhost";
+        try
+        {
+            hostName = InetAddress.getLocalHost().getHostAddress();
+            log("Using hostname: " + hostName, AttributedStyle.WHITE);
+        }
+        catch (final Exception e)
+        {
+            log("Unable to get hostname", AttributedStyle.RED);
+        }
+        final String egressChannel = "aeron:udp?endpoint=" + hostName + ":0";
+        log("Using egress channel: " + egressChannel, AttributedStyle.WHITE);
+        log("Using ingress channel: " + INGRESS_CHANNEL, AttributedStyle.WHITE);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
         mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context()
@@ -165,10 +184,10 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         aeronCluster = AeronCluster.connect(
             new AeronCluster.Context()
                 .egressListener(adminClientEgressListener)
-                .egressChannel("aeron:udp?endpoint=localhost:0")
-                .aeronDirectoryName(mediaDriver.aeronDirectoryName())
-                .ingressChannel("aeron:udp")
-                .ingressEndpoints(ingressEndpoints));
+                .egressChannel(egressChannel)
+                .ingressChannel(INGRESS_CHANNEL)
+                .ingressEndpoints(ingressEndpoints)
+                .aeronDirectoryName(mediaDriver.aeronDirectoryName()));
     }
 
     /**
@@ -179,32 +198,6 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     public void setLineReader(final LineReader lineReader)
     {
         this.lineReader = lineReader;
-    }
-
-    /**
-     * Ingress endpoint configuration
-     *
-     * @param hostnames list of hostnames
-     * @param portBase port base to use
-     * @return ingress endpoint configuration
-     */
-    private static String ingressEndpoints(final int portBase, final List<String> hostnames)
-    {
-        final StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < hostnames.size(); i++)
-        {
-            sb.append(i).append('=');
-            sb.append(hostnames.get(i)).append(':').append(calculatePort(portBase, i, 10));
-            sb.append(',');
-        }
-
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
-    }
-
-    private static int calculatePort(final int portBase, final int nodeId, final int offset)
-    {
-        return portBase + (nodeId * ClusterConfig.PORTS_PER_NODE) + offset;
     }
 
     /**

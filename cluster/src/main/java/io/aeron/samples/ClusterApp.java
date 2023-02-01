@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static java.lang.Integer.parseInt;
+
 /**
  * Sample cluster application
  */
@@ -29,10 +31,18 @@ public class ClusterApp
     public static void main(final String[] args)
     {
         final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
+        LOGGER.info("CLUSTER_ADDRESSES: {}", System.getenv("CLUSTER_ADDRESSES"));
+        LOGGER.info("CLUSTER_NODE: {}", System.getenv("CLUSTER_NODE"));
+        LOGGER.info("CLUSTER_PORT_BASE: {}", System.getenv("CLUSTER_PORT_BASE"));
+        final int portBase = parseInt(System.getenv("CLUSTER_PORT_BASE"));
+        final int nodeId = parseInt(System.getenv("CLUSTER_NODE"));
+        final String hosts = System.getenv("CLUSTER_ADDRESSES");
+
+        LOGGER.info("Starting Cluster Node {} on base port {} with hosts {}...", nodeId, portBase, hosts);
 
         //temp config for initial development - replace with proper config.
         final ClusterConfig clusterConfig = ClusterConfig.create(
-            0, List.of("localhost"), List.of("localhost"), 9000,
+            nodeId, List.of(hosts.split(",")), List.of(hosts.split(",")), portBase,
             new AppClusteredService());
         clusterConfig.consensusModuleContext().ingressChannel("aeron:udp?endpoint=localhost:9010|term-length=64k");
         clusterConfig.mediaDriverContext().errorHandler(errorHandler("Media Driver"));
