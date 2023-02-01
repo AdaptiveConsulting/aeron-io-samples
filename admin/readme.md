@@ -8,7 +8,7 @@ First, you will need to build the uberJar. You can do this via gradle:
 ./gradlew uberJar
 ```
 
-This should output an uber jar in:
+This should output an Admin uber jar in:
 
 `/admin/build/libs/admin-uber.jar`
 

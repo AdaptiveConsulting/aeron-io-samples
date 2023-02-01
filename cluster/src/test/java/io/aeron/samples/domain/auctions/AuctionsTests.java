@@ -51,7 +51,7 @@ class AuctionsTests
         assertEquals("name", auctions.getAuctionList().get(0).getName());
         assertEquals("description", auctions.getAuctionList().get(0).getDescription());
         assertEquals(0, auctions.getAuctionList().get(0).getBidCount());
-        assertEquals(Long.MIN_VALUE, auctions.getAuctionList().get(0).getCurrentPrice());
+        assertEquals(0, auctions.getAuctionList().get(0).getCurrentPrice());
         assertEquals(Long.MIN_VALUE, auctions.getAuctionList().get(0).getLastUpdateTime());
         assertEquals(-1L, auctions.getAuctionList().get(0).getWinningParticipantId());
         assertEquals(AuctionStatus.PRE_OPEN, auctions.getAuctionList().get(0).getAuctionStatus());

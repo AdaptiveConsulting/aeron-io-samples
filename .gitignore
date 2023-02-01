@@ -75,7 +75,6 @@ docker/.env
 
 # JMH
 generated_tests
-java/messaging/hydra-codecs-tests/generated
 **/jmh/generated/**
 
 .DS_Store

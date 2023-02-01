@@ -19,6 +19,7 @@ import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedStyle;
 
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 
@@ -156,6 +157,15 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     private void connectCluster(final int basePort, final String clusterHosts)
     {
         final String ingressEndpoints = ingressEndpoints(basePort, Arrays.asList(clusterHosts));
+        String hostName = "localhost";
+        try
+        {
+            hostName = InetAddress.getLocalHost().getHostAddress();
+        }
+        catch (final Exception e)
+        {
+            log("Unable to get hostname", AttributedStyle.RED);
+        }
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
         mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context()
@@ -165,7 +175,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         aeronCluster = AeronCluster.connect(
             new AeronCluster.Context()
                 .egressListener(adminClientEgressListener)
-                .egressChannel("aeron:udp?endpoint=localhost:0")
+                .egressChannel("aeron:udp?endpoint=" + hostName + ":0")
                 .aeronDirectoryName(mediaDriver.aeronDirectoryName())
                 .ingressChannel("aeron:udp")
                 .ingressEndpoints(ingressEndpoints));
