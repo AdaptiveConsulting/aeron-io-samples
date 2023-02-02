@@ -8,7 +8,6 @@ import io.aeron.cluster.ClusteredMediaDriver;
 import io.aeron.cluster.service.ClusteredServiceContainer;
 import io.aeron.samples.cluster.ClusterConfig;
 import io.aeron.samples.infra.AppClusteredService;
-import org.agrona.ErrorHandler;
 import org.agrona.concurrent.ShutdownSignalBarrier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,11 +60,6 @@ public class ClusterApp
             nodeId, List.of(hosts.split(",")), List.of(hosts.split(",")), portBase,
             new AppClusteredService());
         clusterConfig.consensusModuleContext().ingressChannel("aeron:udp");
-        clusterConfig.mediaDriverContext().errorHandler(errorHandler("Media Driver"));
-        clusterConfig.archiveContext().errorHandler(errorHandler("Archive"));
-        clusterConfig.aeronArchiveContext().errorHandler(errorHandler("Aeron Archive"));
-        clusterConfig.consensusModuleContext().errorHandler(errorHandler("Consensus Module"));
-        clusterConfig.clusteredServiceContext().errorHandler(errorHandler("Clustered Service"));
 
         try (
             ClusteredMediaDriver ignored = ClusteredMediaDriver.launch(
@@ -76,24 +70,8 @@ public class ClusterApp
                 clusterConfig.clusteredServiceContext()))
         {
             LOGGER.info("Started Cluster Node...");
-            LOGGER.info(clusterConfig.clusteredServiceContext().toString());
-            LOGGER.info(clusterConfig.consensusModuleContext().toString());
-            LOGGER.info(clusterConfig.mediaDriverContext().toString());
-            LOGGER.info(clusterConfig.aeronArchiveContext().toString());
-            LOGGER.info(clusterConfig.clusteredServiceContext().aeron().context().toString());
             barrier.await();
             LOGGER.info("Exiting");
         }
-    }
-
-    /**
-     * Logs errors within the given context.
-     *
-     * @param context the context to log within
-     * @return the ErrorHandler to be used
-     */
-    private static ErrorHandler errorHandler(final String context)
-    {
-        return (Throwable throwable) -> LOGGER.error(context, throwable);
     }
 }

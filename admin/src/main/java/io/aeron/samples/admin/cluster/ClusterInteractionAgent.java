@@ -23,7 +23,7 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.aeron.samples.admin.cluster.MessageTypes.CLIENT_ONLY;
+import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_CLIENT_CONTROL;
 import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
 
 /**
@@ -85,7 +85,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     @Override
     public void onMessage(final int msgTypeId, final MutableDirectBuffer buffer, final int offset, final int length)
     {
-        if (msgTypeId == CLIENT_ONLY)
+        if (msgTypeId == CLUSTER_CLIENT_CONTROL)
         {
             if (length < MessageHeaderDecoder.ENCODED_LENGTH)
             {
@@ -162,8 +162,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
         final String ingressEndpoints = ClusterConfig.ingressEndpoints(
             hostnames, basePort, ClusterConfig.CLIENT_FACING_PORT_OFFSET);
-        log("Connecting to cluster hosts using ingress: " + ingressEndpoints, AttributedStyle.WHITE);
-        log("Using base port: " + basePort, AttributedStyle.WHITE);
+        log("Connecting to cluster hosts using ingress endpoints: " + ingressEndpoints, AttributedStyle.WHITE);
         String hostName = "localhost";
         if (localHostName.isEmpty() || localHostName.isBlank())
         {
@@ -182,8 +181,6 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
             hostName = localHostName;
         }
         final String egressChannel = "aeron:udp?endpoint=" + hostName + ":0";
-        log("Using egress channel: " + egressChannel, AttributedStyle.WHITE);
-        log("Using ingress channel: " + INGRESS_CHANNEL, AttributedStyle.WHITE);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
         mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context()
