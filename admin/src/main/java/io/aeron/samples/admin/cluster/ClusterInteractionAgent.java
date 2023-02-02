@@ -160,8 +160,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     private void connectCluster(final int basePort, final String clusterHosts, final String localHostName)
     {
         final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
-        final String ingressEndpoints = ClusterConfig.ingressEndpoints(
-            hostnames, basePort, ClusterConfig.CLIENT_FACING_PORT_OFFSET);
+        final String ingressEndpoints = ingressEndpoints(basePort, hostnames);
         log("Connecting to cluster hosts using ingress: " + ingressEndpoints, AttributedStyle.WHITE);
         log("Using base port: " + basePort, AttributedStyle.WHITE);
         String hostName = "localhost";
@@ -181,11 +180,12 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         {
             hostName = localHostName;
         }
-        final String egressChannel = "aeron:udp?endpoint=" + hostName + ":0";
+        final String egressChannel = "aeron:udp?endpoint=localhost:0";
         log("Using egress channel: " + egressChannel, AttributedStyle.WHITE);
         log("Using ingress channel: " + INGRESS_CHANNEL, AttributedStyle.WHITE);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
+
         mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context()
             .threadingMode(ThreadingMode.SHARED)
             .dirDeleteOnStart(true)
@@ -194,9 +194,28 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
             new AeronCluster.Context()
                 .egressListener(adminClientEgressListener)
                 .egressChannel(egressChannel)
-                .ingressChannel(INGRESS_CHANNEL)
+                .ingressChannel("aeron:udp")
                 .ingressEndpoints(ingressEndpoints)
                 .aeronDirectoryName(mediaDriver.aeronDirectoryName()));
+    }
+
+    private static String ingressEndpoints(final int portBase, final List<String> hostnames)
+    {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < hostnames.size(); i++)
+        {
+            sb.append(i).append('=');
+            sb.append(hostnames.get(i)).append(':').append(calculatePort(portBase, i, 10));
+            sb.append(',');
+        }
+
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
+    private static int calculatePort(final int portBase, final int nodeId, final int offset)
+    {
+        return portBase + (nodeId * ClusterConfig.PORTS_PER_NODE) + offset;
     }
 
     /**
