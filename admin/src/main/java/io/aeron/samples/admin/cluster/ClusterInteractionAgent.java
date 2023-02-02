@@ -36,8 +36,8 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
     private long lastHeartbeatTime = Long.MIN_VALUE;
     private final OneToOneRingBuffer adminClusterComms;
-    private MessageHeaderDecoder messageHeaderDecoder = new MessageHeaderDecoder();
-    private ConnectClusterDecoder connectClusterDecoder = new ConnectClusterDecoder();
+    private final MessageHeaderDecoder messageHeaderDecoder = new MessageHeaderDecoder();
+    private final ConnectClusterDecoder connectClusterDecoder = new ConnectClusterDecoder();
     private MediaDriver mediaDriver;
     private AeronCluster aeronCluster;
     private AdminClientEgressListener adminClientEgressListener;
@@ -49,7 +49,6 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
      */
     public ClusterInteractionAgent(final OneToOneRingBuffer adminClusterChannel)
     {
-
         this.adminClusterComms = adminClusterChannel;
     }
 
@@ -113,24 +112,22 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         final MutableDirectBuffer buffer,
         final int offset)
     {
-        switch (messageHeaderDecoder.templateId())
+        final int templateId = messageHeaderDecoder.templateId();
+        if (templateId == ConnectClusterDecoder.TEMPLATE_ID)
         {
-            case ConnectClusterDecoder.TEMPLATE_ID ->
-            {
-                connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
-                log("Connecting to cluster", AttributedStyle.WHITE);
-                connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.clusterHosts(),
-                    connectClusterDecoder.localhostName());
-                connectionState = ConnectionState.CONNECTED;
-                log("Cluster connected", AttributedStyle.GREEN);
-            }
-            case DisconnectClusterDecoder.TEMPLATE_ID ->
-            {
-                log("Disconnecting from cluster", AttributedStyle.WHITE);
-                disconnectCluster();
-                connectionState = ConnectionState.NOT_CONNECTED;
-                log("Cluster disconnected", AttributedStyle.GREEN);
-            }
+            connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
+            log("Connecting to cluster", AttributedStyle.WHITE);
+            connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.clusterHosts(),
+                connectClusterDecoder.localhostName());
+            connectionState = ConnectionState.CONNECTED;
+            log("Cluster connected", AttributedStyle.GREEN);
+        }
+        else if (templateId == DisconnectClusterDecoder.TEMPLATE_ID)
+        {
+            log("Disconnecting from cluster", AttributedStyle.WHITE);
+            disconnectCluster();
+            connectionState = ConnectionState.NOT_CONNECTED;
+            log("Cluster disconnected", AttributedStyle.GREEN);
         }
     }
 

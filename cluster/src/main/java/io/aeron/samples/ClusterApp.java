@@ -55,7 +55,6 @@ public class ClusterApp
 
         LOGGER.info("Starting Cluster Node {} on base port {} with hosts {}...", nodeId, portBase, hosts);
 
-        //temp config for initial development - replace with proper config.
         final ClusterConfig clusterConfig = ClusterConfig.create(
             nodeId, List.of(hosts.split(",")), List.of(hosts.split(",")), portBase,
             new AppClusteredService());
