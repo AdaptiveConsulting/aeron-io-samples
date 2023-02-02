@@ -60,7 +60,7 @@ public class ClusterApp
         final ClusterConfig clusterConfig = ClusterConfig.create(
             nodeId, List.of(hosts.split(",")), List.of(hosts.split(",")), portBase,
             new AppClusteredService());
-        clusterConfig.consensusModuleContext().ingressChannel("aeron:udp?endpoint=localhost:9010|term-length=64k");
+        clusterConfig.consensusModuleContext().ingressChannel("aeron:udp");
         clusterConfig.mediaDriverContext().errorHandler(errorHandler("Media Driver"));
         clusterConfig.archiveContext().errorHandler(errorHandler("Archive"));
         clusterConfig.aeronArchiveContext().errorHandler(errorHandler("Aeron Archive"));
@@ -77,6 +77,7 @@ public class ClusterApp
         {
             LOGGER.info("Started Cluster Node...");
             LOGGER.info(clusterConfig.clusteredServiceContext().toString());
+            LOGGER.info(clusterConfig.consensusModuleContext().toString());
             LOGGER.info(clusterConfig.mediaDriverContext().toString());
             LOGGER.info(clusterConfig.aeronArchiveContext().toString());
             LOGGER.info(clusterConfig.clusteredServiceContext().aeron().context().toString());
