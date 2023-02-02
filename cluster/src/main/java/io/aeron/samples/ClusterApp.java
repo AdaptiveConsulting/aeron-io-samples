@@ -54,18 +54,14 @@ public class ClusterApp
         final int nodeId = parseInt(clusterNode);
         final String hosts = clusterAddresses;
 
+        final List<String> splithosts = List.of(hosts.split(","));
+        final String ingressComputed = "aeron:udp?endpoint=" + splithosts.get(nodeId) + ":9010|term-length=64k";
         LOGGER.info("Starting Cluster Node {} on base port {} with hosts {}...", nodeId, portBase, hosts);
 
         //temp config for initial development - replace with proper config.
-        final ClusterConfig clusterConfig = ClusterConfig.create(
-            nodeId, List.of(hosts.split(",")), List.of(hosts.split(",")), portBase,
+        final ClusterConfig clusterConfig = ClusterConfig.create(nodeId, splithosts, splithosts, portBase,
             new AppClusteredService());
-        clusterConfig.consensusModuleContext().ingressChannel("aeron:udp?endpoint=localhost:9010|term-length=64k");
-        clusterConfig.mediaDriverContext().errorHandler(errorHandler("Media Driver"));
-        clusterConfig.archiveContext().errorHandler(errorHandler("Archive"));
-        clusterConfig.aeronArchiveContext().errorHandler(errorHandler("Aeron Archive"));
-        clusterConfig.consensusModuleContext().errorHandler(errorHandler("Consensus Module"));
-        clusterConfig.clusteredServiceContext().errorHandler(errorHandler("Clustered Service"));
+        clusterConfig.consensusModuleContext().ingressChannel(ingressComputed);
 
         try (
             ClusteredMediaDriver ignored = ClusteredMediaDriver.launch(

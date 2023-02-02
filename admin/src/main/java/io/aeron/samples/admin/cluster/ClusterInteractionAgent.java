@@ -180,9 +180,10 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         {
             hostName = localHostName;
         }
-        final String egressChannel = "aeron:udp?endpoint=localhost:0";
+        final String egressChannel = "aeron:udp?endpoint=" + hostName + ":0";
         log("Using egress channel: " + egressChannel, AttributedStyle.WHITE);
         log("Using ingress channel: " + INGRESS_CHANNEL, AttributedStyle.WHITE);
+        log("Using ingress endpoints: " + ingressEndpoints, AttributedStyle.WHITE);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
 
@@ -194,7 +195,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
             new AeronCluster.Context()
                 .egressListener(adminClientEgressListener)
                 .egressChannel(egressChannel)
-                .ingressChannel("aeron:udp")
+                .ingressChannel(INGRESS_CHANNEL)
                 .ingressEndpoints(ingressEndpoints)
                 .aeronDirectoryName(mediaDriver.aeronDirectoryName()));
     }
