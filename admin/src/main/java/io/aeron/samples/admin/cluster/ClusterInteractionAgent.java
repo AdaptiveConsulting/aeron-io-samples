@@ -119,7 +119,8 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
             {
                 connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
                 log("Connecting to cluster", AttributedStyle.WHITE);
-                connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.clusterHosts());
+                connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.clusterHosts(),
+                    connectClusterDecoder.localhostName());
                 connectionState = ConnectionState.CONNECTED;
                 log("Cluster connected", AttributedStyle.GREEN);
             }
@@ -154,8 +155,9 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
      *
      * @param basePort base port to use
      * @param clusterHosts list of cluster hosts
+     * @param localHostName if empty, will be looked up
      */
-    private void connectCluster(final int basePort, final String clusterHosts)
+    private void connectCluster(final int basePort, final String clusterHosts, final String localHostName)
     {
         final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
         final String ingressEndpoints = ClusterConfig.ingressEndpoints(
@@ -163,14 +165,21 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         log("Connecting to cluster hosts using ingress: " + ingressEndpoints, AttributedStyle.WHITE);
         log("Using base port: " + basePort, AttributedStyle.WHITE);
         String hostName = "localhost";
-        try
+        if (localHostName.isEmpty() || localHostName.isBlank())
         {
-            hostName = InetAddress.getLocalHost().getHostAddress();
-            log("Using hostname: " + hostName, AttributedStyle.WHITE);
+            try
+            {
+                hostName = InetAddress.getLocalHost().getHostAddress();
+                log("Using hostname: " + hostName, AttributedStyle.WHITE);
+            }
+            catch (final Exception e)
+            {
+                log("Unable to get hostname", AttributedStyle.RED);
+            }
         }
-        catch (final Exception e)
+        else
         {
-            log("Unable to get hostname", AttributedStyle.RED);
+            hostName = localHostName;
         }
         final String egressChannel = "aeron:udp?endpoint=" + hostName + ":0";
         log("Using egress channel: " + egressChannel, AttributedStyle.WHITE);

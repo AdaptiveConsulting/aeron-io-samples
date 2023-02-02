@@ -31,12 +31,28 @@ public class ClusterApp
     public static void main(final String[] args)
     {
         final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
-        LOGGER.info("CLUSTER_ADDRESSES: {}", System.getenv("CLUSTER_ADDRESSES"));
-        LOGGER.info("CLUSTER_NODE: {}", System.getenv("CLUSTER_NODE"));
-        LOGGER.info("CLUSTER_PORT_BASE: {}", System.getenv("CLUSTER_PORT_BASE"));
-        final int portBase = parseInt(System.getenv("CLUSTER_PORT_BASE"));
-        final int nodeId = parseInt(System.getenv("CLUSTER_NODE"));
-        final String hosts = System.getenv("CLUSTER_ADDRESSES");
+        String portBaseString = System.getenv("CLUSTER_PORT_BASE");
+        if (null == portBaseString || portBaseString.isEmpty())
+        {
+            portBaseString = "9000";
+        }
+        String clusterNode = System.getenv("CLUSTER_NODE");
+        if (null == clusterNode || clusterNode.isEmpty())
+        {
+            clusterNode = "0";
+        }
+        String clusterAddresses = System.getenv("CLUSTER_ADDRESSES");
+        if (null == clusterAddresses || clusterAddresses.isEmpty())
+        {
+            clusterAddresses = "localhost";
+        }
+        LOGGER.info("CLUSTER_ADDRESSES: {}", clusterAddresses);
+        LOGGER.info("CLUSTER_NODE: {}", clusterNode);
+        LOGGER.info("CLUSTER_PORT_BASE: {}", portBaseString);
+
+        final int portBase = parseInt(portBaseString);
+        final int nodeId = parseInt(clusterNode);
+        final String hosts = clusterAddresses;
 
         LOGGER.info("Starting Cluster Node {} on base port {} with hosts {}...", nodeId, portBase, hosts);
 
@@ -60,6 +76,10 @@ public class ClusterApp
                 clusterConfig.clusteredServiceContext()))
         {
             LOGGER.info("Started Cluster Node...");
+            LOGGER.info(clusterConfig.clusteredServiceContext().toString());
+            LOGGER.info(clusterConfig.mediaDriverContext().toString());
+            LOGGER.info(clusterConfig.aeronArchiveContext().toString());
+            LOGGER.info(clusterConfig.clusteredServiceContext().aeron().context().toString());
             barrier.await();
             LOGGER.info("Exiting");
         }

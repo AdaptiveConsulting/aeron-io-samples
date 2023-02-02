@@ -39,5 +39,5 @@ In the `~/aeron` folder, you can find some aeron tools, including AeronStat.
 For example, to open AeronStat, move to `~/aeron` and run:
 
 ```bash
-java -cp aeron-all-*.jar -Daeron.dir=/dev/shm/aeron-root-0-driver io.aeron.samples.AeronStat
+java -cp ~/aeron/aeron-all-*.jar -Daeron.dir=/dev/shm/aeron-root-0-driver io.aeron.samples.AeronStat
 ```
