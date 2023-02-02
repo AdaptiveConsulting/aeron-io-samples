@@ -12,7 +12,7 @@ import picocli.shell.jline3.PicocliCommands;
 
 import java.io.PrintWriter;
 
-import static io.aeron.samples.admin.cluster.MessageTypes.CLIENT_ONLY;
+import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_CLIENT_CONTROL;
 import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
 
 /**
@@ -88,6 +88,6 @@ public class CliCommands implements Runnable
      */
     public void offerClusterClientMessage(final ExpandableArrayBuffer buffer, final int offset, final int encodedLength)
     {
-        adminChannel.write(CLIENT_ONLY, buffer, offset, encodedLength);
+        adminChannel.write(CLUSTER_CLIENT_CONTROL, buffer, offset, encodedLength);
     }
 }

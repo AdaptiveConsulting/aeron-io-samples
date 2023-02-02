@@ -14,5 +14,5 @@ public final class MessageTypes
     }
 
     public static final int CLUSTER_PASSTHROUGH = 1;
-    public static final int CLIENT_ONLY = 2;
+    public static final int CLUSTER_CLIENT_CONTROL = 2;
 }

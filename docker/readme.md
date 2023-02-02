@@ -25,8 +25,10 @@ java --add-opens java.base/sun.nio.ch=ALL-UNNAMED -jar admin-uber.jar
 Within the admin, you can connect to the cluster with:
 
 ```bash
-connect hostnames=172.16.202.2,172.16.202.3,172.16.202.4
+connect hostnames=172.16.202.2,172.16.202.3,172.16.202.4 thishost=
 ```
+
+Note that `thishost=` is telling the admin process to detect its own hostname, which is required given the admin is in a different container to the clusters.
 
 ## Stopping containers
 
@@ -39,5 +41,5 @@ In the `~/aeron` folder, you can find some aeron tools, including AeronStat.
 For example, to open AeronStat, move to `~/aeron` and run:
 
 ```bash
-java -cp aeron-all-*.jar -Daeron.dir=/dev/shm/aeron-root-0-driver io.aeron.samples.AeronStat
+java -cp ~/aeron/aeron-all-*.jar -Daeron.dir=/dev/shm/aeron-root-0-driver io.aeron.samples.AeronStat
 ```

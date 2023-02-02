@@ -8,7 +8,6 @@ import io.aeron.cluster.ClusteredMediaDriver;
 import io.aeron.cluster.service.ClusteredServiceContainer;
 import io.aeron.samples.cluster.ClusterConfig;
 import io.aeron.samples.infra.AppClusteredService;
-import org.agrona.ErrorHandler;
 import org.agrona.concurrent.ShutdownSignalBarrier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +30,28 @@ public class ClusterApp
     public static void main(final String[] args)
     {
         final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
-        LOGGER.info("CLUSTER_ADDRESSES: {}", System.getenv("CLUSTER_ADDRESSES"));
-        LOGGER.info("CLUSTER_NODE: {}", System.getenv("CLUSTER_NODE"));
-        LOGGER.info("CLUSTER_PORT_BASE: {}", System.getenv("CLUSTER_PORT_BASE"));
-        final int portBase = parseInt(System.getenv("CLUSTER_PORT_BASE"));
-        final int nodeId = parseInt(System.getenv("CLUSTER_NODE"));
-        final String hosts = System.getenv("CLUSTER_ADDRESSES");
+        String portBaseString = System.getenv("CLUSTER_PORT_BASE");
+        if (null == portBaseString || portBaseString.isEmpty())
+        {
+            portBaseString = "9000";
+        }
+        String clusterNode = System.getenv("CLUSTER_NODE");
+        if (null == clusterNode || clusterNode.isEmpty())
+        {
+            clusterNode = "0";
+        }
+        String clusterAddresses = System.getenv("CLUSTER_ADDRESSES");
+        if (null == clusterAddresses || clusterAddresses.isEmpty())
+        {
+            clusterAddresses = "localhost";
+        }
+        LOGGER.info("CLUSTER_ADDRESSES: {}", clusterAddresses);
+        LOGGER.info("CLUSTER_NODE: {}", clusterNode);
+        LOGGER.info("CLUSTER_PORT_BASE: {}", portBaseString);
+
+        final int portBase = parseInt(portBaseString);
+        final int nodeId = parseInt(clusterNode);
+        final String hosts = clusterAddresses;
 
         LOGGER.info("Starting Cluster Node {} on base port {} with hosts {}...", nodeId, portBase, hosts);
 
@@ -44,12 +59,7 @@ public class ClusterApp
         final ClusterConfig clusterConfig = ClusterConfig.create(
             nodeId, List.of(hosts.split(",")), List.of(hosts.split(",")), portBase,
             new AppClusteredService());
-        clusterConfig.consensusModuleContext().ingressChannel("aeron:udp?endpoint=localhost:9010|term-length=64k");
-        clusterConfig.mediaDriverContext().errorHandler(errorHandler("Media Driver"));
-        clusterConfig.archiveContext().errorHandler(errorHandler("Archive"));
-        clusterConfig.aeronArchiveContext().errorHandler(errorHandler("Aeron Archive"));
-        clusterConfig.consensusModuleContext().errorHandler(errorHandler("Consensus Module"));
-        clusterConfig.clusteredServiceContext().errorHandler(errorHandler("Clustered Service"));
+        clusterConfig.consensusModuleContext().ingressChannel("aeron:udp");
 
         try (
             ClusteredMediaDriver ignored = ClusteredMediaDriver.launch(
@@ -63,16 +73,5 @@ public class ClusterApp
             barrier.await();
             LOGGER.info("Exiting");
         }
-    }
-
-    /**
-     * Logs errors within the given context.
-     *
-     * @param context the context to log within
-     * @return the ErrorHandler to be used
-     */
-    private static ErrorHandler errorHandler(final String context)
-    {
-        return (Throwable throwable) -> LOGGER.error(context, throwable);
     }
 }

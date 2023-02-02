@@ -26,6 +26,10 @@ public class ConnectCluster implements Runnable
         "Multiple addresses can be specified by separating them with a comma.")
     private String hostnames = "localhost";
 
+    @SuppressWarnings("all")
+    @CommandLine.Option(names = "thishost", description = "The response hostname (default localhost).")
+    private String localhost = "localhost";
+
     private final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
     private final ConnectClusterEncoder connectClusterEncoder = new ConnectClusterEncoder();
@@ -39,6 +43,7 @@ public class ConnectCluster implements Runnable
         connectClusterEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         connectClusterEncoder.baseport(baseport);
         connectClusterEncoder.clusterHosts(hostnames);
+        connectClusterEncoder.localhostName(localhost);
 
         parent.offerClusterClientMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
             connectClusterEncoder.encodedLength());

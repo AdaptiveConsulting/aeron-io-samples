@@ -23,7 +23,7 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.aeron.samples.admin.cluster.MessageTypes.CLIENT_ONLY;
+import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_CLIENT_CONTROL;
 import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
 
 /**
@@ -85,7 +85,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     @Override
     public void onMessage(final int msgTypeId, final MutableDirectBuffer buffer, final int offset, final int length)
     {
-        if (msgTypeId == CLIENT_ONLY)
+        if (msgTypeId == CLUSTER_CLIENT_CONTROL)
         {
             if (length < MessageHeaderDecoder.ENCODED_LENGTH)
             {
@@ -119,7 +119,8 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
             {
                 connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
                 log("Connecting to cluster", AttributedStyle.WHITE);
-                connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.clusterHosts());
+                connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.clusterHosts(),
+                    connectClusterDecoder.localhostName());
                 connectionState = ConnectionState.CONNECTED;
                 log("Cluster connected", AttributedStyle.GREEN);
             }
@@ -154,27 +155,32 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
      *
      * @param basePort base port to use
      * @param clusterHosts list of cluster hosts
+     * @param localHostName if empty, will be looked up
      */
-    private void connectCluster(final int basePort, final String clusterHosts)
+    private void connectCluster(final int basePort, final String clusterHosts, final String localHostName)
     {
         final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
         final String ingressEndpoints = ClusterConfig.ingressEndpoints(
             hostnames, basePort, ClusterConfig.CLIENT_FACING_PORT_OFFSET);
-        log("Connecting to cluster hosts using ingress: " + ingressEndpoints, AttributedStyle.WHITE);
-        log("Using base port: " + basePort, AttributedStyle.WHITE);
+        log("Connecting to cluster hosts using ingress endpoints: " + ingressEndpoints, AttributedStyle.WHITE);
         String hostName = "localhost";
-        try
+        if (localHostName.isEmpty() || localHostName.isBlank())
         {
-            hostName = InetAddress.getLocalHost().getHostAddress();
-            log("Using hostname: " + hostName, AttributedStyle.WHITE);
+            try
+            {
+                hostName = InetAddress.getLocalHost().getHostAddress();
+                log("Using hostname: " + hostName, AttributedStyle.WHITE);
+            }
+            catch (final Exception e)
+            {
+                log("Unable to get hostname", AttributedStyle.RED);
+            }
         }
-        catch (final Exception e)
+        else
         {
-            log("Unable to get hostname", AttributedStyle.RED);
+            hostName = localHostName;
         }
         final String egressChannel = "aeron:udp?endpoint=" + hostName + ":0";
-        log("Using egress channel: " + egressChannel, AttributedStyle.WHITE);
-        log("Using ingress channel: " + INGRESS_CHANNEL, AttributedStyle.WHITE);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
         mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context()
