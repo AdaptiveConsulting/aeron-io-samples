@@ -214,7 +214,9 @@ public class Auctions
      * @param newStatus         the new status
      * @return true, if the transition was successful, false otherwise
      */
-    private boolean transitionAuction(final Auction auction, final AuctionStatus expectedStatus,
+    private boolean transitionAuction(
+        final Auction auction,
+        final AuctionStatus expectedStatus,
         final AuctionStatus newStatus)
     {
 

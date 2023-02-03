@@ -43,7 +43,6 @@ public class AuctionResponderImpl implements AuctionResponder
         this.context = context;
     }
 
-
     /**
      * Responds to the client that an auction has been added with a result code and the auction id
      * and broadcasts the new auction to all clients

@@ -163,7 +163,7 @@ public class SnapshotManager implements FragmentHandler
     private void offerParticipants(final ExclusivePublication snapshotPublication)
     {
         headerEncoder.wrap(buffer, 0);
-        participants.getParticipants().forEach(participant ->
+        participants.getParticipantList().forEach(participant ->
         {
             participantEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
             participantEncoder.participantId(participant.participantId());
