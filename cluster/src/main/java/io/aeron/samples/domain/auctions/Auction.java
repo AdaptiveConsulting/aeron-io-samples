@@ -16,7 +16,7 @@ public class Auction
     private final String name;
     private final String description;
     private long currentPrice = 0;
-    private long winningParticipantId = Long.MIN_VALUE;
+    private long winningParticipantId;
     private long lastUpdateTime = Long.MIN_VALUE;
     private int bidCount = 0;
     private AuctionStatus auctionStatus = AuctionStatus.PRE_OPEN;
@@ -35,8 +35,14 @@ public class Auction
      * @param description the description of the auction
      * @param winningParticipantId the id of the winning participant
      */
-    public Auction(final long auctionId, final long createdByParticipantId, final long startTime, final long endTime,
-        final String name, final String description, final long winningParticipantId)
+    public Auction(
+        final long auctionId,
+        final long createdByParticipantId,
+        final long startTime,
+        final long endTime,
+        final String name,
+        final String description,
+        final long winningParticipantId)
     {
         this.auctionId = auctionId;
         this.createdByParticipantId = createdByParticipantId;

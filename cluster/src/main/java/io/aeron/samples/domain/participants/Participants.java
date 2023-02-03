@@ -17,7 +17,7 @@ import java.util.List;
 public class Participants
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Participants.class);
-    private Long2ObjectHashMap<Participant> participants = new Long2ObjectHashMap<>();
+    private final Long2ObjectHashMap<Participant> participantMap = new Long2ObjectHashMap<>();
 
     /**
      * Adds a participant to the cluster
@@ -28,16 +28,16 @@ public class Participants
     {
         LOGGER.info("Adding participant {} with name {}", participantId, name);
         final var participant = new Participant(participantId, name);
-        participants.put(participantId, participant);
+        participantMap.put(participantId, participant);
     }
 
     /**
      * Lists all participants in the cluster, after sorting by participant id
      * @return the list of participants
      */
-    public List<Participant> getParticipants()
+    public List<Participant> getParticipantList()
     {
-        return participants
+        return participantMap
             .values()
             .stream()
             .sorted(Comparator.comparingLong(Participant::participantId))
@@ -51,6 +51,6 @@ public class Participants
      */
     public boolean isKnownParticipant(final long participantId)
     {
-        return participants.containsKey(participantId);
+        return participantMap.containsKey(participantId);
     }
 }
