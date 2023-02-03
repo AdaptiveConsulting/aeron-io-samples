@@ -56,7 +56,9 @@ public class SnapshotManager implements FragmentHandler
      * @param participants the participant domain model to read and write with snapshot interactions
      * @param context      the session message context to use for snapshot interactions
      */
-    public SnapshotManager(final Auctions auctions, final Participants participants,
+    public SnapshotManager(
+        final Auctions auctions,
+        final Participants participants,
         final SessionMessageContext context)
     {
         this.auctions = auctions;

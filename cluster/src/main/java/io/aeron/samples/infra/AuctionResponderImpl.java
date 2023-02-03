@@ -55,8 +55,14 @@ public class AuctionResponderImpl implements AuctionResponder
      * @param description the description
      */
     @Override
-    public void onAuctionAdded(final String correlationId, final long auctionId, final AddAuctionResult result,
-        final long startTime, final long endTime, final String name, final String description)
+    public void onAuctionAdded(
+        final String correlationId,
+        final long auctionId,
+        final AddAuctionResult result,
+        final long startTime,
+        final long endTime,
+        final String name,
+        final String description)
     {
         messageHeaderEncoder.wrap(buffer, 0);
 

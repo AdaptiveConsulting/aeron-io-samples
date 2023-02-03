@@ -37,8 +37,10 @@ public final class LineReaderHelper
         }
         else
         {
-            final String s = new AttributedStringBuilder().style(AttributedStyle.DEFAULT.foreground(color))
-                .append(message).toAnsi(lineReader.getTerminal());
+            final String s = new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(color))
+                .append(message)
+                .toAnsi(lineReader.getTerminal());
 
             if (lineReader.isReading())
             {

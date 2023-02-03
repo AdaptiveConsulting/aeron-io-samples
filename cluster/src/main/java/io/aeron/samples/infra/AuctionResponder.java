@@ -25,8 +25,14 @@ public interface AuctionResponder
      * @param name the name of the auction
      * @param description the description
      */
-    void onAuctionAdded(String correlationId, long auctionId, AddAuctionResult result, long startTime,
-        long endTime, String name, String description);
+    void onAuctionAdded(
+        String correlationId,
+        long auctionId,
+        AddAuctionResult result,
+        long startTime,
+        long endTime,
+        String name,
+        String description);
 
     /**
      * Responds to the client that an auction has not been added with a result code
@@ -53,8 +59,14 @@ public interface AuctionResponder
      * @param lastUpdateTime the time of the last update
      * @param winningParticipantId the id of the winning participant
      */
-    void onAuctionUpdated(String correlationId, long auctionId, AuctionStatus auctionStatus, long currentPrice,
-        int bidCount, long lastUpdateTime, long winningParticipantId);
+    void onAuctionUpdated(
+        String correlationId,
+        long auctionId,
+        AuctionStatus auctionStatus,
+        long currentPrice,
+        int bidCount,
+        long lastUpdateTime,
+        long winningParticipantId);
 
     /**
      * Broadcasts an update for an auction once the state has been updated
@@ -65,6 +77,11 @@ public interface AuctionResponder
      * @param lastUpdateTime the time of the last update
      * @param winningParticipantId the id of the winning participant
      */
-    void onAuctionStateUpdate(long auctionId, AuctionStatus auctionStatus, long currentPrice, int bidCount,
-        long lastUpdateTime, long winningParticipantId);
+    void onAuctionStateUpdate(
+        long auctionId,
+        AuctionStatus auctionStatus,
+        long currentPrice,
+        int bidCount,
+        long lastUpdateTime,
+        long winningParticipantId);
 }

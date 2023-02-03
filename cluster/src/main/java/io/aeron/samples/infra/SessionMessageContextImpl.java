@@ -107,7 +107,10 @@ public class SessionMessageContextImpl implements SessionMessageContext
      * @param offset the offset to read from
      * @param length the length to read
      */
-    private void offerToSession(final ClientSession targetSession, final DirectBuffer buffer, final int offset,
+    private void offerToSession(
+        final ClientSession targetSession,
+        final DirectBuffer buffer,
+        final int offset,
         final int length)
     {
         Objects.requireNonNull(idleStrategy, "idleStrategy must be set");
