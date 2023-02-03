@@ -62,7 +62,8 @@ public class Auctions
      * @param correlationId          the correlation id for this request
      * @param createdByParticipantId the participant who created the auction
      * @param startTime              the start time of the auction. Bids cannot be added before this time.
-     * @param endTime                the end time of the auction, at which time no more bids can be added and the result is computed
+     * @param endTime                the end time of the auction, at which time no more bids can be added and the result
+     *                               is computed
      * @param name                   the name of the auction
      * @param description            the description
      */
@@ -94,8 +95,8 @@ public class Auctions
 
         final var startCorrelationId = timerManager.scheduleTimer(startTime, () -> openAuction(auctionId));
         final var endCorrelationId = timerManager.scheduleTimer(endTime, () -> closeAuction(auctionId));
-        final var removeCorrelationId = timerManager.scheduleTimer(endTime + REMOVAL_TIMER_DURATION,
-            () -> removeAuction(auctionId));
+        final var removeCorrelationId = timerManager.scheduleTimer(
+            endTime + REMOVAL_TIMER_DURATION, () -> removeAuction(auctionId));
 
         auction.setStartTimerCorrelationId(startCorrelationId);
         auction.setEndTimerCorrelationId(endCorrelationId);
@@ -105,16 +106,16 @@ public class Auctions
     /**
      * Loads an auction from the snapshot
      *
-     * @param auctionId              the auction id
-     * @param createdByParticipantId the participant who created the auction
-     * @param startTime              the start time of the auction
-     * @param startTimerTimerCorrelationId the timer correlation id for the start timer
-     * @param endTime                the end time of the auction
-     * @param endTimerTimerCorrelationId the timer correlation id for the end timer
+     * @param auctionId                     the auction id
+     * @param createdByParticipantId        the participant who created the auction
+     * @param startTime                     the start time of the auction
+     * @param startTimerTimerCorrelationId  the timer correlation id for the start timer
+     * @param endTime                       the end time of the auction
+     * @param endTimerTimerCorrelationId    the timer correlation id for the end timer
      * @param removeTimerTimerCorrelationId the timer correlation id for the removal timer
-     * @param winningParticipantId   the winning participant id
-     * @param name                   the name of the auction
-     * @param description            the description
+     * @param winningParticipantId          the winning participant id
+     * @param name                          the name of the auction
+     * @param description                   the description
      */
     public void restoreAuction(
         final long auctionId,
@@ -128,8 +129,8 @@ public class Auctions
         final String name,
         final String description)
     {
-        final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description,
-            winningParticipantId);
+        final var auction = new Auction(
+            auctionId, createdByParticipantId, startTime, endTime, name, description, winningParticipantId);
         auctionList.add(auction);
 
         //Aeron Cluster is already snapshotting the cluster timer state, so we just need to rehydrate the internal
@@ -208,9 +209,9 @@ public class Auctions
 
     /**
      * Transitions an auction to the next state, if known and in the previously expected state
-     * @param auction the auction to transition
-     * @param expectedStatus the expected status
-     * @param newStatus the new status
+     * @param auction           the auction to transition
+     * @param expectedStatus    the expected status
+     * @param newStatus         the new status
      * @return true, if the transition was successful, false otherwise
      */
     private boolean transitionAuction(final Auction auction, final AuctionStatus expectedStatus,
@@ -219,8 +220,9 @@ public class Auctions
 
         if (auction.getAuctionStatus() != expectedStatus)
         {
-            LOGGER.error("Unknown auction id {}, cannot transition from {} to {}", auction.getAuctionId(),
-                expectedStatus, newStatus);
+            LOGGER.error(
+                "Unknown auction id {}, cannot transition from {} to {}", auction.getAuctionId(), expectedStatus,
+                newStatus);
             return false;
         }
         auction.setAuctionStatus(newStatus);
@@ -254,9 +256,9 @@ public class Auctions
 
         auction.setWinningBid(participantId, price, context.getClusterTime());
 
-        auctionResponder.onAuctionUpdated(correlationId, auction.getAuctionId(), auction.getAuctionStatus(),
-            auction.getCurrentPrice(), auction.getBidCount(), auction.getLastUpdateTime(),
-            auction.getWinningParticipantId());
+        auctionResponder.onAuctionUpdated(
+            correlationId, auction.getAuctionId(), auction.getAuctionStatus(), auction.getCurrentPrice(),
+            auction.getBidCount(), auction.getLastUpdateTime(), auction.getWinningParticipantId());
     }
 
     /**
@@ -369,9 +371,9 @@ public class Auctions
         if (optionalAuction.isPresent())
         {
             final var auction = optionalAuction.get();
-            auctionResponder.onAuctionStateUpdate(auction.getAuctionId(), auction.getAuctionStatus(),
-                auction.getCurrentPrice(), auction.getBidCount(), auction.getLastUpdateTime(),
-                auction.getWinningParticipantId());
+            auctionResponder.onAuctionStateUpdate(
+                auction.getAuctionId(), auction.getAuctionStatus(), auction.getCurrentPrice(), auction.getBidCount(),
+                auction.getLastUpdateTime(), auction.getWinningParticipantId());
         }
     }
 }

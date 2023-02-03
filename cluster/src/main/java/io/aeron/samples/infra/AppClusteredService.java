@@ -27,7 +27,7 @@ public class AppClusteredService implements ClusteredService
     private final SessionMessageContextImpl context = new SessionMessageContextImpl(clientSessions);
     private final Participants participants = new Participants();
     private final AuctionResponder auctionResponder = new AuctionResponderImpl(context);
-    private TimerManager timerManager = new TimerManager(context);
+    private final TimerManager timerManager = new TimerManager(context);
     private final Auctions auctions = new Auctions(context, participants, auctionResponder,
         timerManager);
     private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, context);
@@ -61,8 +61,13 @@ public class AppClusteredService implements ClusteredService
     }
 
     @Override
-    public void onSessionMessage(final ClientSession session, final long timestamp, final DirectBuffer buffer,
-        final int offset, final int length, final Header header)
+    public void onSessionMessage(
+        final ClientSession session,
+        final long timestamp,
+        final DirectBuffer buffer,
+        final int offset,
+        final int length,
+        final Header header)
     {
         context.setSessionContext(session, timestamp);
         sbeDemuxer.dispatch(buffer, offset, length);

@@ -45,8 +45,8 @@ public class ConnectCluster implements Runnable
         connectClusterEncoder.clusterHosts(hostnames);
         connectClusterEncoder.localhostName(localhost);
 
-        parent.offerClusterClientMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
-            connectClusterEncoder.encodedLength());
+        parent.offerClusterClientMessage(
+            buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + connectClusterEncoder.encodedLength());
     }
 
 

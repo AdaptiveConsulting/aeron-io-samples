@@ -30,8 +30,8 @@ public class DisconnectCluster implements Runnable
     {
         messageHeaderEncoder.wrap(buffer, 0);
         disconnectClusterEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
-        parent.offerClusterClientMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
-            disconnectClusterEncoder.encodedLength());
+        parent.offerClusterClientMessage(
+            buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + disconnectClusterEncoder.encodedLength());
     }
 
 
