@@ -13,6 +13,7 @@ apt-get install \
     bash \
     wget \
     iproute2 \
+    iputils-ping \
     less \
     dnsutils \
     procps \

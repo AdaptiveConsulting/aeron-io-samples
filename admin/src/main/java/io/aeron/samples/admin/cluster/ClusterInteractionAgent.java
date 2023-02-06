@@ -177,7 +177,8 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         {
             hostName = localHostName;
         }
-        final String egressChannel = "aeron:udp?endpoint=" + hostName + ":0";
+        final String egressChannel = "aeron:udp?endpoint=" + hostName + ":49152"; //todo add port argument
+        log("USING HOST" + egressChannel, AttributedStyle.RED);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
         mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context()
