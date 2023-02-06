@@ -46,8 +46,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          ports:
-          livenessProbe:
           volumeMounts:
             - mountPath: /dev/shm
               name: shm
