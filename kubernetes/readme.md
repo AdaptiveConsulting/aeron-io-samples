@@ -34,9 +34,12 @@ Step 7:
 - Run admin with `java --add-opens java.base/sun.nio.ch=ALL-UNNAMED -jar admin-uber.jar`
 
 Step 8: connect to the cluster from the admin container
+- getting the admin container internal IP: `kubectl describe pod aeron-io-sample-admin -n aeron-io-sample-admin` -- see `IP:`
+- getting the admin container external IP: from within the admin container, run `env | grep AERON_IO_SAMPLE_ADMIN_SERVICE_HOST`
 
 none of these will work (note the IPs are dynamic and you will need to look them up; `kubectl get endpoints -n aeron-io-sample-admin` helps):
 
 `connect hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=aeron-io-sample-admin.aeron-io-sample-admin.svc.cluster.local.`
 `connect hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=10.106.232.139`
-`connect hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=10.244.0.19`
+`connect hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=10.244.0.8`
+`connect hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=aeron-io-sample-admin-5bdb9c6c49-jfsl9.aeron-io-sample-admin.svc.cluster.local.`
