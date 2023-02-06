@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: aeron-io-sample
+  namespace: aeron-io-sample
+  labels:
+    app.kubernetes.io/name: aeron-io-sample
+    app.kubernetes.io/instance: aeron-io-sample
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 3
+  podManagementPolicy: Parallel
+  serviceName: aeron-io-sample
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aeron-io-sample
+      app.kubernetes.io/instance: aeron-io-sample
+  template:
+    metadata:
+      annotations:
+        {}
+      labels:
+        app.kubernetes.io/name: aeron-io-sample
+        app.kubernetes.io/instance: aeron-io-sample
+    spec:
+      serviceAccountName: aeron-io-sample
+      volumes:
+        - emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+          name: shm
+      containers:
+        - name: aeron-io-sample
+          image: "cluster:latest"
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+          args:
+            - -c
+            - /root/jar/entrypoint.sh -Dnode.id=${POD_NAME##*-}
+          env:
+            - name: CLUSTER_ADDRESSES
+              value: aeron-io-sample-0.aeron-io-sample.aeron-io-sample.svc.cluster.local.,aeron-io-sample-1.aeron-io-sample.aeron-io-sample.svc.cluster.local.,aeron-io-sample-2.aeron-io-sample.aeron-io-sample.svc.cluster.local.
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          ports:
+          livenessProbe:
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: shm
