@@ -12,6 +12,7 @@ apt-get install \
     --no-install-recommends \
     bash \
     wget \
+    curl \
     iproute2 \
     iputils-ping \
     less \
@@ -24,5 +25,3 @@ mkdir /root/jar
 
 wget https://repo1.maven.org/maven2/io/aeron/aeron-all/1.40.0/aeron-all-1.40.0.jar -P /root/aeron/
 wget https://repo1.maven.org/maven2/io/aeron/aeron-agent/1.40.0/aeron-agent-1.40.0.jar -P /root/aeron/
-
-apt-get remove wget --quiet --assume-yes
