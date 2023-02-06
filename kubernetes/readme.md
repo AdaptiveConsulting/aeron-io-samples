@@ -25,8 +25,8 @@ Step 5:
 Step 6:
 - Apply the kubernetes scripts to deploy the cluster and admin by running  `kubectl apply -f .` in both the cluster and admin folders.
 
-The cluster and admin should now be running within the `aeron-io-sample` namespace.
-You can check the status of the pods with `kubectl get pods -n aeron-io-sample` and the logs with `kubectl logs aeron-io-sample-1 -n aeron-io-sample` (using cluster node 1 as the example).
+The cluster and admin should now be running within the `aeron-io-sample-cluster` and `aeron-io-sample-admin` namespaces respectively.
+You can check the status of the pods with `kubectl get pods -n aeron-io-sample-cluster` and `kubectl get pods -n aeron-io-sample-admin` and the logs with `kubectl logs aeron-io-sample-cluster-1 -n aeron-io-sample-cluster` (using cluster node 1 as the example).
 
 Step 7:
 - Find the admin container's name with `kubectl get pods -n aeron-io-sample-admin`
