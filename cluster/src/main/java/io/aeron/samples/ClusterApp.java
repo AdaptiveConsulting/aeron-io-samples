@@ -31,22 +31,6 @@ public class ClusterApp
      */
     public static void main(final String[] args)
     {
-        final Map<String, String> envMap = System.getenv();
-
-        LOGGER.info("----------------------");
-        LOGGER.info("Environment variables:");
-        LOGGER.info("----------------------");
-        for (final String envName : envMap.keySet())
-        {
-            LOGGER.info("{} = {}", envName, envMap.get(envName));
-        }
-
-        LOGGER.info("----------------------");
-        LOGGER.info("System Props:");
-        LOGGER.info("----------------------");
-        final Properties properties = System.getProperties();
-        properties.forEach((k, v) -> LOGGER.info("{}:{}", k, v));
-
         final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
         String portBaseString = System.getenv("CLUSTER_PORT_BASE");
         if (null == portBaseString || portBaseString.isEmpty())
