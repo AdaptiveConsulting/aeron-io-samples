@@ -11,7 +11,7 @@ import io.aeron.samples.domain.auctions.AuctionStatus;
 /**
  * Interface for responding to auction requests, encapsulating the SBE encoding and Aeron interactions
  */
-public interface AuctionResponder
+public interface ClusterClientResponder
 {
 
     /**
@@ -84,4 +84,10 @@ public interface AuctionResponder
         int bidCount,
         long lastUpdateTime,
         long winningParticipantId);
+
+    /**
+     * Acknowledges that a participant has been added to the client using the correlation they provided
+     * @param correlationId the correlation id provided by the client
+     */
+    void acknowledgeParticipantAdded(String correlationId);
 }

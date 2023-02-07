@@ -10,6 +10,7 @@ import io.aeron.logbuffer.Header;
 import io.aeron.samples.cluster.protocol.AddAuctionBidCommandResultDecoder;
 import io.aeron.samples.cluster.protocol.AddAuctionBidResult;
 import io.aeron.samples.cluster.protocol.AddAuctionResult;
+import io.aeron.samples.cluster.protocol.AddParticipantCommandResultDecoder;
 import io.aeron.samples.cluster.protocol.AuctionUpdateEventDecoder;
 import io.aeron.samples.cluster.protocol.CreateAuctionCommandResultDecoder;
 import io.aeron.samples.cluster.protocol.MessageHeaderDecoder;
@@ -53,6 +54,10 @@ public class AdminClientEgressListener implements EgressListener
 
         switch (messageHeaderDecoder.templateId())
         {
+            case AddParticipantCommandResultDecoder.TEMPLATE_ID ->
+            {
+                log("Participant added", AttributedStyle.GREEN);
+            }
             case AuctionUpdateEventDecoder.TEMPLATE_ID ->
             {
                 auctionUpdateEventDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);

@@ -5,6 +5,7 @@
 package io.aeron.samples.infra;
 
 import io.aeron.samples.cluster.protocol.AddAuctionBidCommandResultEncoder;
+import io.aeron.samples.cluster.protocol.AddParticipantCommandResultEncoder;
 import io.aeron.samples.cluster.protocol.AuctionUpdateEventEncoder;
 import io.aeron.samples.cluster.protocol.CreateAuctionCommandResultEncoder;
 import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
@@ -17,18 +18,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of the {@link AuctionResponder} interface which returns SBE encoded results to the client
+ * Implementation of the {@link ClusterClientResponder} interface which returns SBE encoded results to the client
  */
-public class AuctionResponderImpl implements AuctionResponder
+public class ClusterClientResponderImpl implements ClusterClientResponder
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuctionResponderImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClusterClientResponderImpl.class);
     private final SessionMessageContextImpl context;
     private final CreateAuctionCommandResultEncoder createAuctionResultEncoder =
         new CreateAuctionCommandResultEncoder();
     private final NewAuctionEventEncoder newAuctionEventEncoder = new NewAuctionEventEncoder();
     private final AddAuctionBidCommandResultEncoder addAuctionBidResultEncoder =
         new AddAuctionBidCommandResultEncoder();
-
+    private final AddParticipantCommandResultEncoder addParticipantResultEncoder =
+        new AddParticipantCommandResultEncoder();
     private final AuctionUpdateEventEncoder auctionUpdateEncoder = new AuctionUpdateEventEncoder();
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
     private final ExpandableDirectByteBuffer buffer = new ExpandableDirectByteBuffer(1024);
@@ -38,7 +40,7 @@ public class AuctionResponderImpl implements AuctionResponder
      *
      * @param context the context to use in order to interact with clients
      */
-    public AuctionResponderImpl(final SessionMessageContextImpl context)
+    public ClusterClientResponderImpl(final SessionMessageContextImpl context)
     {
         this.context = context;
     }
@@ -152,6 +154,15 @@ public class AuctionResponderImpl implements AuctionResponder
         auctionUpdateEncoder.lastUpdate(lastUpdateTime);
         auctionUpdateEncoder.winningParticipantId(winningParticipantId);
         context.broadcast(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + auctionUpdateEncoder.encodedLength());
+    }
+
+    @Override
+    public void acknowledgeParticipantAdded(final String correlationId)
+    {
+        messageHeaderEncoder.wrap(buffer, 0);
+        addParticipantResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        addParticipantResultEncoder.correlationId(correlationId);
+        context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + addParticipantResultEncoder.encodedLength());
     }
 
     private io.aeron.samples.cluster.protocol.AuctionStatus mapAuctionStatus(final AuctionStatus status)

@@ -4,6 +4,7 @@
 
 package io.aeron.samples.domain.participants;
 
+import io.aeron.samples.infra.ClusterClientResponder;
 import org.agrona.collections.Long2ObjectHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +19,39 @@ public class Participants
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Participants.class);
     private final Long2ObjectHashMap<Participant> participantMap = new Long2ObjectHashMap<>();
+    private final ClusterClientResponder clusterClientResponder;
+
+    /**
+     * Constructor
+     * @param clusterClientResponder the cluster client responder
+     */
+    public Participants(final ClusterClientResponder clusterClientResponder)
+    {
+        this.clusterClientResponder = clusterClientResponder;
+    }
 
     /**
      * Adds a participant to the cluster
      * @param participantId the id of the participant
      * @param name the name of the participant
+     * @param correlationId the correlation id of the request
      */
-    public void addParticipant(final long participantId, final String name)
+    public void addParticipant(final long participantId, final String correlationId, final String name)
     {
         LOGGER.info("Adding participant {} with name {}", participantId, name);
+        final var participant = new Participant(participantId, name);
+        participantMap.put(participantId, participant);
+        clusterClientResponder.acknowledgeParticipantAdded(correlationId);
+    }
+
+    /**
+     * Restores a participant to the cluster
+     * @param participantId the id of the participant
+     * @param name the name of the participant
+     */
+    public void restoreParticipant(final long participantId, final String name)
+    {
+        LOGGER.info("Restoring participant {} with name {}", participantId, name);
         final var participant = new Participant(participantId, name);
         participantMap.put(participantId, participant);
     }

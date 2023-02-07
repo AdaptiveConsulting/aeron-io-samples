@@ -62,7 +62,7 @@ public class SbeDemuxer
             {
                 addParticipantDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
                 participants.addParticipant(addParticipantDecoder.participantId(),
-                    addParticipantDecoder.name());
+                    addParticipantDecoder.correlationId(), addParticipantDecoder.name());
             }
             case CreateAuctionCommandDecoder.TEMPLATE_ID ->
             {
