@@ -6,6 +6,8 @@ These assume that you are running either on an Intel or Apple Silicon Mac with D
 
 ### MiniKube
 
+
+
 Step 1:
 - install Docker Desktop
 - allocate at least 6 cores and 15GB of RAM to Docker Desktop
@@ -20,7 +22,8 @@ Run `./minikube-run.sh` to build, deploy and run the cluster and admin.
 
 ### Docker Desktop with Kubernetes enabled
 
-Note: tested with Kubernetes `1.24.5`
+> **Note**: tested with Kubernetes `1.24.5` - there is no way to override the version of Kubernetes used by Docker Desktop. Minikube is recommended.
+
 As with minikube, allocate at least 6 cores and 15GB of RAM to Docker Desktop.
 
 Run `./docker-desktop-k8s-run.sh` to build, deploy and run the cluster and admin.
