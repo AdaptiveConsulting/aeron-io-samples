@@ -32,68 +32,19 @@ public class ClusterApp
      */
     public static void main(final String[] args)
     {
-        LOGGER.info("Starting ClusterApp...");
-        if (applyDnsDelay())
-        {
-            LOGGER.info("Waiting 5 seconds for DNS to be registered...");
-            quietSleep(5000);
-        }
-
         final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
-        String portBaseString = System.getenv("CLUSTER_PORT_BASE");
-        if (null == portBaseString || portBaseString.isEmpty())
-        {
-            portBaseString = System.getProperty("port.base", "9000");
-        }
-        String clusterNode = System.getenv("CLUSTER_NODE");
-        if (null == clusterNode || clusterNode.isEmpty())
-        {
-            clusterNode = System.getProperty("node.id", "0");
-        }
-        String clusterAddresses = System.getenv("CLUSTER_ADDRESSES");
-        if (null == clusterAddresses || clusterAddresses.isEmpty())
-        {
-            clusterAddresses = System.getProperty("cluster.addresses", "localhost");
-        }
-        LOGGER.info("CLUSTER_ADDRESSES: {}", clusterAddresses);
-        LOGGER.info("CLUSTER_NODE: {}", clusterNode);
-        LOGGER.info("CLUSTER_PORT_BASE: {}", portBaseString);
-
-        final int portBase = parseInt(portBaseString);
-        final int nodeId = parseInt(clusterNode);
-        final String hosts = clusterAddresses;
+        final int portBase = getBasePort();
+        final int nodeId = getClusterNode();
+        final String hosts = getClusterAddresses();
 
         LOGGER.info("Starting cluster node {} on base port {} with hosts {}...", nodeId, portBase, hosts);
-        final String[] hostArray = hosts.split(",");
-        final ClusterConfig clusterConfig = ClusterConfig.create(
-            nodeId, List.of(hostArray), List.of(hostArray), portBase,
+
+        final List<String> hostAddresses = List.of(hosts.split(","));
+        final ClusterConfig clusterConfig = ClusterConfig.create(nodeId, hostAddresses, hostAddresses, portBase,
             new AppClusteredService());
         clusterConfig.consensusModuleContext().ingressChannel("aeron:udp");
 
-        //loop until cluster addresses can resolve self, or timeout at 1 minute
-        final long endTime = SystemEpochClock.INSTANCE.time() + 60000;
-        java.security.Security.setProperty("networkaddress.cache.ttl", "0");
-        boolean resolved = false;
-        while (!resolved)
-        {
-            if (SystemEpochClock.INSTANCE.time() > endTime)
-            {
-                LOGGER.error("cannot resolve name {}, exiting", hostArray[nodeId]);
-                System.exit(-1);
-            }
-
-            try
-            {
-                final InetAddress byName = InetAddress.getByName(hostArray[nodeId]);
-                LOGGER.info("resolved name {} to {}", hostArray[nodeId], byName.getHostAddress());
-                resolved = true;
-            }
-            catch (final UnknownHostException e)
-            {
-                LOGGER.warn("cannot yet resolve name {}, retrying in 3 seconds", hostArray[nodeId]);
-                quietSleep(3000);
-            }
-        }
+        awaitDnsResolution(hostAddresses, nodeId);
 
         try (
             ClusteredMediaDriver ignored = ClusteredMediaDriver.launch(
@@ -106,6 +57,92 @@ public class ClusterApp
             LOGGER.info("Started Cluster Node...");
             barrier.await();
             LOGGER.info("Exiting");
+        }
+    }
+
+    /**
+     * Read the cluster addresses from the environment variable CLUSTER_ADDRESSES or the
+     * system property cluster.addresses
+     * @return cluster addresses
+     */
+    private static String getClusterAddresses()
+    {
+        String clusterAddresses = System.getenv("CLUSTER_ADDRESSES");
+        if (null == clusterAddresses || clusterAddresses.isEmpty())
+        {
+            clusterAddresses = System.getProperty("cluster.addresses", "localhost");
+        }
+        LOGGER.info("CLUSTER_ADDRESSES: {}", clusterAddresses);
+        return clusterAddresses;
+    }
+
+    /**
+     * Get the cluster node id
+     * @return cluster node id, default 0
+     */
+    private static int getClusterNode()
+    {
+        String clusterNode = System.getenv("CLUSTER_NODE");
+        if (null == clusterNode || clusterNode.isEmpty())
+        {
+            clusterNode = System.getProperty("node.id", "0");
+        }
+        LOGGER.info("CLUSTER_NODE: {}", clusterNode);
+        return parseInt(clusterNode);
+    }
+
+    /**
+     * Get the base port for the cluster configuration
+     * @return base port, default 9000
+     */
+    private static int getBasePort()
+    {
+        String portBaseString = System.getenv("CLUSTER_PORT_BASE");
+        if (null == portBaseString || portBaseString.isEmpty())
+        {
+            portBaseString = System.getProperty("port.base", "9000");
+        }
+        LOGGER.info("CLUSTER_PORT_BASE: {}", portBaseString);
+        return parseInt(portBaseString);
+    }
+
+    /**
+     * Await DNS resolution of self. Under Kubernetes, this can take a while.
+     * @param hostArray host array
+     * @param nodeId node id
+     */
+    private static void awaitDnsResolution(final List<String> hostArray, final int nodeId)
+    {
+        if (applyDnsDelay())
+        {
+            LOGGER.info("Waiting 5 seconds for DNS to be registered...");
+            quietSleep(5000);
+        }
+
+        final long endTime = SystemEpochClock.INSTANCE.time() + 60000;
+        final String nodeName = hostArray.get(nodeId);
+        java.security.Security.setProperty("networkaddress.cache.ttl", "0");
+
+        boolean resolved = false;
+        while (!resolved)
+        {
+            if (SystemEpochClock.INSTANCE.time() > endTime)
+            {
+                LOGGER.error("cannot resolve name {}, exiting", nodeName);
+                System.exit(-1);
+            }
+
+            try
+            {
+                final InetAddress byName = InetAddress.getByName(nodeName);
+                LOGGER.info("resolved name {} to {}", nodeName, byName.getHostAddress());
+                resolved = true;
+            }
+            catch (final UnknownHostException e)
+            {
+                LOGGER.warn("cannot yet resolve name {}, retrying in 3 seconds", nodeName);
+                quietSleep(3000);
+            }
         }
     }
 
