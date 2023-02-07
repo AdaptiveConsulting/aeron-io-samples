@@ -44,5 +44,4 @@ public class AddParticipant implements Runnable
             addParticipantCommandEncoder.encodedLength());
     }
 
-
 }
