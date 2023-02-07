@@ -9,6 +9,8 @@ import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
 import org.agrona.ExpandableArrayBuffer;
 import picocli.CommandLine;
 
+import java.util.UUID;
+
 /**
  * Adds a participant to the cluster
  */
@@ -36,10 +38,10 @@ public class AddParticipant implements Runnable
         messageHeaderEncoder.wrap(buffer, 0);
         addParticipantCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         addParticipantCommandEncoder.participantId(participantId);
+        addParticipantCommandEncoder.correlationId(UUID.randomUUID().toString());
         addParticipantCommandEncoder.name(participantName);
         parent.offerClusterMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
             addParticipantCommandEncoder.encodedLength());
     }
-
 
 }

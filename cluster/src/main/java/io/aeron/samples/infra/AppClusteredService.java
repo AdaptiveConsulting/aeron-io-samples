@@ -25,10 +25,10 @@ public class AppClusteredService implements ClusteredService
     private static final Logger LOGGER = LoggerFactory.getLogger(AppClusteredService.class);
     private final ClientSessions clientSessions = new ClientSessions();
     private final SessionMessageContextImpl context = new SessionMessageContextImpl(clientSessions);
-    private final Participants participants = new Participants();
-    private final AuctionResponder auctionResponder = new AuctionResponderImpl(context);
+    private final ClusterClientResponder clusterClientResponder = new ClusterClientResponderImpl(context);
     private final TimerManager timerManager = new TimerManager(context);
-    private final Auctions auctions = new Auctions(context, participants, auctionResponder,
+    private final Participants participants = new Participants(clusterClientResponder);
+    private final Auctions auctions = new Auctions(context, participants, clusterClientResponder,
         timerManager);
     private final SnapshotManager snapshotManager = new SnapshotManager(auctions, participants, context);
     private final SbeDemuxer sbeDemuxer = new SbeDemuxer(participants, auctions);

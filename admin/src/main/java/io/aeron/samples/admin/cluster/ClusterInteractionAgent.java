@@ -19,9 +19,9 @@ import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedStyle;
 
-import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_CLIENT_CONTROL;
 import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
@@ -36,6 +36,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
     private long lastHeartbeatTime = Long.MIN_VALUE;
     private final OneToOneRingBuffer adminClusterComms;
+    private final AtomicBoolean runningFlag;
     private final MessageHeaderDecoder messageHeaderDecoder = new MessageHeaderDecoder();
     private final ConnectClusterDecoder connectClusterDecoder = new ConnectClusterDecoder();
     private MediaDriver mediaDriver;
@@ -46,10 +47,14 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     /**
      * Creates a new agent to interact with the cluster
      * @param adminClusterChannel the channel to send messages to the cluster from the REPL
+     * @param runningFlag the flag to indicate if the REPL is still running
      */
-    public ClusterInteractionAgent(final OneToOneRingBuffer adminClusterChannel)
+    public ClusterInteractionAgent(
+        final OneToOneRingBuffer adminClusterChannel,
+        final AtomicBoolean runningFlag)
     {
         this.adminClusterComms = adminClusterChannel;
+        this.runningFlag = runningFlag;
     }
 
     @Override
@@ -117,8 +122,8 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         {
             connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
             log("Connecting to cluster", AttributedStyle.WHITE);
-            connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.clusterHosts(),
-                connectClusterDecoder.localhostName());
+            connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.port(),
+                connectClusterDecoder.clusterHosts(), connectClusterDecoder.localhostName());
             connectionState = ConnectionState.CONNECTED;
             log("Cluster connected", AttributedStyle.GREEN);
         }
@@ -151,38 +156,28 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
      * Connects to the cluster
      *
      * @param basePort base port to use
+     * @param port the port to use
      * @param clusterHosts list of cluster hosts
      * @param localHostName if empty, will be looked up
      */
-    private void connectCluster(final int basePort, final String clusterHosts, final String localHostName)
+    private void connectCluster(
+        final int basePort,
+        final int port,
+        final String clusterHosts,
+        final String localHostName)
     {
         final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
         final String ingressEndpoints = ClusterConfig.ingressEndpoints(
             hostnames, basePort, ClusterConfig.CLIENT_FACING_PORT_OFFSET);
         log("Connecting to cluster hosts using ingress endpoints: " + ingressEndpoints, AttributedStyle.WHITE);
-        String hostName = "localhost";
-        if (localHostName.isEmpty() || localHostName.isBlank())
-        {
-            try
-            {
-                hostName = InetAddress.getLocalHost().getHostAddress();
-                log("Using hostname: " + hostName, AttributedStyle.WHITE);
-            }
-            catch (final Exception e)
-            {
-                log("Unable to get hostname", AttributedStyle.RED);
-            }
-        }
-        else
-        {
-            hostName = localHostName;
-        }
-        final String egressChannel = "aeron:udp?endpoint=" + hostName + ":0";
+        final String egressChannel = "aeron:udp?endpoint=" + localHostName + ":" + port;
+        log("Egress channel is set to: " + egressChannel, AttributedStyle.WHITE);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
-        mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context()
+        mediaDriver = MediaDriver.launch(new MediaDriver.Context()
             .threadingMode(ThreadingMode.SHARED)
             .dirDeleteOnStart(true)
+            .errorHandler(this::logError)
             .dirDeleteOnShutdown(true));
         aeronCluster = AeronCluster.connect(
             new AeronCluster.Context()
@@ -190,7 +185,13 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
                 .egressChannel(egressChannel)
                 .ingressChannel(INGRESS_CHANNEL)
                 .ingressEndpoints(ingressEndpoints)
+                .errorHandler(this::logError)
                 .aeronDirectoryName(mediaDriver.aeronDirectoryName()));
+    }
+
+    private void logError(final Throwable throwable)
+    {
+        log("Error: " + throwable.getMessage(), AttributedStyle.RED);
     }
 
     /**
@@ -225,5 +226,6 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         {
             mediaDriver.close();
         }
+        runningFlag.set(false);
     }
 }

@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aeron-io-sample-admin
+  namespace: aeron-io-sample-admin
+  labels:
+    app.kubernetes.io/name: aeron-io-sample-admin
+    app.kubernetes.io/instance: aeron-io-sample-admin
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: aeron-io-sample-admin
+    app.kubernetes.io/instance: aeron-io-sample-admin

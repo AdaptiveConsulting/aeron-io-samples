@@ -1,11 +1,13 @@
+# Admin
+
+## Running Admin outside of Kubernetes or Docker
+
 > **Note**: You will need a running cluster for the Admin to connect to. `./gradlew runSingleNodeCluster` will start a cluster.
 
-## Running Admin
-
-First, you will need to build the uberJar. You can do this via gradle:
+First, you will need to build the uber jar. You can do this via gradle in the project root directory:
 
 ```bash
-./gradlew uberJar
+./gradlew
 ```
 
 This should output an Admin uber jar in:
@@ -20,7 +22,7 @@ java --add-opens java.base/sun.nio.ch=ALL-UNNAMED -jar admin-uber.jar
 
 Note that the admin is a terminal application, and cannot run inside other tools such as IntelliJ terminal or via Gradle run.
 
-## Commands
+## Admin Commands
 
 You can obtain per command help by typing `help` followed by the command name.
 

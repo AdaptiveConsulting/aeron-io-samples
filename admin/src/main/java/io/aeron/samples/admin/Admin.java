@@ -6,6 +6,7 @@ package io.aeron.samples.admin;
 
 import io.aeron.samples.admin.cli.CliCommands;
 import io.aeron.samples.admin.cluster.ClusterInteractionAgent;
+import org.agrona.CloseHelper;
 import org.agrona.concurrent.AgentRunner;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.SleepingMillisIdleStrategy;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
@@ -48,11 +50,13 @@ public class Admin
     public static void main(final String[] args) throws IOException
     {
         //start the agent used for cluster interaction
+        final AtomicBoolean running = new AtomicBoolean(true);
         final IdleStrategy idleStrategy = new SleepingMillisIdleStrategy();
         final UnsafeBuffer adminClusterBuffer = new UnsafeBuffer(ByteBuffer.allocate(8192 + TRAILER_LENGTH));
         final OneToOneRingBuffer adminClusterChannel = new OneToOneRingBuffer(adminClusterBuffer);
 
-        final ClusterInteractionAgent clusterInteractionAgent = new ClusterInteractionAgent(adminClusterChannel);
+        final ClusterInteractionAgent clusterInteractionAgent = new ClusterInteractionAgent(adminClusterChannel,
+            running);
         final AgentRunner clusterInteractionAgentRunner = new AgentRunner(idleStrategy, Throwable::printStackTrace,
             null, clusterInteractionAgent);
         AgentRunner.startOnThread(clusterInteractionAgentRunner);
@@ -91,12 +95,17 @@ public class Admin
             terminal.writer().println("-------------------------------------------------");
             terminal.writer().println("Useful commands: help, exit");
             terminal.writer().println("");
-            while (true)
+            while (running.get())
             {
                 try
                 {
                     systemRegistry.cleanUp();
                     line = reader.readLine(prompt, null, (MaskingCallback)null, null);
+                    if ("exit".equalsIgnoreCase(line))
+                    {
+                        running.set(false);
+                        CloseHelper.quietClose(clusterInteractionAgentRunner);
+                    }
                     systemRegistry.execute(line);
                 }
                 catch (final UserInterruptException e)

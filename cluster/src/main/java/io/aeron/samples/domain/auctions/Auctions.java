@@ -5,7 +5,7 @@
 package io.aeron.samples.domain.auctions;
 
 import io.aeron.samples.domain.participants.Participants;
-import io.aeron.samples.infra.AuctionResponder;
+import io.aeron.samples.infra.ClusterClientResponder;
 import io.aeron.samples.infra.SessionMessageContext;
 import io.aeron.samples.infra.TimerManager;
 import org.agrona.concurrent.SnowflakeIdGenerator;
@@ -28,7 +28,7 @@ public class Auctions
     private static final long MINIMUM_DURATION = TimeUnit.SECONDS.toMillis(30);
     private static final long REMOVAL_TIMER_DURATION = TimeUnit.SECONDS.toMillis(60);
     private final SessionMessageContext context;
-    private final AuctionResponder auctionResponder;
+    private final ClusterClientResponder clusterClientResponder;
     private final TimerManager timerManager;
     private final Participants participants;
     private final List<Auction> auctionList;
@@ -39,17 +39,17 @@ public class Auctions
      *
      * @param context          the session message context
      * @param participants     the participant data
-     * @param auctionResponder the object used to respond to auction actions
+     * @param clusterClientResponder the object used to respond to auction actions
      * @param timerManager     the timer manager
      */
     public Auctions(
         final SessionMessageContext context,
         final Participants participants,
-        final AuctionResponder auctionResponder,
+        final ClusterClientResponder clusterClientResponder,
         final TimerManager timerManager)
     {
         this.context = context;
-        this.auctionResponder = auctionResponder;
+        this.clusterClientResponder = clusterClientResponder;
         this.timerManager = timerManager;
         this.auctionList = new ArrayList<>();
         this.participants = participants;
@@ -79,7 +79,7 @@ public class Auctions
 
         if (result != AddAuctionResult.SUCCESS)
         {
-            auctionResponder.rejectAddAuction(correlationId, result);
+            clusterClientResponder.rejectAddAuction(correlationId, result);
             return;
         }
 
@@ -91,7 +91,7 @@ public class Auctions
             -1L);
         auctionList.add(auction);
 
-        auctionResponder.onAuctionAdded(correlationId, auctionId, result, startTime, endTime, name, description);
+        clusterClientResponder.onAuctionAdded(correlationId, auctionId, result, startTime, endTime, name, description);
 
         final var startCorrelationId = timerManager.scheduleTimer(startTime, () -> openAuction(auctionId));
         final var endCorrelationId = timerManager.scheduleTimer(endTime, () -> closeAuction(auctionId));
@@ -244,7 +244,7 @@ public class Auctions
         final var optionalAuction = getAuctionById(auctionId);
         if (optionalAuction.isEmpty())
         {
-            auctionResponder.rejectAddBid(correlationId, auctionId, AddAuctionBidResult.UNKNOWN_AUCTION);
+            clusterClientResponder.rejectAddBid(correlationId, auctionId, AddAuctionBidResult.UNKNOWN_AUCTION);
             return;
         }
 
@@ -252,13 +252,13 @@ public class Auctions
         final var validationResult = validateBid(auction, participantId, price);
         if (validationResult != AddAuctionBidResult.SUCCESS)
         {
-            auctionResponder.rejectAddBid(correlationId, auctionId, validationResult);
+            clusterClientResponder.rejectAddBid(correlationId, auctionId, validationResult);
             return;
         }
 
         auction.setWinningBid(participantId, price, context.getClusterTime());
 
-        auctionResponder.onAuctionUpdated(
+        clusterClientResponder.onAuctionUpdated(
             correlationId, auction.getAuctionId(), auction.getAuctionStatus(), auction.getCurrentPrice(),
             auction.getBidCount(), auction.getLastUpdateTime(), auction.getWinningParticipantId());
     }
@@ -373,7 +373,7 @@ public class Auctions
         if (optionalAuction.isPresent())
         {
             final var auction = optionalAuction.get();
-            auctionResponder.onAuctionStateUpdate(
+            clusterClientResponder.onAuctionStateUpdate(
                 auction.getAuctionId(), auction.getAuctionStatus(), auction.getCurrentPrice(), auction.getBidCount(),
                 auction.getLastUpdateTime(), auction.getWinningParticipantId());
         }

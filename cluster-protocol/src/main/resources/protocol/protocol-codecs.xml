@@ -63,11 +63,18 @@
                  id="1"
                  description="Add a new Auction Participant">
         <field name="participantId" id="1" type="int64"/>
-        <data name="name" id="2" type="varUtf8Encoding"/>
+        <field name="correlationId" id="2" type="uuidString"/>
+        <data name="name" id="3" type="varUtf8Encoding"/>
+    </sbe:message>
+
+    <sbe:message name="AddParticipantCommandResult"
+                 id="2"
+                 description="Add a new Auction Participant">
+        <field name="correlationId" id="1" type="uuidString"/>
     </sbe:message>
 
     <sbe:message name="ParticipantSnapshot"
-                 id="2"
+                 id="3"
                  description="Snapshot storage for Participants in the system">
         <field name="participantId" id="1" type="int64"/>
         <data name="name" id="2" type="varUtf8Encoding"/>

@@ -132,8 +132,7 @@ public class SnapshotManager implements FragmentHandler
             case ParticipantSnapshotDecoder.TEMPLATE_ID ->
             {
                 participantDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
-                participants.addParticipant(participantDecoder.participantId(),
-                    participantDecoder.name());
+                participants.restoreParticipant(participantDecoder.participantId(), participantDecoder.name());
             }
             case AuctionSnapshotDecoder.TEMPLATE_ID ->
             {
