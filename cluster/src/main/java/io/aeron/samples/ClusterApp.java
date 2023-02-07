@@ -13,7 +13,6 @@ import org.agrona.concurrent.SystemEpochClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -36,7 +35,7 @@ public class ClusterApp
         LOGGER.info("Starting ClusterApp...");
         if (applyDnsDelay())
         {
-            LOGGER.info("Waiting 5 seconds for DNS to be registered ready start...");
+            LOGGER.info("Waiting 5 seconds for DNS to be registered...");
             quietSleep(5000);
         }
 
@@ -85,14 +84,14 @@ public class ClusterApp
 
             try
             {
-                final InetAddress byName = Inet4Address.getByName(hostArray[nodeId]);
+                final InetAddress byName = InetAddress.getByName(hostArray[nodeId]);
                 LOGGER.info("resolved name {} to {}", hostArray[nodeId], byName.getHostAddress());
                 resolved = true;
             }
             catch (final UnknownHostException e)
             {
-                LOGGER.warn("cannot yet resolve name {}, retrying in 5 seconds", hostArray[nodeId]);
-                quietSleep(5000);
+                LOGGER.warn("cannot yet resolve name {}, retrying in 3 seconds", hostArray[nodeId]);
+                quietSleep(3000);
             }
         }
 
@@ -123,7 +122,7 @@ public class ClusterApp
         }
         catch (final InterruptedException ex)
         {
-            throw new RuntimeException(ex);
+            LOGGER.warn("Interrupted while sleeping");
         }
     }
 

@@ -11,9 +11,9 @@ echo "🐳  building cluster image..."
 cd ../cluster || exit
 docker build . -t cluster --no-cache
 cd .. || exit
-echo "🔥  removing old kubernetes namespaces..."
-kubectl delete ns aeron-io-sample-admin
+echo "🔥  removing old kubernetes namespaces (if they exist)..."
 kubectl delete ns aeron-io-sample-cluster
+kubectl delete ns aeron-io-sample-admin
 echo "📷  loading images..."
 minikube image load admin:latest
 minikube image load cluster:latest

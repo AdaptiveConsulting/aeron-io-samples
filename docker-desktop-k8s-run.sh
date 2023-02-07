@@ -11,7 +11,7 @@ echo "🐳  building cluster image..."
 cd ../cluster || exit
 docker build . -t cluster --no-cache
 cd .. || exit
-echo "🔥  removing old kubernetes namespaces..."
+echo "🔥  removing old kubernetes namespaces (if they exist)..."
 kubectl delete ns aeron-io-sample-admin
 kubectl delete ns aeron-io-sample-cluster
 echo "▶️  applying admin..."
