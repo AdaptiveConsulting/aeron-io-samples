@@ -5,11 +5,12 @@
 echo "🏛️  building Java..."
 ./gradlew
 echo "🐳️  building admin docker image..."
-cd admin
+cd admin || exit
 docker build . -t admin --no-cache
 echo "🐳  building cluster image..."
-cd ../cluster
+cd ../cluster || exit
 docker build . -t cluster --no-cache
+cd .. || exit
 echo "🔥  removing old kubernetes namespaces..."
 kubectl delete ns aeron-io-sample-admin
 kubectl delete ns aeron-io-sample-cluster
@@ -17,8 +18,8 @@ echo "📷  loading images..."
 minikube image load admin:latest
 minikube image load cluster:latest
 echo "▶️  applying admin..."
-cd ./kubernetes/admin
+cd ./kubernetes/admin || exit
 kubectl apply -f .
 echo "▶️  applying cluster..."
-cd ../cluster
+cd ../cluster || exit
 kubectl apply -f .

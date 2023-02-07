@@ -40,6 +40,8 @@ spec:
             - -c
             - /root/jar/entrypoint.sh -Dnode.id=${POD_NAME##*-}
           env:
+            - name: DNS_DELAY
+              value: "true"
             - name: CLUSTER_ADDRESSES
               value: aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.
             - name: POD_NAME

@@ -33,6 +33,13 @@ public class ClusterApp
      */
     public static void main(final String[] args)
     {
+        LOGGER.info("Starting ClusterApp...");
+        if (applyDnsDelay())
+        {
+            LOGGER.info("Waiting 5 seconds for DNS to be registered ready start...");
+            quietSleep(5000);
+        }
+
         final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
         String portBaseString = System.getenv("CLUSTER_PORT_BASE");
         if (null == portBaseString || portBaseString.isEmpty())
@@ -57,7 +64,7 @@ public class ClusterApp
         final int nodeId = parseInt(clusterNode);
         final String hosts = clusterAddresses;
 
-        LOGGER.info("Starting Cluster Node {} on base port {} with hosts {}...", nodeId, portBase, hosts);
+        LOGGER.info("Starting cluster node {} on base port {} with hosts {}...", nodeId, portBase, hosts);
         final String[] hostArray = hosts.split(",");
         final ClusterConfig clusterConfig = ClusterConfig.create(
             nodeId, List.of(hostArray), List.of(hostArray), portBase,
@@ -118,5 +125,19 @@ public class ClusterApp
         {
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * Apply DNS delay
+     * @return true if DNS delay should be applied
+     */
+    private static boolean applyDnsDelay()
+    {
+        final String dnsDelay = System.getenv("DNS_DELAY");
+        if (null == dnsDelay || dnsDelay.isEmpty())
+        {
+            return false;
+        }
+        return Boolean.parseBoolean(dnsDelay);
     }
 }
