@@ -22,6 +22,11 @@ spec:
         app.kubernetes.io/instance: aeron-io-sample-admin
     spec:
       serviceAccountName: aeron-io-sample-admin
+      volumes:
+        - emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+          name: shm
       containers:
         - name: aeron-io-sample-admin
           image: "admin:latest"
@@ -30,3 +35,6 @@ spec:
             - name: aeron
               containerPort: 49152
               protocol: UDP
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: shm

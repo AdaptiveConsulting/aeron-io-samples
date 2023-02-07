@@ -1,3 +1,8 @@
+# Minikube
+
+Assuming you are using minikube with docker on macOS, 
+you can use `./minikube-run.sh` to build, deploy and run the cluster and admin in minikube. 
+
 # Docker Desktop on Mac
 
 Step 0:
@@ -39,9 +44,12 @@ Step 8: connect to the cluster from the admin container
 
 none of these will work (note the IPs are dynamic and you will need to look them up; `kubectl get endpoints -n aeron-io-sample-admin` helps):
 
-- `connect hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=aeron-io-sample-admin.aeron-io-sample-admin.svc.cluster.local.`
-- `connect hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=10.106.232.139`
-- `connect hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=10.244.0.8`
-- `connect hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=aeron-io-sample-admin-5bdb9c6c49-jfsl9.aeron-io-sample-admin.svc.cluster.local.`
+- `connect port=49152 hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=aeron-io-sample-admin.aeron-io-sample-admin.svc.cluster.local.`
+- `connect port=49152 hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=10.106.232.139`
+- `connect port=49152 hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=10.244.0.25`
+- `connect port=49152 hostnames=aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local. thishost=aeron-io-sample-admin-5bdb9c6c49-jfsl9.aeron-io-sample-admin.svc.cluster.local.`
 
 Either binding fails, or the cluster nodes can't connect to the admin container.
+
+
+java -cp aeron-all-*.jar -Daeron.dir=/dev/shm/aeron-root-2-driver io.aeron.samples.AeronStat

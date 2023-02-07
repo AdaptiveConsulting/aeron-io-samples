@@ -183,12 +183,13 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
             hostName = localHostName;
         }
         final String egressChannel = "aeron:udp?endpoint=" + hostName + ":" + port;
-        log("USING HOST" + egressChannel, AttributedStyle.RED);
+        log("USING HOST " + egressChannel, AttributedStyle.RED);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
-        mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context()
+        mediaDriver = MediaDriver.launch(new MediaDriver.Context()
             .threadingMode(ThreadingMode.SHARED)
             .dirDeleteOnStart(true)
+            .errorHandler(this::logError)
             .dirDeleteOnShutdown(true));
         aeronCluster = AeronCluster.connect(
             new AeronCluster.Context()
@@ -196,7 +197,13 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
                 .egressChannel(egressChannel)
                 .ingressChannel(INGRESS_CHANNEL)
                 .ingressEndpoints(ingressEndpoints)
+                .errorHandler(this::logError)
                 .aeronDirectoryName(mediaDriver.aeronDirectoryName()));
+    }
+
+    private void logError(final Throwable throwable)
+    {
+        log("Error: " + throwable.getMessage(), AttributedStyle.RED);
     }
 
     /**
