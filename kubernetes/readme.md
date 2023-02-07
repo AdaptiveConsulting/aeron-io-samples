@@ -1,7 +1,7 @@
 # Docker Desktop on Mac
 
 Step 0:
-- build everything with `./gradlew build`
+- build everything with `./gradlew`. This will compile the code and produce uber jar images ready for copying into the docker images.
 
 Step 1:
 - install Docker Desktop

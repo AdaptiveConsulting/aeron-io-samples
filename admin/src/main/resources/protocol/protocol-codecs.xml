@@ -38,8 +38,9 @@
                  id="1"
                  description="Connects the cluster">
         <field name="baseport" id="1" type="int32"/>
-        <data name="clusterHosts" id="2" type="varUtf8Encoding"/>
-        <data name="localhostName" id="3" type="varUtf8Encoding"/>
+        <field name="port" id="2" type="int32"/>
+        <data name="clusterHosts" id="3" type="varUtf8Encoding"/>
+        <data name="localhostName" id="4" type="varUtf8Encoding"/>
     </sbe:message>
 
     <sbe:message name="DisconnectCluster"

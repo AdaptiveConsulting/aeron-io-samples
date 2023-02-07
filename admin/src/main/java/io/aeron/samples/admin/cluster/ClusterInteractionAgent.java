@@ -117,8 +117,8 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         {
             connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
             log("Connecting to cluster", AttributedStyle.WHITE);
-            connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.clusterHosts(),
-                connectClusterDecoder.localhostName());
+            connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.port(),
+                connectClusterDecoder.clusterHosts(), connectClusterDecoder.localhostName());
             connectionState = ConnectionState.CONNECTED;
             log("Cluster connected", AttributedStyle.GREEN);
         }
@@ -151,10 +151,15 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
      * Connects to the cluster
      *
      * @param basePort base port to use
+     * @param port the port to use
      * @param clusterHosts list of cluster hosts
      * @param localHostName if empty, will be looked up
      */
-    private void connectCluster(final int basePort, final String clusterHosts, final String localHostName)
+    private void connectCluster(
+        final int basePort,
+        final int port,
+        final String clusterHosts,
+        final String localHostName)
     {
         final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
         final String ingressEndpoints = ClusterConfig.ingressEndpoints(
@@ -177,7 +182,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         {
             hostName = localHostName;
         }
-        final String egressChannel = "aeron:udp?endpoint=" + hostName + ":49152"; //todo add port argument
+        final String egressChannel = "aeron:udp?endpoint=" + hostName + ":" + port;
         log("USING HOST" + egressChannel, AttributedStyle.RED);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);

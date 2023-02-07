@@ -30,6 +30,11 @@ public class ConnectCluster implements Runnable
     @CommandLine.Option(names = "thishost", description = "The response hostname (default localhost).")
     private String localhost = "localhost";
 
+    @CommandLine.Option(names = "port", description = "The port to use for communication. The default, 0," +
+        " will auto-assign a port")
+    private Integer port = 0;
+
+
     private final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
     private final ConnectClusterEncoder connectClusterEncoder = new ConnectClusterEncoder();
@@ -42,6 +47,7 @@ public class ConnectCluster implements Runnable
         messageHeaderEncoder.wrap(buffer, 0);
         connectClusterEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         connectClusterEncoder.baseport(baseport);
+        connectClusterEncoder.port(port);
         connectClusterEncoder.clusterHosts(hostnames);
         connectClusterEncoder.localhostName(localhost);
 
