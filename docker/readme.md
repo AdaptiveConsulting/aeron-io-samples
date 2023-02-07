@@ -19,16 +19,14 @@ Assumes Docker Compose 2 is available.
 Once you are in the container, you can run the admin with:
 
 ```bash
-java --add-opens java.base/sun.nio.ch=ALL-UNNAMED -jar admin-uber.jar
+./run-admin.sh
 ```
 
-Within the admin, you can connect to the cluster with:
+Within the admin, you can then connect to the cluster:
 
 ```bash
-connect hostnames=172.16.202.2,172.16.202.3,172.16.202.4 thishost=
+connect
 ```
-
-Note that `thishost=` is telling the admin process to detect its own hostname, which is required given the admin is in a different container to the clusters.
 
 ## Stopping containers
 
@@ -43,5 +41,3 @@ For example, to open AeronStat, move to `~/aeron` and run:
 ```bash
 java -cp ~/aeron/aeron-all-*.jar -Daeron.dir=/dev/shm/aeron-root-0-driver io.aeron.samples.AeronStat
 ```
-
-

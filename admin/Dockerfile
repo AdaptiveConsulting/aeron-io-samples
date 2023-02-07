@@ -7,6 +7,7 @@ SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
 
 COPY --chmod=755 setup-docker.sh /root/dockerbuild/setup-docker.sh
 COPY --chmod=755 setup-docker.sh /root/aeron/
+COPY --chmod=755 run-admin.sh /root/jar/run-admin.sh
 RUN /root/dockerbuild/setup-docker.sh && rm --recursive --force "/root/dockerbuild"
 
 WORKDIR /root/jar/
