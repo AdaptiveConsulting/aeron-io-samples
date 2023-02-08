@@ -121,7 +121,6 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         if (templateId == ConnectClusterDecoder.TEMPLATE_ID)
         {
             connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
-            log("Connecting to cluster", AttributedStyle.WHITE);
             connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.port(),
                 connectClusterDecoder.clusterHosts(), connectClusterDecoder.localhostName());
             connectionState = ConnectionState.CONNECTED;
@@ -169,7 +168,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
         final String ingressEndpoints = ClusterConfig.ingressEndpoints(
             hostnames, basePort, ClusterConfig.CLIENT_FACING_PORT_OFFSET);
-        log("Connecting to cluster hosts using ingress endpoints: " + ingressEndpoints, AttributedStyle.WHITE);
+        log("Connecting to cluster host endpoints: " + ingressEndpoints, AttributedStyle.WHITE);
         final String egressChannel = "aeron:udp?endpoint=" + localHostName + ":" + port;
         log("Egress channel is set to: " + egressChannel, AttributedStyle.WHITE);
         adminClientEgressListener = new AdminClientEgressListener();
