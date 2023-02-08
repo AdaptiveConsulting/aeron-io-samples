@@ -10,6 +10,11 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 spec:
   type: ClusterIP
+  ports:
+    - name: aeron
+      port: 49152
+      protocol: UDP
+      targetPort: 49152
   selector:
     app.kubernetes.io/name: aeron-io-sample-admin
     app.kubernetes.io/instance: aeron-io-sample-admin

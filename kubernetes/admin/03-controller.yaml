@@ -31,7 +31,13 @@ spec:
         - name: aeron-io-sample-admin
           image: "admin:latest"
           imagePullPolicy: IfNotPresent
+          ports:
+            - name: aeron
+              containerPort: 49152
+              protocol: UDP
           env:
+            - name: RESPONSE_PORT
+              value: "49152"
             - name: CLUSTER_ADDRESSES
               value: aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.
           volumeMounts:
