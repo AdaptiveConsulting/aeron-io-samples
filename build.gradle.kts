@@ -12,6 +12,7 @@ java {
 
 checkstyle {
     maxWarnings = 0
+    toolVersion = libs.versions.checkstyleVersion.get()
 }
 
 version = "0.0.1-SNAPSHOT"

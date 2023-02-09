@@ -1,16 +1,15 @@
 [versions]
 junitVersion = "5.9.2"
-checkstyleVersion = "10.6.0"
+checkstyleVersion = "10.7.0"
 aeronVersion = "1.40.0"
 sbeVersion = "1.27.0"
 agronaVersion = "1.17.1"
 slf4jVersion = "2.0.6"
 logbackVersion = "1.4.5"
-jmhVersion = "1.36"
 picocliVersion = "4.7.0"
 jlineVersion = "3.22.0"
 picoJlineVersion = "4.7.1"
-mockitoVersion = "5.0.0"
+mockitoVersion = "5.1.1"
 
 [libraries]
 aeron = { group = "io.aeron", name = "aeron-all", version.ref = "aeronVersion" }
@@ -21,8 +20,6 @@ jupiterApi = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.
 checkstyle = { group = "com.puppycrawl.tools", name = "checkstyle", version.ref = "checkstyleVersion" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4jVersion" }
 logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logbackVersion" }
-jmhCore = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmhVersion" }
-jmhAnnotationProcessor = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmhVersion" }
 picocli = { group = "info.picocli", name = "picocli", version.ref = "picocliVersion" }
 mockito-core = { group = "org.mockito", name="mockito-core", version.ref = "mockitoVersion"}
 mockito-junit = { group = "org.mockito", name="mockito-junit-jupiter", version.ref = "mockitoVersion"}
