@@ -17,6 +17,12 @@ if ! [ -x "$(command -v kubectl)" ]; then
   exit 1
 fi
 
+minikubestatus=$(minikube status -f "{{.Host}}")
+if [[ $minikubestatus != *"Running"* ]]; then
+  echo "Minikube is not running; please start with at least 15GB ram and 6 cores assigned."
+  exit 1
+fi
+
 echo "Building Java..."
 ./gradlew
 echo "Building admin docker image..."
