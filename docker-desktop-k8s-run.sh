@@ -2,21 +2,22 @@
 # Copyright (c) 2023 Adaptive Financial Consulting
 #
 
-echo "🏛️️  building Java..."
+echo "Building Java..."
 ./gradlew
-echo "🐳️  building admin docker image..."
+echo "Building admin docker image..."
 cd admin || exit
 docker build . -t admin --no-cache
-echo "🐳  building cluster image..."
+echo "Building cluster image..."
 cd ../cluster || exit
 docker build . -t cluster --no-cache
 cd .. || exit
-echo "🔥  removing old kubernetes namespaces (if they exist)..."
+echo "Removing old kubernetes namespaces (if they exist)..."
 kubectl delete ns aeron-io-sample-admin
 kubectl delete ns aeron-io-sample-cluster
-echo "▶️  applying admin..."
+echo "Applying admin..."
 cd ./kubernetes/admin || exit
 kubectl apply -f .
-echo "▶️  applying cluster..."
+echo "Applying cluster..."
 cd ../cluster || exit
 kubectl apply -f .
+echo "Done"
