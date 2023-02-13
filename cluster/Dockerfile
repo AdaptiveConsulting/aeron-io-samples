@@ -20,4 +20,5 @@ COPY --chmod=755 lossstat.sh /root/jar/lossstat.sh
 COPY --chmod=755 streamstat.sh /root/jar/streamstat.sh
 COPY --chmod=755 stackdump.sh /root/jar/stackdump.sh
 COPY --chmod=755 clustererrors.sh /root/jar/clustererrors.sh
+COPY --chmod=755 noderole.sh /root/jar/noderole.sh
 ENTRYPOINT ["/root/jar/entrypoint.sh"]

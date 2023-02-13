@@ -11,7 +11,7 @@ nodes=(
 )
 
 for i in {0..2}; do
-  output=$(${commands[i]} | tail -5)
+  output=$(kubectl exec -it "${nodes[i]}" -n aeron-io-sample-cluster -- ./noderole.sh | tail -5)
   if [[ $output == *"LEADER"* ]]; then
     echo "${nodes[i]}"
     break
