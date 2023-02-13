@@ -45,6 +45,3 @@ add-bid id=<auction id> created-by=501 price=1000
 disconnect
 exit
 ```
-
-add-auction created-by=5300 name=auction
-add-bid id=7030918330873544704 created-by=501 price=1000
