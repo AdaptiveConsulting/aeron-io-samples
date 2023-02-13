@@ -2,6 +2,16 @@
 # Copyright (c) 2023 Adaptive Financial Consulting
 #
 
+if ! [ -x "$(command -v docker)" ]; then
+  echo 'Error: docker is not installed. Please install it first.' >&2
+  exit 1
+fi
+
+if ! [ -x "$(command -v kubectl)" ]; then
+  echo 'Error: kubectl is not installed. Please install it first.' >&2
+  exit 1
+fi
+
 echo "Building Java..."
 ./gradlew
 echo "Building admin docker image..."
