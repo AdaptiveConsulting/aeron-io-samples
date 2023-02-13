@@ -15,4 +15,9 @@ COPY --chmod=755 entrypoint.sh /root/jar/entrypoint.sh
 COPY --chmod=755 describe.sh /root/jar/describe.sh
 COPY --chmod=755 snapshot.sh /root/jar/snapshot.sh
 COPY --chmod=755 aeronstat_single.sh /root/jar/aeronstat_single.sh
+COPY --chmod=755 errorstat.sh /root/jar/errorstat.sh
+COPY --chmod=755 lossstat.sh /root/jar/lossstat.sh
+COPY --chmod=755 streamstat.sh /root/jar/streamstat.sh
+COPY --chmod=755 stackdump.sh /root/jar/stackdump.sh
+COPY --chmod=755 clustererrors.sh /root/jar/clustererrors.sh
 ENTRYPOINT ["/root/jar/entrypoint.sh"]

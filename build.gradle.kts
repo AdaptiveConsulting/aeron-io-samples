@@ -21,6 +21,7 @@ defaultTasks("check", "build", "test", "uberJar")
 
 allprojects {
     repositories {
+        mavenLocal()
         mavenCentral()
     }
 }
