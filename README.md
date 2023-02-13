@@ -16,6 +16,7 @@ Running the samples in Docker is the easiest way to get started. See the [docker
 
 - Java 17 (Zulu 17.0.6 was used for development)
 - Gradle 7.6
+- Aeron 1.41.0-SNAPSHOT should be available in Maven local. You can do this by pulling the latest from Aeron GitHub and running `./gradlew publishToMavenLocal` in the Aeron project root.
 
 # Runtime requirements
 
