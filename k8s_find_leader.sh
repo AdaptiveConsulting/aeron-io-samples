@@ -1,9 +1,3 @@
-commands=(
-  "kubectl logs aeron-io-sample-cluster-0 -n aeron-io-sample-cluster"
-  "kubectl logs aeron-io-sample-cluster-1 -n aeron-io-sample-cluster"
-  "kubectl logs aeron-io-sample-cluster-2 -n aeron-io-sample-cluster"
-)
-
 nodes=(
   "aeron-io-sample-cluster-0"
   "aeron-io-sample-cluster-1"
