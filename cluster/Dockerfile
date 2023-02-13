@@ -12,4 +12,7 @@ RUN /root/dockerbuild/setup-docker.sh && rm --recursive --force "/root/dockerbui
 WORKDIR /root/jar/
 COPY --chmod=755 /build/libs/cluster-uber.jar /root/jar/cluster-uber.jar
 COPY --chmod=755 entrypoint.sh /root/jar/entrypoint.sh
+COPY --chmod=755 describe.sh /root/jar/describe.sh
+COPY --chmod=755 snapshot.sh /root/jar/snapshot.sh
+COPY --chmod=755 aeronstat_single.sh /root/jar/aeronstat_single.sh
 ENTRYPOINT ["/root/jar/entrypoint.sh"]
