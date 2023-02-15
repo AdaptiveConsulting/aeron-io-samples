@@ -76,7 +76,11 @@ public class CliCommands implements Runnable
      */
     public void offerClusterMessage(final ExpandableArrayBuffer buffer, final int offset, final int encodedLength)
     {
-        adminChannel.write(CLUSTER_PASSTHROUGH, buffer, offset, encodedLength);
+        final boolean success = adminChannel.write(CLUSTER_PASSTHROUGH, buffer, offset, encodedLength);
+        if (!success)
+        {
+            out.println("Failed to send message to cluster interaction agent. Buffer is full.");
+        }
     }
 
     /**
@@ -88,6 +92,10 @@ public class CliCommands implements Runnable
      */
     public void offerClusterClientMessage(final ExpandableArrayBuffer buffer, final int offset, final int encodedLength)
     {
-        adminChannel.write(CLUSTER_CLIENT_CONTROL, buffer, offset, encodedLength);
+        final boolean success = adminChannel.write(CLUSTER_CLIENT_CONTROL, buffer, offset, encodedLength);
+        if (!success)
+        {
+            out.println("Failed to send message to cluster interaction agent. Buffer is full.");
+        }
     }
 }
