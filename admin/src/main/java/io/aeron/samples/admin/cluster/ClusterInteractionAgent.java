@@ -4,6 +4,7 @@
 
 package io.aeron.samples.admin.cluster;
 
+import io.aeron.Publication;
 import io.aeron.cluster.client.AeronCluster;
 import io.aeron.driver.MediaDriver;
 import io.aeron.driver.ThreadingMode;
@@ -13,6 +14,7 @@ import io.aeron.samples.cluster.admin.protocol.DisconnectClusterDecoder;
 import io.aeron.samples.cluster.admin.protocol.MessageHeaderDecoder;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.Agent;
+import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.MessageHandler;
 import org.agrona.concurrent.SystemEpochClock;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
@@ -32,10 +34,12 @@ import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
 public class ClusterInteractionAgent implements Agent, MessageHandler
 {
     private static final long HEARTBEAT_INTERVAL = 250;
+    private static final long RETRY_COUNT = 10;
     public static final String INGRESS_CHANNEL = "aeron:udp?term-length=64k";
     private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
     private long lastHeartbeatTime = Long.MIN_VALUE;
     private final OneToOneRingBuffer adminClusterComms;
+    private final IdleStrategy idleStrategy;
     private final AtomicBoolean runningFlag;
     private final MessageHeaderDecoder messageHeaderDecoder = new MessageHeaderDecoder();
     private final ConnectClusterDecoder connectClusterDecoder = new ConnectClusterDecoder();
@@ -47,13 +51,16 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
     /**
      * Creates a new agent to interact with the cluster
      * @param adminClusterChannel the channel to send messages to the cluster from the REPL
+     * @param idleStrategy the idle strategy to use
      * @param runningFlag the flag to indicate if the REPL is still running
      */
     public ClusterInteractionAgent(
         final OneToOneRingBuffer adminClusterChannel,
+        final IdleStrategy idleStrategy,
         final AtomicBoolean runningFlag)
     {
         this.adminClusterComms = adminClusterChannel;
+        this.idleStrategy = idleStrategy;
         this.runningFlag = runningFlag;
     }
 
@@ -103,7 +110,33 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         {
             if (connectionState == ConnectionState.CONNECTED)
             {
-                aeronCluster.offer(buffer, offset, length);
+                int retries = 0;
+                do
+                {
+                    final long result = aeronCluster.offer(buffer, offset, length);
+                    if (result > 0L)
+                    {
+                        return;
+                    }
+                    else if (result == Publication.ADMIN_ACTION || result == Publication.BACK_PRESSURED)
+                    {
+                        log("backpressure or admin action on cluster offer", AttributedStyle.YELLOW);
+                    }
+                    else if (result == Publication.NOT_CONNECTED || result == Publication.MAX_POSITION_EXCEEDED)
+                    {
+                        log("Cluster is not connected, or maximum position has been exceeded. Message lost.",
+                            AttributedStyle.RED);
+                        return;
+                    }
+
+                    idleStrategy.idle();
+                    retries += 1;
+                    log("failed to send message to cluster. Retrying (" + retries + " of " + RETRY_COUNT + ")",
+                        AttributedStyle.YELLOW);
+                }
+                while (retries < RETRY_COUNT);
+
+                log("Failed to send message to cluster. Message lost.", AttributedStyle.RED);
             }
             else
             {

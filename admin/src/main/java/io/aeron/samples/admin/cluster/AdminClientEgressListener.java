@@ -115,9 +115,22 @@ public class AdminClientEgressListener implements EgressListener
         final EventCode code,
         final String detail)
     {
-        LOGGER.info("Received session event {} for session {} with detail {}", code, clusterSessionId, detail);
+        if (code != EventCode.OK)
+        {
+            log("Session event: " + code.name() + " " + detail + ". leadershipTermId=" + leadershipTermId,
+                AttributedStyle.YELLOW);
+        }
     }
 
+    @Override
+    public void onNewLeader(
+        final long clusterSessionId,
+        final long leadershipTermId,
+        final int leaderMemberId,
+        final String ingressEndpoints)
+    {
+        log("New Leader: " + leaderMemberId + ". leadershipTermId=" + leadershipTermId, AttributedStyle.YELLOW);
+    }
 
     /**
      * Sets the terminal
