@@ -56,7 +56,7 @@ public class Admin
         final OneToOneRingBuffer adminClusterChannel = new OneToOneRingBuffer(adminClusterBuffer);
 
         final ClusterInteractionAgent clusterInteractionAgent = new ClusterInteractionAgent(adminClusterChannel,
-            running);
+            idleStrategy, running);
         final AgentRunner clusterInteractionAgentRunner = new AgentRunner(idleStrategy, Throwable::printStackTrace,
             null, clusterInteractionAgent);
         AgentRunner.startOnThread(clusterInteractionAgentRunner);
