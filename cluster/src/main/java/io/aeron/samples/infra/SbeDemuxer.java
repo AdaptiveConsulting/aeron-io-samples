@@ -7,12 +7,16 @@ package io.aeron.samples.infra;
 import io.aeron.samples.cluster.protocol.AddAuctionBidCommandDecoder;
 import io.aeron.samples.cluster.protocol.AddParticipantCommandDecoder;
 import io.aeron.samples.cluster.protocol.CreateAuctionCommandDecoder;
+import io.aeron.samples.cluster.protocol.ListAuctionsCommandDecoder;
 import io.aeron.samples.cluster.protocol.MessageHeaderDecoder;
+import io.aeron.samples.domain.auctions.Auction;
 import io.aeron.samples.domain.auctions.Auctions;
 import io.aeron.samples.domain.participants.Participants;
 import org.agrona.DirectBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Demultiplexes messages from the ingress stream to the appropriate domain handler.
@@ -22,22 +26,31 @@ public class SbeDemuxer
     private static final Logger LOGGER = LoggerFactory.getLogger(SbeDemuxer.class);
     private final Participants participants;
     private final Auctions auctions;
+    private final ClusterClientResponder responder;
+
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
 
     private final AddParticipantCommandDecoder addParticipantDecoder = new AddParticipantCommandDecoder();
     private final AddAuctionBidCommandDecoder addAuctionBidDecoder = new AddAuctionBidCommandDecoder();
     private final CreateAuctionCommandDecoder createAuctionDecoder = new CreateAuctionCommandDecoder();
+    private final ListAuctionsCommandDecoder listAuctionsDecoder = new ListAuctionsCommandDecoder();
+
 
     /**
      * Dispatches ingress messages to domain logic.
      *
      * @param participants          the participants domain model to which commands are dispatched
      * @param auctions              the auction domain model to which commands are dispatched
+     * @param responder             the responder to which responses are sent
      */
-    public SbeDemuxer(final Participants participants, final Auctions auctions)
+    public SbeDemuxer(
+        final Participants participants,
+        final Auctions auctions,
+        final ClusterClientResponder responder)
     {
         this.participants = participants;
         this.auctions = auctions;
+        this.responder = responder;
     }
 
     /**
@@ -81,6 +94,11 @@ public class SbeDemuxer
                     addAuctionBidDecoder.addedByParticipantId(),
                     addAuctionBidDecoder.price(),
                     addAuctionBidDecoder.correlationId());
+            }
+            case ListAuctionsCommandDecoder.TEMPLATE_ID ->
+            {
+                final List<Auction> auctionList = auctions.getAuctionList();
+                responder.returnAuctionList(auctionList);
             }
             default -> LOGGER.error("Unknown message template {}, ignored.", headerDecoder.templateId());
         }

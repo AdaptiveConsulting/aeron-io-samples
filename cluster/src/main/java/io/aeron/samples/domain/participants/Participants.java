@@ -41,7 +41,7 @@ public class Participants
         LOGGER.info("Adding participant {} with name {}", participantId, name);
         final var participant = new Participant(participantId, name);
         participantMap.put(participantId, participant);
-        clusterClientResponder.acknowledgeParticipantAdded(correlationId);
+        clusterClientResponder.acknowledgeParticipantAdded(participantId, correlationId);
     }
 
     /**

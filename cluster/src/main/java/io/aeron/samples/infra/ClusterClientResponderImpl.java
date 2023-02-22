@@ -6,16 +6,20 @@ package io.aeron.samples.infra;
 
 import io.aeron.samples.cluster.protocol.AddAuctionBidCommandResultEncoder;
 import io.aeron.samples.cluster.protocol.AddParticipantCommandResultEncoder;
+import io.aeron.samples.cluster.protocol.AuctionListEncoder;
 import io.aeron.samples.cluster.protocol.AuctionUpdateEventEncoder;
 import io.aeron.samples.cluster.protocol.CreateAuctionCommandResultEncoder;
 import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
 import io.aeron.samples.cluster.protocol.NewAuctionEventEncoder;
 import io.aeron.samples.domain.auctions.AddAuctionBidResult;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
+import io.aeron.samples.domain.auctions.Auction;
 import io.aeron.samples.domain.auctions.AuctionStatus;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Implementation of the {@link ClusterClientResponder} interface which returns SBE encoded results to the client
@@ -34,7 +38,7 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
     private final AuctionUpdateEventEncoder auctionUpdateEncoder = new AuctionUpdateEventEncoder();
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
     private final ExpandableDirectByteBuffer buffer = new ExpandableDirectByteBuffer(1024);
-
+    private final AuctionListEncoder auctionListEncoder = new AuctionListEncoder();
     /**
      * Constructor
      *
@@ -65,8 +69,6 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
         final String name,
         final String description)
     {
-        messageHeaderEncoder.wrap(buffer, 0);
-
         createAuctionResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
             .auctionId(auctionId)
             .result(mapAddAuctionResult(result))
@@ -91,7 +93,6 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
     @Override
     public void rejectAddAuction(final String correlationId, final AddAuctionResult result)
     {
-        messageHeaderEncoder.wrap(buffer, 0);
         createAuctionResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder)
             .auctionId(-1)
             .result(mapAddAuctionResult(result))
@@ -108,7 +109,6 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
     @Override
     public void rejectAddBid(final String correlationId, final long auctionId, final AddAuctionBidResult resultCode)
     {
-        messageHeaderEncoder.wrap(buffer, 0);
         addAuctionBidResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         addAuctionBidResultEncoder.auctionId(auctionId);
         addAuctionBidResultEncoder.result(mapAddAuctionBidResult(resultCode));
@@ -126,7 +126,6 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
         final long lastUpdateTime,
         final long winningParticipantId)
     {
-        messageHeaderEncoder.wrap(buffer, 0);
         addAuctionBidResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         addAuctionBidResultEncoder.auctionId(auctionId);
         addAuctionBidResultEncoder.result(mapAddAuctionBidResult(AddAuctionBidResult.SUCCESS));
@@ -145,7 +144,6 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
         final long lastUpdateTime,
         final long winningParticipantId)
     {
-        messageHeaderEncoder.wrap(buffer, 0);
         auctionUpdateEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         auctionUpdateEncoder.auctionId(auctionId);
         auctionUpdateEncoder.status(mapAuctionStatus(auctionStatus));
@@ -157,12 +155,37 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
     }
 
     @Override
-    public void acknowledgeParticipantAdded(final String correlationId)
+    public void acknowledgeParticipantAdded(final long participantId, final String correlationId)
     {
-        messageHeaderEncoder.wrap(buffer, 0);
         addParticipantResultEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         addParticipantResultEncoder.correlationId(correlationId);
+        addParticipantResultEncoder.participantId(participantId);
         context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + addParticipantResultEncoder.encodedLength());
+    }
+
+    @Override
+    public void returnAuctionList(final List<Auction> auctionList)
+    {
+        auctionListEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+
+        final AuctionListEncoder.AuctionsEncoder auctionsEncoder =
+            auctionListEncoder.auctionsCount(auctionList.size());
+
+        for (int i = 0; i < auctionList.size(); i++)
+        {
+            final Auction auction = auctionList.get(i);
+            auctionsEncoder.next()
+                .auctionId(auction.getAuctionId())
+                .createdByParticipantId(auction.getCreatedByParticipantId())
+                .startTime(auction.getStartTime())
+                .endTime(auction.getEndTime())
+                .winningParticipantId(auction.getWinningParticipantId())
+                .currentPrice(auction.getCurrentPrice())
+                .status(mapAuctionStatus(auction.getAuctionStatus()))
+                .name(auction.getName());
+        }
+
+        context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + auctionListEncoder.encodedLength());
     }
 
     private io.aeron.samples.cluster.protocol.AuctionStatus mapAuctionStatus(final AuctionStatus status)

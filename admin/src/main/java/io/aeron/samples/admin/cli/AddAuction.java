@@ -39,7 +39,6 @@ public class AddAuction implements Runnable
      */
     public void run()
     {
-        messageHeaderEncoder.wrap(buffer, 0);
         createAuctionCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         createAuctionCommandEncoder.createdByParticipantId(participantId);
         createAuctionCommandEncoder.startTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(10));
