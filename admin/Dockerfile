@@ -12,4 +12,4 @@ RUN /root/dockerbuild/setup-docker.sh && rm --recursive --force "/root/dockerbui
 
 WORKDIR /root/jar/
 COPY --chmod=755 /build/libs/admin-uber.jar /root/jar/admin-uber.jar
-ENTRYPOINT ["sh", "-c", "tail -f /dev/null"]
+ENTRYPOINT ["sh", "-c", "sleep infinity"]
