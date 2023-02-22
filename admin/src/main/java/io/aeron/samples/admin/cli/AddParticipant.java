@@ -35,7 +35,6 @@ public class AddParticipant implements Runnable
      */
     public void run()
     {
-        messageHeaderEncoder.wrap(buffer, 0);
         addParticipantCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         addParticipantCommandEncoder.participantId(participantId);
         addParticipantCommandEncoder.correlationId(UUID.randomUUID().toString());

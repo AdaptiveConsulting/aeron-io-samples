@@ -6,7 +6,10 @@ package io.aeron.samples.infra;
 
 import io.aeron.samples.domain.auctions.AddAuctionBidResult;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
+import io.aeron.samples.domain.auctions.Auction;
 import io.aeron.samples.domain.auctions.AuctionStatus;
+
+import java.util.List;
 
 /**
  * Interface for responding to auction requests, encapsulating the SBE encoding and Aeron interactions
@@ -87,7 +90,14 @@ public interface ClusterClientResponder
 
     /**
      * Acknowledges that a participant has been added to the client using the correlation they provided
+     * @param participantId the id of the participant added
      * @param correlationId the correlation id provided by the client
      */
-    void acknowledgeParticipantAdded(String correlationId);
+    void acknowledgeParticipantAdded(long participantId, String correlationId);
+
+    /**
+     * Lists all auctions in the cluster
+     * @param auctionList the list of auctions to return
+     */
+    void returnAuctionList(List<Auction> auctionList);
 }

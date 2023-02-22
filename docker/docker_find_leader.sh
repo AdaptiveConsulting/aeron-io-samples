@@ -5,7 +5,7 @@ nodes=(
 )
 
 for i in {0..2}; do
-  output=$(docker exec -it "${nodes[i]}" ./noderole.sh | tail -5)
+  output=$(docker exec -it "${nodes[i]}" ./noderole.sh)
   if [[ $output == *"LEADER"* ]]; then
     echo "${nodes[i]}"
     break

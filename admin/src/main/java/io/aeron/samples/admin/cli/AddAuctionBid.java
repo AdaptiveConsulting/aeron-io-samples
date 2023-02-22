@@ -41,7 +41,6 @@ public class AddAuctionBid implements Runnable
      */
     public void run()
     {
-        messageHeaderEncoder.wrap(buffer, 0);
         bidCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         bidCommandEncoder.auctionId(auctionId);
         bidCommandEncoder.addedByParticipantId(participantId);

@@ -44,7 +44,6 @@ public class ConnectCluster implements Runnable
      */
     public void run()
     {
-        messageHeaderEncoder.wrap(buffer, 0);
         connectClusterEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         connectClusterEncoder.baseport(baseport);
         connectClusterEncoder.port(port);
