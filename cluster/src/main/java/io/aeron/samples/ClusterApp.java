@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Integer.parseInt;
 
@@ -37,12 +38,13 @@ public class ClusterApp
         final int nodeId = getClusterNode();
         final String hosts = getClusterAddresses();
 
-        LOGGER.info("Starting cluster node {} on base port {} with hosts {}...", nodeId, portBase, hosts);
-
         final List<String> hostAddresses = List.of(hosts.split(","));
         final ClusterConfig clusterConfig = ClusterConfig.create(nodeId, hostAddresses, hostAddresses, portBase,
             new AppClusteredService());
         clusterConfig.consensusModuleContext().ingressChannel("aeron:udp");
+
+        //only suitable for highly reliable networks
+        clusterConfig.consensusModuleContext().leaderHeartbeatTimeoutNs(TimeUnit.SECONDS.toNanos(1));
 
         awaitDnsResolution(hostAddresses, nodeId);
 
@@ -72,7 +74,6 @@ public class ClusterApp
         {
             clusterAddresses = System.getProperty("cluster.addresses", "localhost");
         }
-        LOGGER.info("CLUSTER_ADDRESSES: {}", clusterAddresses);
         return clusterAddresses;
     }
 
@@ -87,7 +88,6 @@ public class ClusterApp
         {
             clusterNode = System.getProperty("node.id", "0");
         }
-        LOGGER.info("CLUSTER_NODE: {}", clusterNode);
         return parseInt(clusterNode);
     }
 
@@ -102,7 +102,6 @@ public class ClusterApp
         {
             portBaseString = System.getProperty("port.base", "9000");
         }
-        LOGGER.info("CLUSTER_PORT_BASE: {}", portBaseString);
         return parseInt(portBaseString);
     }
 
@@ -134,8 +133,7 @@ public class ClusterApp
 
             try
             {
-                final InetAddress byName = InetAddress.getByName(nodeName);
-                LOGGER.info("resolved name {} to {}", nodeName, byName.getHostAddress());
+                InetAddress.getByName(nodeName);
                 resolved = true;
             }
             catch (final UnknownHostException e)

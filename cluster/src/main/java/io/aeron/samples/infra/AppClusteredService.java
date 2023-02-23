@@ -48,7 +48,7 @@ public class AppClusteredService implements ClusteredService
     @Override
     public void onSessionOpen(final ClientSession session, final long timestamp)
     {
-        LOGGER.info("Session opened: {}", session);
+        LOGGER.info("Client session opened");
         context.setClusterTime(timestamp);
         clientSessions.addSession(session);
     }

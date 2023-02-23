@@ -22,7 +22,7 @@ public class AddAuctionBid implements Runnable
     CliCommands parent;
 
     @SuppressWarnings("all")
-    @CommandLine.Option(names = "id", description = "Auction ID")
+    @CommandLine.Option(names = "auction-id", description = "Auction ID")
     private Long auctionId = Long.MIN_VALUE;
 
     @SuppressWarnings("all")

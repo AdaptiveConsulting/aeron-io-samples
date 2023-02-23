@@ -6,7 +6,10 @@ package io.aeron.samples.admin;
 
 import io.aeron.samples.admin.cli.CliCommands;
 import io.aeron.samples.admin.cluster.ClusterInteractionAgent;
+import io.aeron.samples.cluster.admin.protocol.ConnectClusterEncoder;
+import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.CloseHelper;
+import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.AgentRunner;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.SleepingMillisIdleStrategy;
@@ -29,12 +32,18 @@ import picocli.CommandLine;
 import picocli.shell.jline3.PicocliCommands;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
+import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_CLIENT_CONTROL;
+import static io.aeron.samples.admin.util.ClusterConnectUtil.getThisHostName;
+import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetClusterHostsFromEnv;
+import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetDumbTerminalFromEnv;
+import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetResponsePortFromEnv;
 import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
 /**
@@ -50,6 +59,7 @@ public class Admin
     public static void main(final String[] args) throws IOException
     {
         //start the agent used for cluster interaction
+        final String prompt = "admin > ";
         final AtomicBoolean running = new AtomicBoolean(true);
         final IdleStrategy idleStrategy = new SleepingMillisIdleStrategy();
         final UnsafeBuffer adminClusterBuffer = new UnsafeBuffer(ByteBuffer.allocate(8192 + TRAILER_LENGTH));
@@ -64,7 +74,10 @@ public class Admin
         final Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
 
         //start the terminal REPL
-        try (Terminal terminal = TerminalBuilder.builder().build())
+        try (Terminal terminal = TerminalBuilder
+            .builder()
+            .dumb(tryGetDumbTerminalFromEnv())
+            .build())
         {
             final Parser parser = new DefaultParser();
             final ConfigurationPath configPath = new ConfigurationPath(workDir.get(), workDir.get());
@@ -87,14 +100,15 @@ public class Admin
             factory.setTerminal(terminal);
             clusterInteractionAgent.setLineReader(reader);
 
-            final String prompt = "admin > ";
-
             String line;
             terminal.writer().println("-------------------------------------------------");
             terminal.writer().println("Welcome to the Aeron Cluster Sample Admin Console");
             terminal.writer().println("-------------------------------------------------");
             terminal.writer().println("Useful commands: help, exit");
             terminal.writer().println("");
+
+            autoConnectCluster(adminClusterChannel, terminal.writer());
+
             while (running.get())
             {
                 try
@@ -122,6 +136,31 @@ public class Admin
                 }
             }
         }
+    }
+
+    /**
+     * Auto-connect to the cluster with environment variables if AUTO_CONNECT is true.
+     *
+     * @param adminClusterChannel the channel to send the connect command to
+     * @param writer
+     */
+    private static void autoConnectCluster(final OneToOneRingBuffer adminClusterChannel, final PrintWriter writer)
+    {
+        if (!Boolean.parseBoolean(System.getenv("AUTO_CONNECT")))
+        {
+            writer.println("Not auto-connecting to cluster");
+            return;
+        }
+        final ConnectClusterEncoder connectClusterEncoder = new ConnectClusterEncoder();
+        final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
+        final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
+        connectClusterEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        connectClusterEncoder.baseport(9000);
+        connectClusterEncoder.port(tryGetResponsePortFromEnv());
+        connectClusterEncoder.clusterHosts(tryGetClusterHostsFromEnv());
+        connectClusterEncoder.localhostName(getThisHostName());
+        adminClusterChannel.write(CLUSTER_CLIENT_CONTROL, buffer, 0,
+            MessageHeaderEncoder.ENCODED_LENGTH + connectClusterEncoder.encodedLength());
     }
 
 }

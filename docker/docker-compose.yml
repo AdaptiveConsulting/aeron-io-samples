@@ -1,5 +1,5 @@
-version: '3.7'
-
+version: '3.8'
+name: 'aeron'
 services:
   engine0:
     build:
@@ -50,6 +50,8 @@ services:
       internal_bus:
         ipv4_address: 172.16.202.10
     environment:
+      - AUTO_CONNECT=true
+      - DUMB_TERMINAL=true
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
 
 networks:

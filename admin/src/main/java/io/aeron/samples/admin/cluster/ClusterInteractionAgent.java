@@ -201,9 +201,7 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
         final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
         final String ingressEndpoints = ClusterConfig.ingressEndpoints(
             hostnames, basePort, ClusterConfig.CLIENT_FACING_PORT_OFFSET);
-        log("Connecting to cluster host endpoints: " + ingressEndpoints, AttributedStyle.WHITE);
         final String egressChannel = "aeron:udp?endpoint=" + localHostName + ":" + port;
-        log("Egress channel is set to: " + egressChannel, AttributedStyle.WHITE);
         adminClientEgressListener = new AdminClientEgressListener();
         adminClientEgressListener.setLineReader(lineReader);
         mediaDriver = MediaDriver.launch(new MediaDriver.Context()
@@ -219,6 +217,8 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
                 .ingressEndpoints(ingressEndpoints)
                 .errorHandler(this::logError)
                 .aeronDirectoryName(mediaDriver.aeronDirectoryName()));
+
+        log("Connected to cluster leader, node " + aeronCluster.leaderMemberId(), AttributedStyle.GREEN);
     }
 
     private void logError(final Throwable throwable)

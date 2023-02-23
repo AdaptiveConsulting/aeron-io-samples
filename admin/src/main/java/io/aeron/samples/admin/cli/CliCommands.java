@@ -27,7 +27,7 @@ import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
     subcommands = {
         AddParticipant.class, PicocliCommands.ClearScreen.class, CommandLine.HelpCommand.class,
         ConnectCluster.class, DisconnectCluster.class, AddAuction.class, AddAuctionBid.class,
-        ListAuctions.class})
+        ListAuctions.class, ListParticipants.class})
 public class CliCommands implements Runnable
 {
     PrintWriter out;

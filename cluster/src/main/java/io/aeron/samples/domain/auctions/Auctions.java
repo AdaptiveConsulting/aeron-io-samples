@@ -8,7 +8,7 @@ import io.aeron.samples.domain.participants.Participants;
 import io.aeron.samples.infra.ClusterClientResponder;
 import io.aeron.samples.infra.SessionMessageContext;
 import io.aeron.samples.infra.TimerManager;
-import org.agrona.concurrent.SnowflakeIdGenerator;
+import org.agrona.collections.MutableLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
 
 /**
  * Domain model for the auctions in the cluster
@@ -32,7 +31,7 @@ public class Auctions
     private final TimerManager timerManager;
     private final Participants participants;
     private final List<Auction> auctionList;
-    private final SnowflakeIdGenerator idGenerator;
+    private final MutableLong idGenerator = new MutableLong(0);
 
     /**
      * Constructor
@@ -53,7 +52,6 @@ public class Auctions
         this.timerManager = timerManager;
         this.auctionList = new ArrayList<>();
         this.participants = participants;
-        this.idGenerator = new SnowflakeIdGenerator(10, 12, 0L, 0L, context::getClusterTime);
     }
 
     /**
@@ -83,7 +81,7 @@ public class Auctions
             return;
         }
 
-        final var auctionId = idGenerator.nextId();
+        final var auctionId = idGenerator.incrementAndGet();
 
         LOGGER.info("Creating new Auction {} with ID {}", name, auctionId);
 
@@ -241,6 +239,7 @@ public class Auctions
      */
     public void addBid(final long auctionId, final long participantId, final long price, final String correlationId)
     {
+        LOGGER.info("Bid added to Auction {}", auctionId);
         final var optionalAuction = getAuctionById(auctionId);
         if (optionalAuction.isEmpty())
         {

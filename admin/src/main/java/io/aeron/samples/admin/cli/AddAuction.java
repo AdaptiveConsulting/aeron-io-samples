@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * Adds an auction to the cluster
  */
 @CommandLine.Command(name = "add-auction", mixinStandardHelpOptions = false,
-    description = "Adds an auction to the cluster, starting in 10 seconds and ending 45 seconds later")
+    description = "Adds an auction to the cluster, starting in 0.1 seconds and ending 30 seconds later")
 public class AddAuction implements Runnable
 {
     @CommandLine.ParentCommand
@@ -41,8 +41,8 @@ public class AddAuction implements Runnable
     {
         createAuctionCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         createAuctionCommandEncoder.createdByParticipantId(participantId);
-        createAuctionCommandEncoder.startTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(10));
-        createAuctionCommandEncoder.endTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(55));
+        createAuctionCommandEncoder.startTime(SystemEpochClock.INSTANCE.time() + TimeUnit.MILLISECONDS.toMillis(100));
+        createAuctionCommandEncoder.endTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(35));
         createAuctionCommandEncoder.correlationId(UUID.randomUUID().toString());
         createAuctionCommandEncoder.name(auctionName);
         createAuctionCommandEncoder.description("Admin auction");

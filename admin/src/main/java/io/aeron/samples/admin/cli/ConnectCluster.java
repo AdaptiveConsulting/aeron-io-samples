@@ -9,9 +9,9 @@ import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.ExpandableArrayBuffer;
 import picocli.CommandLine;
 
-import java.net.InetAddress;
-
-import static java.lang.Integer.parseInt;
+import static io.aeron.samples.admin.util.ClusterConnectUtil.getThisHostName;
+import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetClusterHostsFromEnv;
+import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetResponsePortFromEnv;
 
 /**
  * Adds a participant to the cluster
@@ -54,48 +54,5 @@ public class ConnectCluster implements Runnable
             buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + connectClusterEncoder.encodedLength());
     }
 
-    private String tryGetClusterHostsFromEnv()
-    {
-        String clusterAddresses = System.getenv("CLUSTER_ADDRESSES");
-        if (null == clusterAddresses || clusterAddresses.isEmpty())
-        {
-            clusterAddresses = System.getProperty("cluster.addresses", "localhost");
-        }
-        return clusterAddresses;
-    }
-
-    /**
-     * Tries to get the response port from the environment variable RESPONSE_PORT. If that is not set, it will try to
-     * get it from the system property response.port. If that is not set, it will return 0.
-     *
-     * This port is the port used by the admin process to open a port for the cluster to connect to.
-     * It could be (and typically is) ephemeral, however, kubernetes prefers that services have well-defined ports.
-     *
-     * Ephemeral ports defined with value 0 for the port.
-     *
-     * @return the response port
-     */
-    private int tryGetResponsePortFromEnv()
-    {
-        String responsePort = System.getenv("RESPONSE_PORT");
-        if (null == responsePort || responsePort.isEmpty())
-        {
-            responsePort = System.getProperty("response.port", "0");
-        }
-        return parseInt(responsePort);
-    }
-
-    private String getThisHostName()
-    {
-        String hostName = "localhost";
-        try
-        {
-            hostName = InetAddress.getLocalHost().getHostAddress();
-        }
-        catch (final Exception e)
-        {
-        }
-        return hostName;
-    }
 
 }

@@ -8,9 +8,11 @@ import io.aeron.samples.cluster.protocol.AddAuctionBidCommandDecoder;
 import io.aeron.samples.cluster.protocol.AddParticipantCommandDecoder;
 import io.aeron.samples.cluster.protocol.CreateAuctionCommandDecoder;
 import io.aeron.samples.cluster.protocol.ListAuctionsCommandDecoder;
+import io.aeron.samples.cluster.protocol.ListParticipantsCommandDecoder;
 import io.aeron.samples.cluster.protocol.MessageHeaderDecoder;
 import io.aeron.samples.domain.auctions.Auction;
 import io.aeron.samples.domain.auctions.Auctions;
+import io.aeron.samples.domain.participants.Participant;
 import io.aeron.samples.domain.participants.Participants;
 import org.agrona.DirectBuffer;
 import org.slf4j.Logger;
@@ -99,6 +101,11 @@ public class SbeDemuxer
             {
                 final List<Auction> auctionList = auctions.getAuctionList();
                 responder.returnAuctionList(auctionList);
+            }
+            case ListParticipantsCommandDecoder.TEMPLATE_ID ->
+            {
+                final List<Participant> participantList = participants.getParticipantList();
+                responder.returnParticipantList(participantList);
             }
             default -> LOGGER.error("Unknown message template {}, ignored.", headerDecoder.templateId());
         }

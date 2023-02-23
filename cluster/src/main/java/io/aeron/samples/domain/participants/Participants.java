@@ -28,6 +28,7 @@ public class Participants
     public Participants(final ClusterClientResponder clusterClientResponder)
     {
         this.clusterClientResponder = clusterClientResponder;
+        addDefaultParticipants();
     }
 
     /**
@@ -77,5 +78,17 @@ public class Participants
     public boolean isKnownParticipant(final long participantId)
     {
         return participantMap.containsKey(participantId);
+    }
+
+    /**
+     * Adds the default participants to the cluster to ease simple demos
+     */
+    private void addDefaultParticipants()
+    {
+        final var initiator = new Participant(500, "initiator");
+        participantMap.put(500, initiator);
+
+        final var responder = new Participant(501, "responder");
+        participantMap.put(501, responder);
     }
 }

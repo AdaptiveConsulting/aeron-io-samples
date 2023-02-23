@@ -44,6 +44,7 @@ tasks {
         group = "uber"
         manifest {
             attributes["Main-Class"]="io.aeron.samples.ClusterApp"
+            attributes["Add-Opens"]="java.base/sun.nio.ch"
         }
         archiveClassifier.set("uber")
         from(sourceSets.main.get().output)

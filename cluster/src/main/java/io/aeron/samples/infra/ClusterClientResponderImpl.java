@@ -11,10 +11,12 @@ import io.aeron.samples.cluster.protocol.AuctionUpdateEventEncoder;
 import io.aeron.samples.cluster.protocol.CreateAuctionCommandResultEncoder;
 import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
 import io.aeron.samples.cluster.protocol.NewAuctionEventEncoder;
+import io.aeron.samples.cluster.protocol.ParticipantListEncoder;
 import io.aeron.samples.domain.auctions.AddAuctionBidResult;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
 import io.aeron.samples.domain.auctions.Auction;
 import io.aeron.samples.domain.auctions.AuctionStatus;
+import io.aeron.samples.domain.participants.Participant;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +41,7 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
     private final ExpandableDirectByteBuffer buffer = new ExpandableDirectByteBuffer(1024);
     private final AuctionListEncoder auctionListEncoder = new AuctionListEncoder();
+    private final ParticipantListEncoder participantListEncoder = new ParticipantListEncoder();
     /**
      * Constructor
      *
@@ -186,6 +189,26 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
         }
 
         context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + auctionListEncoder.encodedLength());
+    }
+
+    @Override
+    public void returnParticipantList(final List<Participant> participants)
+    {
+        participantListEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+
+        final ParticipantListEncoder.ParticipantsEncoder participantsEncoder =
+            participantListEncoder.participantsCount(participants.size());
+
+        for (int i = 0; i < participants.size(); i++)
+        {
+            final Participant participant = participants.get(i);
+            participantsEncoder.next()
+                .participantId(participant.participantId())
+                .name(participant.name());
+        }
+
+        context.reply(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
+            participantListEncoder.encodedLength());
     }
 
     private io.aeron.samples.cluster.protocol.AuctionStatus mapAuctionStatus(final AuctionStatus status)

@@ -8,6 +8,7 @@ import io.aeron.samples.domain.auctions.AddAuctionBidResult;
 import io.aeron.samples.domain.auctions.AddAuctionResult;
 import io.aeron.samples.domain.auctions.Auction;
 import io.aeron.samples.domain.auctions.AuctionStatus;
+import io.aeron.samples.domain.participants.Participant;
 
 import java.util.List;
 
@@ -100,4 +101,10 @@ public interface ClusterClientResponder
      * @param auctionList the list of auctions to return
      */
     void returnAuctionList(List<Auction> auctionList);
+
+    /**
+     * Lists all participants in the cluster
+     * @param participantList the list of participants to return
+     */
+    void returnParticipantList(List<Participant> participantList);
 }

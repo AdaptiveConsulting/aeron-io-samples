@@ -36,6 +36,8 @@ spec:
               containerPort: 49152
               protocol: UDP
           env:
+            - name: DUMB_TERMINAL
+              value: "true"
             - name: RESPONSE_PORT
               value: "49152"
             - name: CLUSTER_ADDRESSES

@@ -17,6 +17,7 @@ import io.aeron.samples.cluster.protocol.AuctionUpdateEventDecoder;
 import io.aeron.samples.cluster.protocol.CreateAuctionCommandResultDecoder;
 import io.aeron.samples.cluster.protocol.MessageHeaderDecoder;
 import io.aeron.samples.cluster.protocol.NewAuctionEventDecoder;
+import io.aeron.samples.cluster.protocol.ParticipantListDecoder;
 import org.agrona.DirectBuffer;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedStyle;
@@ -37,6 +38,8 @@ public class AdminClientEgressListener implements EgressListener
         new CreateAuctionCommandResultDecoder();
     private final NewAuctionEventDecoder newAuctionEventDecoder = new NewAuctionEventDecoder();
     private final AddAuctionBidCommandResultDecoder addBidResultDecoder = new AddAuctionBidCommandResultDecoder();
+    private final AuctionListDecoder auctionListDecoder = new AuctionListDecoder();
+    private final ParticipantListDecoder participantListDecoder = new ParticipantListDecoder();
     private LineReader lineReader;
 
     @Override
@@ -98,6 +101,7 @@ public class AdminClientEgressListener implements EgressListener
             }
             case AuctionUpdateEventDecoder.TEMPLATE_ID -> displayAuctionUpdate(buffer, offset);
             case AuctionListDecoder.TEMPLATE_ID -> displayAuctions(buffer, offset);
+            case ParticipantListDecoder.TEMPLATE_ID -> displayParticipants(buffer, offset);
             default -> log("unknown message type: " + messageHeaderDecoder.templateId(), AttributedStyle.RED);
         }
     }
@@ -120,15 +124,37 @@ public class AdminClientEgressListener implements EgressListener
         else
         {
             log("Auction update event: " + auctionId + " now in state " +
-                auctionStatus.name() + ". There have been " + bidCount + " bids. The current price is " +
-                currentPrice + ". The winning bidder participant id is " + winningParticipantId,
+                auctionStatus.name() + ". There have been " + bidCount + " bids. Current price is " +
+                currentPrice + ". The winning bidder is " + winningParticipantId,
                 AttributedStyle.YELLOW);
+        }
+    }
+
+    private void displayParticipants(final DirectBuffer buffer, final int offset)
+    {
+        participantListDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
+        final ParticipantListDecoder.ParticipantsDecoder participants = participantListDecoder.participants();
+        final int count = participants.count();
+        if (0 == count)
+        {
+            log("No participants exist in the cluster.",
+                AttributedStyle.YELLOW);
+        }
+        else
+        {
+            log("Participant count: " + count, AttributedStyle.YELLOW);
+            while (participants.hasNext())
+            {
+                participants.next();
+                final long participantId = participants.participantId();
+                final String name = participants.name();
+                log("Participant: " + participantId + " name: " + name, AttributedStyle.YELLOW);
+            }
         }
     }
 
     private void displayAuctions(final DirectBuffer buffer, final int offset)
     {
-        final AuctionListDecoder auctionListDecoder = new AuctionListDecoder();
         auctionListDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
         final AuctionListDecoder.AuctionsDecoder auction = auctionListDecoder.auctions();
         final int count = auction.count();
@@ -154,8 +180,7 @@ public class AdminClientEgressListener implements EgressListener
                 final String name = auction.name();
 
                 log("Auction ID: " + auctionId + " with name " + name + " created by " + createdBy +
-                    " in state " + status.name() + ". Start time: " + startTime + ", end time: " + endTime,
-                    AttributedStyle.YELLOW);
+                    " in state " + status.name(), AttributedStyle.YELLOW);
 
                 if (winningParticipantId != -1)
                 {
