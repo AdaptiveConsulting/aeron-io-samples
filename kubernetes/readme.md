@@ -30,12 +30,23 @@ Run `./docker-desktop-k8s-run.sh` to build, deploy and run the cluster and admin
 
 ## Running the sample
 
-Step 1:
-- DNS can be slow in Kubernetes, so run `kubectl logs aeron-io-sample-cluster-0 -n aeron-io-sample-cluster` until you see a log message mentioning `resolved name...`
+> Note: DNS can be slow in kubernetes, so you may need to wait a few seconds (typically 5 to 10) for the cluster to start up.
 
-Step 2: Connect to the cluster from admin
+Step 1: Connect to the cluster from admin
+
+By manually interacting with `kubectl`:
+
 - Find the admin container's name with `kubectl get pods -n aeron-io-sample-admin`
-- Connect to the admin container with `kubectl exec -it <POD NAME FROM ABOVE> -n aeron-io-sample-admin -- java --add-opens java.base/sun.nio.ch=ALL-UNNAMED -jar admin-uber.jar`
-- `connect`
+- Connect to the admin container with `kubectl exec -it <POD NAME FROM ABOVE> -n aeron-io-sample-admin -- java -jar admin-uber.jar`
 
-Step 3: interact with the cluster. See the [Admin](../admin/readme.md) for more details.
+Using the provided scripts:
+
+- Run `./k8s_connect_admin.sh` to connect to the admin container and connect to the cluster.
+
+Step 2:
+
+- within Admin, use the `connect` command to connect to the cluster
+
+Step 3: 
+
+- interact with the cluster. See the [Admin](../admin/readme.md) for more details.

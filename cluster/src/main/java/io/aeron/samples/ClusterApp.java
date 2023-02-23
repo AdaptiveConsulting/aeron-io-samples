@@ -43,8 +43,8 @@ public class ClusterApp
             new AppClusteredService());
         clusterConfig.consensusModuleContext().ingressChannel("aeron:udp");
 
-        //only suitable for highly reliable networks
-        clusterConfig.consensusModuleContext().leaderHeartbeatTimeoutNs(TimeUnit.SECONDS.toNanos(1));
+        //this may need tuning for your environment.
+        clusterConfig.consensusModuleContext().leaderHeartbeatTimeoutNs(TimeUnit.SECONDS.toNanos(3));
 
         awaitDnsResolution(hostAddresses, nodeId);
 

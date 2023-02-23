@@ -157,7 +157,6 @@ public class ClusterInteractionAgent implements Agent, MessageHandler
             connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.port(),
                 connectClusterDecoder.clusterHosts(), connectClusterDecoder.localhostName());
             connectionState = ConnectionState.CONNECTED;
-            log("Cluster connected", AttributedStyle.GREEN);
         }
         else if (templateId == DisconnectClusterDecoder.TEMPLATE_ID)
         {
