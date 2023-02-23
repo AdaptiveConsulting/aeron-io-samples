@@ -2,6 +2,8 @@
 
 A Cluster and command line client built using Aeron Cluster.
 
+![demo](images/docker_demo.gif)
+
 # Running
 
 Running the samples in Docker is the easiest way to get started. See the [docker readme](docker/readme.md) for more details.
