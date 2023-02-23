@@ -10,6 +10,7 @@ picocliVersion = "4.7.0"
 jlineVersion = "3.22.0"
 picoJlineVersion = "4.7.1"
 mockitoVersion = "5.1.1"
+junitPlatformLauncherVersion = "1.9.2"
 
 [libraries]
 aeron = { group = "io.aeron", name = "aeron-all", version.ref = "aeronVersion" }
@@ -25,6 +26,7 @@ mockito-core = { group = "org.mockito", name="mockito-core", version.ref = "mock
 mockito-junit = { group = "org.mockito", name="mockito-junit-jupiter", version.ref = "mockitoVersion"}
 jline = { group = "org.jline", name = "jline", version.ref = "jlineVersion" }
 picoJline = { group = "info.picocli", name = "picocli-shell-jline3", version.ref = "picoJlineVersion" }
+junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformLauncherVersion" }
 
 [bundles]
-testing = [ "jupiterApi", "jupiterEngine", "mockito-core", "mockito-junit"]
+testing = ["junitPlatformLauncher", "jupiterApi", "jupiterEngine", "mockito-core", "mockito-junit"]
