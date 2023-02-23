@@ -1,0 +1,274 @@
+/*
+ * Copyright 2023 Adaptive Financial Consulting
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.aeron.samples.admin.cluster;
+
+import io.aeron.Publication;
+import io.aeron.cluster.client.AeronCluster;
+import io.aeron.driver.MediaDriver;
+import io.aeron.driver.ThreadingMode;
+import io.aeron.samples.cluster.ClusterConfig;
+import io.aeron.samples.cluster.admin.protocol.ConnectClusterDecoder;
+import io.aeron.samples.cluster.admin.protocol.DisconnectClusterDecoder;
+import io.aeron.samples.cluster.admin.protocol.MessageHeaderDecoder;
+import org.agrona.MutableDirectBuffer;
+import org.agrona.concurrent.Agent;
+import org.agrona.concurrent.IdleStrategy;
+import org.agrona.concurrent.MessageHandler;
+import org.agrona.concurrent.SystemEpochClock;
+import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
+import org.jline.reader.LineReader;
+import org.jline.utils.AttributedStyle;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_CLIENT_CONTROL;
+import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
+
+/**
+ * Agent to interact with the cluster
+ */
+public class ClusterInteractionAgent implements Agent, MessageHandler
+{
+    private static final long HEARTBEAT_INTERVAL = 250;
+    private static final long RETRY_COUNT = 10;
+    public static final String INGRESS_CHANNEL = "aeron:udp?term-length=64k";
+    private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
+    private long lastHeartbeatTime = Long.MIN_VALUE;
+    private final OneToOneRingBuffer adminClusterComms;
+    private final IdleStrategy idleStrategy;
+    private final AtomicBoolean runningFlag;
+    private final MessageHeaderDecoder messageHeaderDecoder = new MessageHeaderDecoder();
+    private final ConnectClusterDecoder connectClusterDecoder = new ConnectClusterDecoder();
+    private MediaDriver mediaDriver;
+    private AeronCluster aeronCluster;
+    private AdminClientEgressListener adminClientEgressListener;
+    private LineReader lineReader;
+
+    /**
+     * Creates a new agent to interact with the cluster
+     * @param adminClusterChannel the channel to send messages to the cluster from the REPL
+     * @param idleStrategy the idle strategy to use
+     * @param runningFlag the flag to indicate if the REPL is still running
+     */
+    public ClusterInteractionAgent(
+        final OneToOneRingBuffer adminClusterChannel,
+        final IdleStrategy idleStrategy,
+        final AtomicBoolean runningFlag)
+    {
+        this.adminClusterComms = adminClusterChannel;
+        this.idleStrategy = idleStrategy;
+        this.runningFlag = runningFlag;
+    }
+
+    @Override
+    public int doWork()
+    {
+        final long now = SystemEpochClock.INSTANCE.time();
+        if (now > (lastHeartbeatTime + HEARTBEAT_INTERVAL))
+        {
+            lastHeartbeatTime = now;
+            if (connectionState == ConnectionState.CONNECTED)
+            {
+                aeronCluster.sendKeepAlive();
+            }
+        }
+
+        adminClusterComms.read(this);
+
+        if (null != aeronCluster && !aeronCluster.isClosed())
+        {
+            aeronCluster.pollEgress();
+        }
+
+        return 0; //always sleep
+    }
+
+    @Override
+    public String roleName()
+    {
+        return "cluster-interaction-agent";
+    }
+
+    @Override
+    public void onMessage(final int msgTypeId, final MutableDirectBuffer buffer, final int offset, final int length)
+    {
+        if (msgTypeId == CLUSTER_CLIENT_CONTROL)
+        {
+            if (length < MessageHeaderDecoder.ENCODED_LENGTH)
+            {
+                log("Invalid message length", AttributedStyle.RED);
+            }
+
+            messageHeaderDecoder.wrap(buffer, offset);
+            processInternalMessage(messageHeaderDecoder, buffer, offset);
+        }
+        else if (msgTypeId == CLUSTER_PASSTHROUGH)
+        {
+            if (connectionState == ConnectionState.CONNECTED)
+            {
+                int retries = 0;
+                do
+                {
+                    final long result = aeronCluster.offer(buffer, offset, length);
+                    if (result > 0L)
+                    {
+                        return;
+                    }
+                    else if (result == Publication.ADMIN_ACTION || result == Publication.BACK_PRESSURED)
+                    {
+                        log("backpressure or admin action on cluster offer", AttributedStyle.YELLOW);
+                    }
+                    else if (result == Publication.NOT_CONNECTED || result == Publication.MAX_POSITION_EXCEEDED)
+                    {
+                        log("Cluster is not connected, or maximum position has been exceeded. Message lost.",
+                            AttributedStyle.RED);
+                        return;
+                    }
+
+                    idleStrategy.idle();
+                    retries += 1;
+                    log("failed to send message to cluster. Retrying (" + retries + " of " + RETRY_COUNT + ")",
+                        AttributedStyle.YELLOW);
+                }
+                while (retries < RETRY_COUNT);
+
+                log("Failed to send message to cluster. Message lost.", AttributedStyle.RED);
+            }
+            else
+            {
+                log("Not connected to cluster. Connect first", AttributedStyle.RED);
+            }
+        }
+    }
+
+    private void processInternalMessage(
+        final MessageHeaderDecoder messageHeaderDecoder,
+        final MutableDirectBuffer buffer,
+        final int offset)
+    {
+        final int templateId = messageHeaderDecoder.templateId();
+        if (templateId == ConnectClusterDecoder.TEMPLATE_ID)
+        {
+            connectClusterDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
+            connectCluster(connectClusterDecoder.baseport(), connectClusterDecoder.port(),
+                connectClusterDecoder.clusterHosts(), connectClusterDecoder.localhostName());
+            connectionState = ConnectionState.CONNECTED;
+        }
+        else if (templateId == DisconnectClusterDecoder.TEMPLATE_ID)
+        {
+            log("Disconnecting from cluster", AttributedStyle.WHITE);
+            disconnectCluster();
+            connectionState = ConnectionState.NOT_CONNECTED;
+            log("Cluster disconnected", AttributedStyle.GREEN);
+        }
+    }
+
+    /**
+     * Disconnects from the cluster
+     */
+    private void disconnectCluster()
+    {
+        adminClientEgressListener = null;
+        if (aeronCluster != null)
+        {
+            aeronCluster.close();
+        }
+        if (mediaDriver != null)
+        {
+            mediaDriver.close();
+        }
+    }
+
+    /**
+     * Connects to the cluster
+     *
+     * @param basePort base port to use
+     * @param port the port to use
+     * @param clusterHosts list of cluster hosts
+     * @param localHostName if empty, will be looked up
+     */
+    private void connectCluster(
+        final int basePort,
+        final int port,
+        final String clusterHosts,
+        final String localHostName)
+    {
+        final List<String> hostnames = Arrays.asList(clusterHosts.split(","));
+        final String ingressEndpoints = ClusterConfig.ingressEndpoints(
+            hostnames, basePort, ClusterConfig.CLIENT_FACING_PORT_OFFSET);
+        final String egressChannel = "aeron:udp?endpoint=" + localHostName + ":" + port;
+        adminClientEgressListener = new AdminClientEgressListener();
+        adminClientEgressListener.setLineReader(lineReader);
+        mediaDriver = MediaDriver.launch(new MediaDriver.Context()
+            .threadingMode(ThreadingMode.SHARED)
+            .dirDeleteOnStart(true)
+            .errorHandler(this::logError)
+            .dirDeleteOnShutdown(true));
+        aeronCluster = AeronCluster.connect(
+            new AeronCluster.Context()
+                .egressListener(adminClientEgressListener)
+                .egressChannel(egressChannel)
+                .ingressChannel(INGRESS_CHANNEL)
+                .ingressEndpoints(ingressEndpoints)
+                .errorHandler(this::logError)
+                .aeronDirectoryName(mediaDriver.aeronDirectoryName()));
+
+        log("Connected to cluster leader, node " + aeronCluster.leaderMemberId(), AttributedStyle.GREEN);
+    }
+
+    private void logError(final Throwable throwable)
+    {
+        log("Error: " + throwable.getMessage(), AttributedStyle.RED);
+    }
+
+    /**
+     * Sets the line reader to use for input saving while logging
+     *
+     * @param lineReader line reader to use
+     */
+    public void setLineReader(final LineReader lineReader)
+    {
+        this.lineReader = lineReader;
+    }
+
+    /**
+     * Logs a message to the terminal if available or to the logger if not
+     *
+     * @param message message to log
+     * @param color message color to use
+     */
+    private void log(final String message, final int color)
+    {
+        LineReaderHelper.log(lineReader, message, color);
+    }
+
+    @Override
+    public void onClose()
+    {
+        if (aeronCluster != null)
+        {
+            aeronCluster.close();
+        }
+        if (mediaDriver != null)
+        {
+            mediaDriver.close();
+        }
+        runningFlag.set(false);
+    }
+}
