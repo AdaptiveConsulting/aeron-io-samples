@@ -1,0 +1,93 @@
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+.ionide/
+
+# Idea IntelliJ/Rider
+!.idea/runConfigurations/
+!.idea/runConfigurations/**
+.idea/libraries/**
+.idea/modules/**
+.idea/shelf/**
+.idea/inspectionProfiles/**
+.idea/codeStyles/**
+.idea/*.xml
+.idea/.name
+.idea/sonarlint
+.idea/dictionaries
+.idea/checkstyleidea-libs/**
+.idea
+*.iws
+*.iml
+*.ipr
+
+# Java
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# vscode
+.vscode/
+.vs/
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamecache
+
+# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
+# gradle/wrapper/gradle-wrapper.properties
+
+# Gradle section:
+# Ignore nested build folders, but not the top level one
+# because of the build scripts
+**/build
+!scripts/gradle/build
+**/.gradle
+**/out
+build-cache/
+
+# Aeron Stuff
+aeron-cluster-0/
+cluster-data/
+archive-mark.dat
+archive.catalog
+cluster-mark.dat
+recording.log
+*.rec
+*.dat
+
+hs_err_pid*.log
+
+# docker jar artifacts
+docker/support_scripts/*.tar.gz
+docker/support_scripts/[0-9].*
+docker/.env
+
+# JMH
+generated_tests
+**/jmh/generated/**
+
+.DS_Store
+
+# Quick-check
+.jqwik-database
+
+# Direnv
+.direnv/
+
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
