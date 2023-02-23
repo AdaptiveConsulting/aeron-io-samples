@@ -7,7 +7,6 @@ metadata:
   labels:
     app.kubernetes.io/name: aeron-io-sample-cluster
     app.kubernetes.io/instance: aeron-io-sample-cluster
-    app.kubernetes.io/managed-by: Helm
 spec:
   type: ClusterIP
   clusterIP: None
