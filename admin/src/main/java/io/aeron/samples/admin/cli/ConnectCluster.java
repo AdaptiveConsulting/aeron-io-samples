@@ -21,9 +21,9 @@ import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.ExpandableArrayBuffer;
 import picocli.CommandLine;
 
-import static io.aeron.samples.admin.util.ClusterConnectUtil.getThisHostName;
-import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetClusterHostsFromEnv;
-import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetResponsePortFromEnv;
+import static io.aeron.samples.admin.util.EnvironmentUtil.getThisHostName;
+import static io.aeron.samples.admin.util.EnvironmentUtil.tryGetClusterHostsFromEnv;
+import static io.aeron.samples.admin.util.EnvironmentUtil.tryGetResponsePortFromEnv;
 
 /**
  * Adds a participant to the cluster

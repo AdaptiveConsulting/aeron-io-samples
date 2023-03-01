@@ -21,6 +21,8 @@ import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.ExpandableArrayBuffer;
 import picocli.CommandLine;
 
+import static io.aeron.samples.admin.util.EnvironmentUtil.tryGetParticipantId;
+
 /**
  * Adds an auction to the cluster
  */
@@ -37,7 +39,7 @@ public class AddAuctionBid implements Runnable
 
     @SuppressWarnings("all")
     @CommandLine.Option(names = "created-by", description = "Created by participant id")
-    private Integer participantId = -1;
+    private Integer participantId = tryGetParticipantId();
 
     @SuppressWarnings("all")
     @CommandLine.Option(names = "price", description = "Bid price")

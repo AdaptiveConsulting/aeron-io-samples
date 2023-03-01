@@ -24,6 +24,8 @@ import picocli.CommandLine;
 
 import java.util.concurrent.TimeUnit;
 
+import static io.aeron.samples.admin.util.EnvironmentUtil.tryGetParticipantId;
+
 /**
  * Adds an auction to the cluster
  */
@@ -40,7 +42,7 @@ public class AddAuction implements Runnable
 
     @SuppressWarnings("all")
     @CommandLine.Option(names = "created-by", description = "Created by participant id")
-    private Integer participantId = -1;
+    private Integer participantId = tryGetParticipantId();
 
     private final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder(); //cluster protocol header

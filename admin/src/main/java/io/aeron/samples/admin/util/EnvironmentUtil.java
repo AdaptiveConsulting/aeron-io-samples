@@ -26,9 +26,9 @@ import static java.lang.Integer.parseInt;
 /**
  * Utility class for cluster connection
  */
-public final class ClusterConnectUtil
+public final class EnvironmentUtil
 {
-    private ClusterConnectUtil()
+    private EnvironmentUtil()
     {
         // helper class
     }
@@ -66,6 +66,23 @@ public final class ClusterConnectUtil
         if (null == responsePort || responsePort.isEmpty())
         {
             responsePort = System.getProperty("response.port", "0");
+        }
+        return parseInt(responsePort);
+    }
+
+    /**
+     * Tries to get the participant id from the environment variable PARTICIPANT_ID.
+     * If that is not set, it will try to get it from the system property participant.id.
+     * If that is not set, it will return 0.
+     *
+     * @return the participant id
+     */
+    public static int tryGetParticipantId()
+    {
+        String responsePort = System.getenv("PARTICIPANT_ID");
+        if (null == responsePort || responsePort.isEmpty())
+        {
+            responsePort = System.getProperty("participant.id", "0");
         }
         return parseInt(responsePort);
     }

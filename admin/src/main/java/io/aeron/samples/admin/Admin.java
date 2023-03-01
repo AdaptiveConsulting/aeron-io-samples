@@ -51,10 +51,10 @@ import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import static io.aeron.samples.admin.util.ClusterConnectUtil.getThisHostName;
-import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetClusterHostsFromEnv;
-import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetDumbTerminalFromEnv;
-import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetResponsePortFromEnv;
+import static io.aeron.samples.admin.util.EnvironmentUtil.getThisHostName;
+import static io.aeron.samples.admin.util.EnvironmentUtil.tryGetClusterHostsFromEnv;
+import static io.aeron.samples.admin.util.EnvironmentUtil.tryGetDumbTerminalFromEnv;
+import static io.aeron.samples.admin.util.EnvironmentUtil.tryGetResponsePortFromEnv;
 import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
 /**
