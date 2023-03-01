@@ -19,6 +19,7 @@ package io.aeron.samples.admin.cluster;
 import io.aeron.cluster.client.EgressListener;
 import io.aeron.cluster.codecs.EventCode;
 import io.aeron.logbuffer.Header;
+import io.aeron.samples.admin.util.EnvironmentUtil;
 import io.aeron.samples.cluster.protocol.AddAuctionBidCommandResultDecoder;
 import io.aeron.samples.cluster.protocol.AddAuctionBidResult;
 import io.aeron.samples.cluster.protocol.AddAuctionResult;
@@ -165,9 +166,17 @@ public class AdminClientEgressListener implements EgressListener
         {
             if (auctionStatus.equals(AuctionStatus.CLOSED))
             {
-                log("Auction " + auctionId + " has ended. Total " + bidCount + " bids. Winning price was " +
-                    currentPrice + ", and the winning bidder is " + winningParticipantId,
-                    AttributedStyle.YELLOW);
+                final int participantId = EnvironmentUtil.tryGetParticipantId();
+                if (participantId != 0 && winningParticipantId == participantId)
+                {
+                    log("Auction " + auctionId + " won! Total " + bidCount + " bids. Winning price was " +
+                        currentPrice, AttributedStyle.GREEN);
+                }
+                else
+                {
+                    log("Auction " + auctionId + " has ended. Total " + bidCount + " bids. Winning price was " +
+                        currentPrice + ", and the winning bidder is " + winningParticipantId, AttributedStyle.YELLOW);
+                }
             }
             else
             {
@@ -231,9 +240,15 @@ public class AdminClientEgressListener implements EgressListener
                 final String name = auction.name();
 
                 log("Auction '" + name + "' with id " + auctionId + " created by " + createdBy +
-                    " in state " + status.name(), AttributedStyle.YELLOW);
+                    " is now in state " + status.name(), AttributedStyle.YELLOW);
 
-                if (winningParticipantId != -1)
+                final int participantId = EnvironmentUtil.tryGetParticipantId();
+                if (participantId != 0 && winningParticipantId == participantId)
+                {
+                    log(" Winning auction with price " +
+                        currentPrice, AttributedStyle.YELLOW);
+                }
+                else if (winningParticipantId != -1)
                 {
                     log(" Current winning participant " + winningParticipantId + " with price " +
                         currentPrice, AttributedStyle.YELLOW);

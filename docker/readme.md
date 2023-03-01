@@ -2,17 +2,18 @@
 
 > **Note**: Assumes Docker Compose 2 is available.
 
-This will start a three-node cluster, with 1 admin container.
+This will start a three-node cluster, with 2 admin containers.
 The cluster nodes will run an election, selecting one of the nodes as the leader.
 
 Containers will be named as follows:
 
-| Container        | Description  |
-|------------------|--------------|
-| docker-engine0-1 | Cluster Node |
-| docker-engine1-1 | Cluster Node |
-| docker-engine2-1 | Cluster Node |
-| docker-admin-1   | Admin Node   |
+| Container      | Description  |
+|----------------|--------------|
+| aeron-engine0-1 | Cluster Node |
+| aeron-engine1-1 | Cluster Node |
+| aeron-engine2-1 | Cluster Node |
+| aeron-admin1-1  | Admin Node   |
+| aeron-admin2-1  | Admin Node   |
 
 ## Building containers
 
@@ -30,9 +31,11 @@ e.g. `docker compose logs | grep LEADER`), or use the script `./docker_find_lead
 
 ## Connecting to the admin container
 
-(assumes a container named `docker-admin-1` is running)
+Both admin containers can be used at the same time. Change `aeron-admin1-1` for `aeron-admin2-1` as needed.
 
-`docker exec -it docker-admin-1 java --add-opens java.base/sun.nio.ch=ALL-UNNAMED -jar admin-uber.jar`
+(assumes a container named `aeron-admin1-1` is running)
+
+`docker exec -it aeron-admin1-1 java --add-opens java.base/sun.nio.ch=ALL-UNNAMED -jar admin-uber.jar`
 
 Within the admin, you can then connect to the cluster:
 
