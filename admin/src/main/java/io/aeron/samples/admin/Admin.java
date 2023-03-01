@@ -18,6 +18,7 @@ package io.aeron.samples.admin;
 
 import io.aeron.samples.admin.cli.CliCommands;
 import io.aeron.samples.admin.cluster.ClusterInteractionAgent;
+import io.aeron.samples.admin.util.EnvironmentUtil;
 import io.aeron.samples.cluster.admin.protocol.ConnectClusterEncoder;
 import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.CloseHelper;
@@ -118,6 +119,7 @@ public class Admin
             terminal.writer().println("");
 
             autoConnectCluster(adminClusterChannel, terminal.writer());
+            logMyUser(terminal.writer());
 
             while (running.get())
             {
@@ -145,6 +147,15 @@ public class Admin
                     systemRegistry.trace(e);
                 }
             }
+        }
+    }
+
+    private static void logMyUser(final PrintWriter writer)
+    {
+        final int myParticipantId = EnvironmentUtil.tryGetParticipantId();
+        if (myParticipantId != 0)
+        {
+            writer.println("Session acting as participant " + myParticipantId);
         }
     }
 

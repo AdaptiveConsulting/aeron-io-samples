@@ -21,11 +21,13 @@ Sample happy path script:
 ```
 connect
 add-auction created-by=500 name=tulips
-<auction ID is logged>
-add-bid auciton-id=<auction id> created-by=501 price=1000
+<auction ID 1 is logged>
+add-bid auction-id=1 created-by=501 price=1000
 disconnect
 exit
 ```
+
+add-bid auction-id=2 created-by=501 price=1000
 
 ## Running Admin outside of Kubernetes or Docker
 

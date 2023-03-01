@@ -30,7 +30,7 @@ import static io.aeron.samples.admin.util.EnvironmentUtil.tryGetParticipantId;
  * Adds an auction to the cluster
  */
 @CommandLine.Command(name = "add-auction", mixinStandardHelpOptions = false,
-    description = "Adds an auction to the cluster, starting in 0.1 seconds and ending 30 seconds later")
+    description = "Adds an auction to the cluster, starting in 0.1 seconds and ending 25 seconds later")
 public class AddAuction implements Runnable
 {
     @CommandLine.ParentCommand
@@ -55,7 +55,7 @@ public class AddAuction implements Runnable
         addAuctionEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         addAuctionEncoder.createdByParticipantId(participantId);
         addAuctionEncoder.startTime(SystemEpochClock.INSTANCE.time() + TimeUnit.MILLISECONDS.toMillis(100));
-        addAuctionEncoder.endTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(35));
+        addAuctionEncoder.endTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(25));
         addAuctionEncoder.name(auctionName);
         addAuctionEncoder.description("Admin auction");
         parent.offerRingBufferMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +

@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 public class Auctions
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Auctions.class);
-    private static final long MINIMUM_DURATION = TimeUnit.SECONDS.toMillis(30);
+    private static final long MINIMUM_DURATION = TimeUnit.SECONDS.toMillis(20);
     private static final long REMOVAL_TIMER_DURATION = TimeUnit.SECONDS.toMillis(60);
     private final SessionMessageContext context;
     private final ClusterClientResponder clusterClientResponder;
