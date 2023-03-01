@@ -78,10 +78,10 @@ public class Auctions
      * @param description            the description
      */
     public void addAuction(
-        final String correlationId,
         final long createdByParticipantId,
         final long startTime,
         final long endTime,
+        final String correlationId,
         final String name,
         final String description)
     {
@@ -95,7 +95,7 @@ public class Auctions
 
         final var auctionId = idGenerator.incrementAndGet();
 
-        LOGGER.info("Creating new Auction {} with ID {}", name, auctionId);
+        LOGGER.info("Creating new auction '{}' with id {}", name, auctionId);
 
         final var auction = new Auction(auctionId, createdByParticipantId, startTime, endTime, name, description,
             -1L);
@@ -156,7 +156,6 @@ public class Auctions
      */
     public void openAuction(final long auctionId)
     {
-        LOGGER.info("Opening Auction {}", auctionId);
         final var optionalAuction = getAuctionById(auctionId);
         if (optionalAuction.isEmpty())
         {
@@ -174,6 +173,7 @@ public class Auctions
 
         if (transitionAuction(auction, AuctionStatus.PRE_OPEN, AuctionStatus.OPEN))
         {
+            LOGGER.info("Opening auction with id {}", auctionId);
             broadcastStateUpdate(auctionId);
         }
     }
@@ -184,7 +184,6 @@ public class Auctions
      */
     public void closeAuction(final long auctionId)
     {
-        LOGGER.info("Closing Auction {}", auctionId);
         final var optionalAuction = getAuctionById(auctionId);
         if (optionalAuction.isEmpty())
         {
@@ -202,6 +201,7 @@ public class Auctions
 
         if (transitionAuction(auction, AuctionStatus.OPEN, AuctionStatus.CLOSED))
         {
+            LOGGER.info("Closing auction with id {}", auctionId);
             broadcastStateUpdate(auctionId);
         }
 
@@ -213,7 +213,7 @@ public class Auctions
      */
     public void removeAuction(final long auctionId)
     {
-        LOGGER.info("Removing Auction {}", auctionId);
+        LOGGER.info("Removing auction with id {}", auctionId);
         auctionList.removeIf(auction -> auction.getAuctionId() == auctionId);
     }
 
@@ -251,7 +251,6 @@ public class Auctions
      */
     public void addBid(final long auctionId, final long participantId, final long price, final String correlationId)
     {
-        LOGGER.info("Bid added to Auction {}", auctionId);
         final var optionalAuction = getAuctionById(auctionId);
         if (optionalAuction.isEmpty())
         {
@@ -263,16 +262,19 @@ public class Auctions
         final var validationResult = validateBid(auction, participantId, price);
         if (validationResult != AddAuctionBidResult.SUCCESS)
         {
+            logValidationResult(auctionId, participantId, price, validationResult);
             clusterClientResponder.rejectAddBid(correlationId, auctionId, validationResult);
             return;
         }
 
+        LOGGER.info("Price improvement bid of {} is now winning auction with id {}", price, auctionId);
         auction.setWinningBid(participantId, price, context.getClusterTime());
 
         clusterClientResponder.onAuctionUpdated(
             correlationId, auction.getAuctionId(), auction.getAuctionStatus(), auction.getCurrentPrice(),
             auction.getBidCount(), auction.getLastUpdateTime(), auction.getWinningParticipantId());
     }
+
 
     /**
      * Gets the list of auctions after sorting it by auction id
@@ -387,6 +389,52 @@ public class Auctions
             clusterClientResponder.onAuctionStateUpdate(
                 auction.getAuctionId(), auction.getAuctionStatus(), auction.getCurrentPrice(), auction.getBidCount(),
                 auction.getLastUpdateTime(), auction.getWinningParticipantId());
+        }
+    }
+
+    /**
+     * Logs the validation result
+     * @param auctionId the auction id
+     * @param participantId the participant id
+     * @param price the price
+     * @param validationResult the validation result
+     */
+    private void logValidationResult(
+        final long auctionId,
+        final long participantId,
+        final long price,
+        final AddAuctionBidResult validationResult)
+    {
+        switch (validationResult)
+        {
+            case CANNOT_SELF_BID ->
+            {
+                LOGGER.error("Participant {} cannot bid on their own auction with id {}", participantId, auctionId);
+            }
+            case AUCTION_NOT_OPEN ->
+            {
+                LOGGER.error("Auction with id {} is not open, cannot add bid", auctionId);
+            }
+            case PRICE_BELOW_CURRENT_WINNING_BID ->
+            {
+                LOGGER.error("Bid price {} is below current price for auction with id {}", price, auctionId);
+            }
+            case INVALID_PRICE ->
+            {
+                LOGGER.error("Bid price {} is invalid for auction with id {}", price, auctionId);
+            }
+            case UNKNOWN_AUCTION ->
+            {
+                LOGGER.error("Unknown auction with id {}", auctionId);
+            }
+            case UNKNOWN_PARTICIPANT ->
+            {
+                LOGGER.error("Unknown participant with id {}", participantId);
+            }
+            default ->
+            {
+                //do nothing
+            }
         }
     }
 }

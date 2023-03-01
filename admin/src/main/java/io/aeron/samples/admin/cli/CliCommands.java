@@ -24,9 +24,6 @@ import picocli.shell.jline3.PicocliCommands;
 
 import java.io.PrintWriter;
 
-import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_CLIENT_CONTROL;
-import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_PASSTHROUGH;
-
 /**
  * Cli Command parent
  */
@@ -87,28 +84,13 @@ public class CliCommands implements Runnable
      * @param offset        the offset
      * @param encodedLength the encoded length
      */
-    public void offerClusterMessage(final ExpandableArrayBuffer buffer, final int offset, final int encodedLength)
+    public void offerRingBufferMessage(final ExpandableArrayBuffer buffer, final int offset, final int encodedLength)
     {
-        final boolean success = adminChannel.write(CLUSTER_PASSTHROUGH, buffer, offset, encodedLength);
+        final boolean success = adminChannel.write(10, buffer, offset, encodedLength);
         if (!success)
         {
             out.println("Failed to send message to cluster interaction agent. Buffer is full.");
         }
     }
 
-    /**
-     * Offers a message to the admin channel that will be processed in the cluster client
-     *
-     * @param buffer        the buffer
-     * @param offset        the offset
-     * @param encodedLength the encoded length
-     */
-    public void offerClusterClientMessage(final ExpandableArrayBuffer buffer, final int offset, final int encodedLength)
-    {
-        final boolean success = adminChannel.write(CLUSTER_CLIENT_CONTROL, buffer, offset, encodedLength);
-        if (!success)
-        {
-            out.println("Failed to send message to cluster interaction agent. Buffer is full.");
-        }
-    }
 }

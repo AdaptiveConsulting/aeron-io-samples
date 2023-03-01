@@ -48,6 +48,7 @@ public class SbeDemuxer
     private final AddAuctionBidCommandDecoder addAuctionBidDecoder = new AddAuctionBidCommandDecoder();
     private final CreateAuctionCommandDecoder createAuctionDecoder = new CreateAuctionCommandDecoder();
     private final ListAuctionsCommandDecoder listAuctionsDecoder = new ListAuctionsCommandDecoder();
+    private final ListParticipantsCommandDecoder listParticipantsDecoder = new ListParticipantsCommandDecoder();
 
 
     /**
@@ -94,10 +95,10 @@ public class SbeDemuxer
             case CreateAuctionCommandDecoder.TEMPLATE_ID ->
             {
                 createAuctionDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
-                auctions.addAuction(createAuctionDecoder.correlationId(),
-                    createAuctionDecoder.createdByParticipantId(),
+                auctions.addAuction(createAuctionDecoder.createdByParticipantId(),
                     createAuctionDecoder.startTime(),
                     createAuctionDecoder.endTime(),
+                    createAuctionDecoder.correlationId(),
                     createAuctionDecoder.name(),
                     createAuctionDecoder.description());
             }
@@ -111,13 +112,15 @@ public class SbeDemuxer
             }
             case ListAuctionsCommandDecoder.TEMPLATE_ID ->
             {
+                listAuctionsDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
                 final List<Auction> auctionList = auctions.getAuctionList();
-                responder.returnAuctionList(auctionList);
+                responder.returnAuctionList(auctionList, listAuctionsDecoder.correlationId());
             }
             case ListParticipantsCommandDecoder.TEMPLATE_ID ->
             {
+                listParticipantsDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
                 final List<Participant> participantList = participants.getParticipantList();
-                responder.returnParticipantList(participantList);
+                responder.returnParticipantList(participantList, listParticipantsDecoder.correlationId());
             }
             default -> LOGGER.error("Unknown message template {}, ignored.", headerDecoder.templateId());
         }

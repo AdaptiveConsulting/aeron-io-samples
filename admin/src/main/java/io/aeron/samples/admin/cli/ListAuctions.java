@@ -16,8 +16,8 @@
 
 package io.aeron.samples.admin.cli;
 
-import io.aeron.samples.cluster.protocol.ListAuctionsCommandEncoder;
-import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
+import io.aeron.samples.cluster.admin.protocol.ListAuctionsEncoder;
+import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.ExpandableArrayBuffer;
 import picocli.CommandLine;
 
@@ -32,14 +32,14 @@ public class ListAuctions implements Runnable
     CliCommands parent;
     private final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder(); //cluster protocol header
-    private final ListAuctionsCommandEncoder listAuctionsCommandEncoder = new ListAuctionsCommandEncoder();
+    private final ListAuctionsEncoder listAuctionsCommandEncoder = new ListAuctionsEncoder();
     /**
      * Determines if a participant should be added
      */
     public void run()
     {
         listAuctionsCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
-        parent.offerClusterMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
+        parent.offerRingBufferMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
             listAuctionsCommandEncoder.encodedLength());
     }
 

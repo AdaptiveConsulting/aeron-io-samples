@@ -52,7 +52,17 @@ public class AdminClientEgressListener implements EgressListener
     private final AddAuctionBidCommandResultDecoder addBidResultDecoder = new AddAuctionBidCommandResultDecoder();
     private final AuctionListDecoder auctionListDecoder = new AuctionListDecoder();
     private final ParticipantListDecoder participantListDecoder = new ParticipantListDecoder();
+    private final PendingMessageManager pendingMessageManager;
     private LineReader lineReader;
+
+    /**
+     * Constructor
+     * @param pendingMessageManager the manager for pending messages
+     */
+    public AdminClientEgressListener(final PendingMessageManager pendingMessageManager)
+    {
+        this.pendingMessageManager = pendingMessageManager;
+    }
 
     @Override
     public void onMessage(
@@ -75,40 +85,50 @@ public class AdminClientEgressListener implements EgressListener
             case AddParticipantCommandResultDecoder.TEMPLATE_ID ->
             {
                 addParticipantDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
-                addParticipantDecoder.correlationId();
+                final String correlationId = addParticipantDecoder.correlationId();
                 final long addedId = addParticipantDecoder.participantId();
                 log("Participant added with id " + addedId, AttributedStyle.GREEN);
+                pendingMessageManager.markMessageAsReceived(correlationId);
             }
             case CreateAuctionCommandResultDecoder.TEMPLATE_ID ->
             {
                 createAuctionResultDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
-                if (createAuctionResultDecoder.result().equals(AddAuctionResult.SUCCESS))
+                final long auctionId = createAuctionResultDecoder.auctionId();
+                final AddAuctionResult result = createAuctionResultDecoder.result();
+                final String correlationId = createAuctionResultDecoder.correlationId();
+                pendingMessageManager.markMessageAsReceived(correlationId);
+                if (result.equals(AddAuctionResult.SUCCESS))
                 {
-                    log("Auction added with ID: " + createAuctionResultDecoder.auctionId(),
+                    log("Auction added with id: " + auctionId,
                         AttributedStyle.GREEN);
                 }
                 else
                 {
-                    log("Auction rejected with reason: " + createAuctionResultDecoder.result().name(),
-                        AttributedStyle.RED);
+                    log("Add auction rejected with reason: " + result.name(), AttributedStyle.RED);
                 }
             }
             case NewAuctionEventDecoder.TEMPLATE_ID ->
             {
                 newAuctionEventDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
-                log("New auction event: " + newAuctionEventDecoder.auctionId() + " with name " +
-                    newAuctionEventDecoder.name(), AttributedStyle.CYAN);
+                final long auctionId = newAuctionEventDecoder.auctionId();
+                final String auctionName = newAuctionEventDecoder.name();
+                log("New auction: " + "'" + auctionName + "' (" + auctionId + ")", AttributedStyle.CYAN);
             }
             case AddAuctionBidCommandResultDecoder.TEMPLATE_ID ->
             {
                 addBidResultDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
-                if (addBidResultDecoder.result().equals(AddAuctionBidResult.SUCCESS))
+                final long auctionId = addBidResultDecoder.auctionId();
+                final AddAuctionBidResult result = addBidResultDecoder.result();
+                final String correlationId = addBidResultDecoder.correlationId();
+
+                pendingMessageManager.markMessageAsReceived(correlationId);
+                if (result.equals(AddAuctionBidResult.SUCCESS))
                 {
-                    log("Bid added to auction " + addBidResultDecoder.auctionId(), AttributedStyle.GREEN);
+                    log("Bid added to auction " + auctionId, AttributedStyle.GREEN);
                 }
                 else
                 {
-                    log("Bid rejected with reason: " + addBidResultDecoder.result().name(), AttributedStyle.RED);
+                    log("Add bid rejected with reason: " + result.name(), AttributedStyle.RED);
                 }
             }
             case AuctionUpdateEventDecoder.TEMPLATE_ID -> displayAuctionUpdate(buffer, offset);
@@ -126,25 +146,43 @@ public class AdminClientEgressListener implements EgressListener
         final int bidCount = auctionUpdateEventDecoder.bidCount();
         final long currentPrice = auctionUpdateEventDecoder.currentPrice();
         final long winningParticipantId = auctionUpdateEventDecoder.winningParticipantId();
+        pendingMessageManager.markMessageAsReceived(auctionUpdateEventDecoder.correlationId());
 
         if (bidCount == 0)
         {
-            log("Auction update event: " + auctionId + " now in state " +
-                auctionStatus.name() + ". There have been " +
-                auctionUpdateEventDecoder.bidCount() + " bids.", AttributedStyle.YELLOW);
+            if (auctionStatus.equals(AuctionStatus.CLOSED))
+            {
+                log("Auction " + auctionId + " has ended. There were no bids.", AttributedStyle.YELLOW);
+            }
+            else
+            {
+                log("Auction " + auctionId + " is now in state " +
+                    auctionStatus.name() + ". There have been " +
+                    auctionUpdateEventDecoder.bidCount() + " bids.", AttributedStyle.YELLOW);
+            }
         }
         else
         {
-            log("Auction update event: " + auctionId + " now in state " +
-                auctionStatus.name() + ". There have been " + bidCount + " bids. Current price is " +
-                currentPrice + ". The winning bidder is " + winningParticipantId,
-                AttributedStyle.YELLOW);
+            if (auctionStatus.equals(AuctionStatus.CLOSED))
+            {
+                log("Auction " + auctionId + " has ended. Total " + bidCount + " bids. Winning price was " +
+                    currentPrice + ", and the winning bidder is " + winningParticipantId,
+                    AttributedStyle.YELLOW);
+            }
+            else
+            {
+                log("Auction update event: auction " + auctionId + " is now in state " +
+                    auctionStatus.name() + ". Total " + bidCount + " bids. Current price is " +
+                    currentPrice + ". The winning bidder is " + winningParticipantId,
+                    AttributedStyle.YELLOW);
+            }
         }
     }
 
     private void displayParticipants(final DirectBuffer buffer, final int offset)
     {
         participantListDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
+        pendingMessageManager.markMessageAsReceived(participantListDecoder.correlationId());
         final ParticipantListDecoder.ParticipantsDecoder participants = participantListDecoder.participants();
         final int count = participants.count();
         if (0 == count)
@@ -160,7 +198,7 @@ public class AdminClientEgressListener implements EgressListener
                 participants.next();
                 final long participantId = participants.participantId();
                 final String name = participants.name();
-                log("Participant: " + participantId + " name: " + name, AttributedStyle.YELLOW);
+                log("Participant: id " + participantId + " name: '" + name + "'", AttributedStyle.YELLOW);
             }
         }
     }
@@ -168,6 +206,7 @@ public class AdminClientEgressListener implements EgressListener
     private void displayAuctions(final DirectBuffer buffer, final int offset)
     {
         auctionListDecoder.wrapAndApplyHeader(buffer, offset, messageHeaderDecoder);
+        pendingMessageManager.markMessageAsReceived(auctionListDecoder.correlationId());
         final AuctionListDecoder.AuctionsDecoder auction = auctionListDecoder.auctions();
         final int count = auction.count();
         if (0 == count)
@@ -191,7 +230,7 @@ public class AdminClientEgressListener implements EgressListener
                 final AuctionStatus status = auction.status();
                 final String name = auction.name();
 
-                log("Auction ID: " + auctionId + " with name " + name + " created by " + createdBy +
+                log("Auction '" + name + "' with id " + auctionId + " created by " + createdBy +
                     " in state " + status.name(), AttributedStyle.YELLOW);
 
                 if (winningParticipantId != -1)

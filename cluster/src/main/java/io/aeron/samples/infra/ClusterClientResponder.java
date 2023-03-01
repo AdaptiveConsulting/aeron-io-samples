@@ -110,13 +110,17 @@ public interface ClusterClientResponder
 
     /**
      * Lists all auctions in the cluster
-     * @param auctionList the list of auctions to return
+     *
+     * @param auctionList   the list of auctions to return
+     * @param correlationId
      */
-    void returnAuctionList(List<Auction> auctionList);
+    void returnAuctionList(List<Auction> auctionList, String correlationId);
 
     /**
      * Lists all participants in the cluster
+     *
      * @param participantList the list of participants to return
+     * @param correlationId
      */
-    void returnParticipantList(List<Participant> participantList);
+    void returnParticipantList(List<Participant> participantList, String correlationId);
 }

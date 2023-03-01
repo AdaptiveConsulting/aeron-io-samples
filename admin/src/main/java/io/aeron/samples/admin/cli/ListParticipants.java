@@ -16,8 +16,8 @@
 
 package io.aeron.samples.admin.cli;
 
-import io.aeron.samples.cluster.protocol.ListParticipantsCommandEncoder;
-import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
+import io.aeron.samples.cluster.admin.protocol.ListParticipantsEncoder;
+import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.ExpandableArrayBuffer;
 import picocli.CommandLine;
 
@@ -32,14 +32,14 @@ public class ListParticipants implements Runnable
     CliCommands parent;
     private final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder(); //cluster protocol header
-    private final ListParticipantsCommandEncoder listCommandEncoder = new ListParticipantsCommandEncoder();
+    private final ListParticipantsEncoder listCommandEncoder = new ListParticipantsEncoder();
     /**
      * Determines if a participant should be added
      */
     public void run()
     {
         listCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
-        parent.offerClusterMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
+        parent.offerRingBufferMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
             listCommandEncoder.encodedLength());
     }
 

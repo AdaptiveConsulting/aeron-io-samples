@@ -16,12 +16,10 @@
 
 package io.aeron.samples.admin.cli;
 
-import io.aeron.samples.cluster.protocol.AddAuctionBidCommandEncoder;
-import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
+import io.aeron.samples.cluster.admin.protocol.AddAuctionBidEncoder;
+import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.ExpandableArrayBuffer;
 import picocli.CommandLine;
-
-import java.util.UUID;
 
 /**
  * Adds an auction to the cluster
@@ -47,20 +45,17 @@ public class AddAuctionBid implements Runnable
 
     private final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder(); //cluster protocol header
-    private final AddAuctionBidCommandEncoder bidCommandEncoder = new AddAuctionBidCommandEncoder();
+    private final AddAuctionBidEncoder addAuctionBidEncoder = new AddAuctionBidEncoder();
     /**
      * Determines if a participant should be added
      */
     public void run()
     {
-        bidCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
-        bidCommandEncoder.auctionId(auctionId);
-        bidCommandEncoder.addedByParticipantId(participantId);
-        bidCommandEncoder.price(price);
-        bidCommandEncoder.correlationId(UUID.randomUUID().toString());
-        parent.offerClusterMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
-            bidCommandEncoder.encodedLength());
+        addAuctionBidEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        addAuctionBidEncoder.auctionId(auctionId);
+        addAuctionBidEncoder.addedByParticipantId(participantId);
+        addAuctionBidEncoder.price(price);
+        parent.offerRingBufferMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
+            addAuctionBidEncoder.encodedLength());
     }
-
-
 }
