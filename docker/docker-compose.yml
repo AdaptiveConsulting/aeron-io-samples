@@ -1,7 +1,7 @@
 version: '3.8'
 name: 'aeron'
 services:
-  engine0:
+  node0:
     build:
       context: ../cluster
     hostname: cluster0
@@ -13,7 +13,7 @@ services:
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
       - CLUSTER_NODE=0
       - CLUSTER_PORT_BASE=9000
-  engine1:
+  node1:
     build:
       context: ../cluster
     hostname: cluster1
@@ -25,7 +25,7 @@ services:
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
       - CLUSTER_NODE=1
       - CLUSTER_PORT_BASE=9000
-  engine2:
+  node2:
     build:
       context: ../cluster
     hostname: cluster2
@@ -41,8 +41,8 @@ services:
     build:
       context: ../admin
     depends_on:
-      - engine0
-    hostname: gw
+      - node0
+    hostname: admin
     shm_size: '1gb'
     stdin_open: true
     tty: true

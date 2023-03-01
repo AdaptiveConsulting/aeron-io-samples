@@ -16,13 +16,12 @@
 
 package io.aeron.samples.admin.cli;
 
-import io.aeron.samples.cluster.protocol.CreateAuctionCommandEncoder;
-import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
+import io.aeron.samples.cluster.admin.protocol.AddAuctionEncoder;
+import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.SystemEpochClock;
 import picocli.CommandLine;
 
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,21 +44,20 @@ public class AddAuction implements Runnable
 
     private final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder(); //cluster protocol header
-    private final CreateAuctionCommandEncoder createAuctionCommandEncoder = new CreateAuctionCommandEncoder();
+    private final AddAuctionEncoder addAuctionEncoder = new AddAuctionEncoder();
     /**
      * Determines if a participant should be added
      */
     public void run()
     {
-        createAuctionCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
-        createAuctionCommandEncoder.createdByParticipantId(participantId);
-        createAuctionCommandEncoder.startTime(SystemEpochClock.INSTANCE.time() + TimeUnit.MILLISECONDS.toMillis(100));
-        createAuctionCommandEncoder.endTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(35));
-        createAuctionCommandEncoder.correlationId(UUID.randomUUID().toString());
-        createAuctionCommandEncoder.name(auctionName);
-        createAuctionCommandEncoder.description("Admin auction");
-        parent.offerClusterMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
-            createAuctionCommandEncoder.encodedLength());
+        addAuctionEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        addAuctionEncoder.createdByParticipantId(participantId);
+        addAuctionEncoder.startTime(SystemEpochClock.INSTANCE.time() + TimeUnit.MILLISECONDS.toMillis(100));
+        addAuctionEncoder.endTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(35));
+        addAuctionEncoder.name(auctionName);
+        addAuctionEncoder.description("Admin auction");
+        parent.offerRingBufferMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
+            addAuctionEncoder.encodedLength());
     }
 
 

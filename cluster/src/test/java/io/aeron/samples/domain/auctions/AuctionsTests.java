@@ -49,7 +49,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1002L, 31003L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31003L, correlationId, "name", "description");
 
         verify(clientResponder).onAuctionAdded(correlationId, 1L, AddAuctionResult.SUCCESS, 1002L, 31003L,
             "name", "description");
@@ -80,7 +80,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId1, 1000L, 1002L, 31004L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31004L, correlationId1, "name", "description");
 
         verify(clientResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 31004L,
             "name", "description");
@@ -143,7 +143,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1001L, 31002L, "name", "description");
+        auctions.addAuction(1000L, 1001L, 31002L, correlationId, "name", "description");
 
         verify(clientResponder).rejectAddAuction(correlationId, AddAuctionResult.UNKNOWN_PARTICIPANT);
     }
@@ -157,7 +157,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 999L, 31002L, "name", "description");
+        auctions.addAuction(1000L, 999L, 31002L, correlationId, "name", "description");
 
         verify(clientResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_START_TIME);
     }
@@ -171,7 +171,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1002L, 999L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 999L, correlationId, "name", "description");
 
         verify(clientResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_END_TIME);
     }
@@ -185,7 +185,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1002L, 31003L, null, "description");
+        auctions.addAuction(1000L, 1002L, 31003L, correlationId, null, "description");
 
         verify(clientResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_NAME);
     }
@@ -199,7 +199,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1002L, 31003L, "name", null);
+        auctions.addAuction(1000L, 1002L, 31003L, correlationId, "name", null);
 
         verify(clientResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_DESCRIPTION);
     }
@@ -213,7 +213,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1002L, 31003L, "", "description");
+        auctions.addAuction(1000L, 1002L, 31003L, correlationId, "", "description");
 
         verify(clientResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_NAME);
     }
@@ -227,7 +227,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1002L, 31003L, "name", "");
+        auctions.addAuction(1000L, 1002L, 31003L, correlationId, "name", "");
 
         verify(clientResponder).rejectAddAuction(correlationId, AddAuctionResult.INVALID_DESCRIPTION);
     }
@@ -243,7 +243,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId1, 1000L, 1002L, 31004L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31004L, correlationId1, "name", "description");
 
         verify(clientResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 31004L,
             "name", "description");
@@ -264,7 +264,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId1, 1000L, 1002L, 31004L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31004L, correlationId1, "name", "description");
 
         verify(clientResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 31004L,
             "name", "description");
@@ -300,7 +300,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId1, 1000L, 1002L, 31004L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31004L, correlationId1, "name", "description");
 
         verify(clientResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 31004L,
             "name", "description");
@@ -321,7 +321,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId1, 1000L, 1002L, 31004L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31004L, correlationId1, "name", "description");
 
         verify(clientResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 31004L,
             "name", "description");
@@ -344,7 +344,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId1, 1000L, 1002L, 31005L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31005L, correlationId1, "name", "description");
 
         //add first bid at 99L
         verify(clientResponder).onAuctionAdded(correlationId1, 1L, AddAuctionResult.SUCCESS, 1002L, 31005L,
@@ -372,7 +372,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1002L, 31003L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31003L, correlationId, "name", "description");
 
         verify(clientResponder).onAuctionAdded(correlationId, 1L, AddAuctionResult.SUCCESS, 1002L, 31003L,
             "name", "description");
@@ -408,7 +408,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1002L, 31003L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31003L, correlationId, "name", "description");
 
         verify(clientResponder).onAuctionAdded(correlationId, 1L, AddAuctionResult.SUCCESS, 1002L, 31003L,
             "name", "description");
@@ -444,7 +444,7 @@ class AuctionsTests
 
         final Auctions auctions =
             new Auctions(sessionMessageContext, participants, clientResponder, timerManager);
-        auctions.addAuction(correlationId, 1000L, 1002L, 31003L, "name", "description");
+        auctions.addAuction(1000L, 1002L, 31003L, correlationId, "name", "description");
 
         verify(clientResponder).onAuctionAdded(correlationId, 1L, AddAuctionResult.SUCCESS, 1002L, 31003L,
             "name", "description");

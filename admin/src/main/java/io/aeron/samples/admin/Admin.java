@@ -51,7 +51,6 @@ import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import static io.aeron.samples.admin.cluster.MessageTypes.CLUSTER_CLIENT_CONTROL;
 import static io.aeron.samples.admin.util.ClusterConnectUtil.getThisHostName;
 import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetClusterHostsFromEnv;
 import static io.aeron.samples.admin.util.ClusterConnectUtil.tryGetDumbTerminalFromEnv;
@@ -114,9 +113,8 @@ public class Admin
 
             String line;
             terminal.writer().println("-------------------------------------------------");
-            terminal.writer().println("Welcome to the Aeron Cluster Sample Admin Console");
+            terminal.writer().println(" Welcome to the Aeron Cluster QuickStart Console");
             terminal.writer().println("-------------------------------------------------");
-            terminal.writer().println("Useful commands: help, exit");
             terminal.writer().println("");
 
             autoConnectCluster(adminClusterChannel, terminal.writer());
@@ -171,7 +169,7 @@ public class Admin
         connectClusterEncoder.port(tryGetResponsePortFromEnv());
         connectClusterEncoder.clusterHosts(tryGetClusterHostsFromEnv());
         connectClusterEncoder.localhostName(getThisHostName());
-        adminClusterChannel.write(CLUSTER_CLIENT_CONTROL, buffer, 0,
+        adminClusterChannel.write(10, buffer, 0,
             MessageHeaderEncoder.ENCODED_LENGTH + connectClusterEncoder.encodedLength());
     }
 

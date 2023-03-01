@@ -62,7 +62,7 @@ public class ConnectCluster implements Runnable
         connectClusterEncoder.clusterHosts(hostnames);
         connectClusterEncoder.localhostName(localhost);
 
-        parent.offerClusterClientMessage(
+        parent.offerRingBufferMessage(
             buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH + connectClusterEncoder.encodedLength());
     }
 

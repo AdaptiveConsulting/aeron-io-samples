@@ -17,14 +17,8 @@
 package io.aeron.samples.admin.cluster;
 
 /**
- * Message types
+ * A message that has been sent to the cluster but has not yet been received by the client.
  */
-public final class MessageTypes
+public record PendingMessage(long timeoutAt, String correlationId, String messageType)
 {
-    private MessageTypes()
-    {
-    }
-
-    public static final int CLUSTER_PASSTHROUGH = 1;
-    public static final int CLUSTER_CLIENT_CONTROL = 2;
 }

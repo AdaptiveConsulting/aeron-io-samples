@@ -33,7 +33,7 @@ checkstyle {
 
 version = "0.0.1-SNAPSHOT"
 
-defaultTasks("check", "build", "test", "uberJar")
+defaultTasks("clean", "check", "build", "test", "uberJar")
 
 allprojects {
     repositories {

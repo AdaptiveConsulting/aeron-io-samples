@@ -16,12 +16,10 @@
 
 package io.aeron.samples.admin.cli;
 
-import io.aeron.samples.cluster.protocol.AddParticipantCommandEncoder;
-import io.aeron.samples.cluster.protocol.MessageHeaderEncoder;
+import io.aeron.samples.cluster.admin.protocol.AddParticipantEncoder;
+import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
 import org.agrona.ExpandableArrayBuffer;
 import picocli.CommandLine;
-
-import java.util.UUID;
 
 /**
  * Adds a participant to the cluster
@@ -41,18 +39,17 @@ public class AddParticipant implements Runnable
 
     private final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder(); //cluster protocol header
-    private final AddParticipantCommandEncoder addParticipantCommandEncoder = new AddParticipantCommandEncoder();
+    private final AddParticipantEncoder addParticipantEncoder = new AddParticipantEncoder();
     /**
      * Determines if a participant should be added
      */
     public void run()
     {
-        addParticipantCommandEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
-        addParticipantCommandEncoder.participantId(participantId);
-        addParticipantCommandEncoder.correlationId(UUID.randomUUID().toString());
-        addParticipantCommandEncoder.name(participantName);
-        parent.offerClusterMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
-            addParticipantCommandEncoder.encodedLength());
+        addParticipantEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        addParticipantEncoder.participantId(participantId);
+        addParticipantEncoder.name(participantName);
+        parent.offerRingBufferMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
+            addParticipantEncoder.encodedLength());
     }
 
 }

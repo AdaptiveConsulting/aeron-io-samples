@@ -137,6 +137,7 @@
         <field name="bidCount" id="4" type="int32"/>
         <field name="lastUpdate" id="5" type="time"/>
         <field name="winningParticipantId" id="6" type="int64"/>
+        <field name="correlationId" id="7" type="uuidString"/>
     </sbe:message>
 
     <sbe:message name="AuctionSnapshot"
@@ -162,10 +163,12 @@
     <sbe:message name="ListAuctionsCommand"
                  id="30"
                  description="Requests the cluster to list all auctions">
+        <field name="correlationId" id="1" type="uuidString"/>
     </sbe:message>
 
     <sbe:message name="AuctionList" id="31">
-        <group name="auctions" id="1" dimensionType="groupSizeEncoding">
+        <field name="correlationId" id="1" type="uuidString"/>
+        <group name="auctions" id="2" dimensionType="groupSizeEncoding">
             <field name="auctionId" id="1" type="int64"/>
             <field name="createdByParticipantId" id="2" type="int64"/>
             <field name="startTime" id="3" type="time"/>
@@ -180,10 +183,12 @@
     <sbe:message name="ListParticipantsCommand"
                  id="32"
                  description="Requests the cluster to list all participants">
+        <field name="correlationId" id="1" type="uuidString"/>
     </sbe:message>
 
     <sbe:message name="ParticipantList" id="33">
-        <group name="participants" id="1" dimensionType="groupSizeEncoding">
+        <field name="correlationId" id="1" type="uuidString"/>
+        <group name="participants" id="2" dimensionType="groupSizeEncoding">
             <field name="participantId" id="1" type="int64"/>
             <data name="name" id="2" type="varUtf8Encoding"/>
         </group>

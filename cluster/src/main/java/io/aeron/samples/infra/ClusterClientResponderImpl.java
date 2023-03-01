@@ -179,9 +179,10 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
     }
 
     @Override
-    public void returnAuctionList(final List<Auction> auctionList)
+    public void returnAuctionList(final List<Auction> auctionList, final String correlationId)
     {
         auctionListEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        auctionListEncoder.correlationId(correlationId);
 
         final AuctionListEncoder.AuctionsEncoder auctionsEncoder =
             auctionListEncoder.auctionsCount(auctionList.size());
@@ -204,9 +205,10 @@ public class ClusterClientResponderImpl implements ClusterClientResponder
     }
 
     @Override
-    public void returnParticipantList(final List<Participant> participants)
+    public void returnParticipantList(final List<Participant> participants, final String correlationId)
     {
         participantListEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
+        participantListEncoder.correlationId(correlationId);
 
         final ParticipantListEncoder.ParticipantsEncoder participantsEncoder =
             participantListEncoder.participantsCount(participants.size());
