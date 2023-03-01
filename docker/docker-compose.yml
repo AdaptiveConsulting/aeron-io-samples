@@ -37,12 +37,12 @@ services:
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
       - CLUSTER_NODE=2
       - CLUSTER_PORT_BASE=9000
-  admin:
+  admin1:
     build:
       context: ../admin
     depends_on:
       - node0
-    hostname: admin
+    hostname: admin1
     shm_size: '1gb'
     stdin_open: true
     tty: true
@@ -51,6 +51,24 @@ services:
         ipv4_address: 172.16.202.10
     environment:
       - AUTO_CONNECT=true
+      - PARTICIPANT_ID=500
+      - DUMB_TERMINAL=true
+      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
+  admin2:
+    build:
+      context: ../admin
+    depends_on:
+      - node0
+    hostname: admin2
+    shm_size: '1gb'
+    stdin_open: true
+    tty: true
+    networks:
+      internal_bus:
+        ipv4_address: 172.16.202.11
+    environment:
+      - AUTO_CONNECT=true
+      - PARTICIPANT_ID=501
       - DUMB_TERMINAL=true
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
 
