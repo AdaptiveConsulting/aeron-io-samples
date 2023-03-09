@@ -151,6 +151,26 @@ public class Auctions
     }
 
     /**
+     * Restores the auction id generator from snapshot
+     *
+     * @param auctionId the auction id
+     */
+    public void restoreAuctionId(final long auctionId)
+    {
+        LOGGER.info("Auction ID restored to {}", auctionId);
+        idGenerator.set(auctionId);
+    }
+
+    /**
+     * Gets the current auction id; used for snapshotting
+     * @return the next auction id
+     */
+    public long getAuctionId()
+    {
+        return idGenerator.get();
+    }
+
+    /**
      * Opens an auction if it was in the PRE_OPEN state and is known.
      * @param auctionId the auction id
      */

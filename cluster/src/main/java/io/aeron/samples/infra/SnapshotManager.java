@@ -21,6 +21,8 @@ import io.aeron.Image;
 import io.aeron.Publication;
 import io.aeron.logbuffer.FragmentHandler;
 import io.aeron.logbuffer.Header;
+import io.aeron.samples.cluster.protocol.AuctionIdSnapshotDecoder;
+import io.aeron.samples.cluster.protocol.AuctionIdSnapshotEncoder;
 import io.aeron.samples.cluster.protocol.AuctionSnapshotDecoder;
 import io.aeron.samples.cluster.protocol.AuctionSnapshotEncoder;
 import io.aeron.samples.cluster.protocol.EndOfSnapshotDecoder;
@@ -57,6 +59,8 @@ public class SnapshotManager implements FragmentHandler
     private final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
     private final AuctionSnapshotDecoder auctionDecoder = new AuctionSnapshotDecoder();
     private final AuctionSnapshotEncoder auctionEncoder = new AuctionSnapshotEncoder();
+    private final AuctionIdSnapshotEncoder auctionIdEncoder = new AuctionIdSnapshotEncoder();
+    private final AuctionIdSnapshotDecoder auctionIdDecoder = new AuctionIdSnapshotDecoder();
     private final ParticipantSnapshotDecoder participantDecoder = new ParticipantSnapshotDecoder();
     private final ParticipantSnapshotEncoder participantEncoder = new ParticipantSnapshotEncoder();
     private final EndOfSnapshotEncoder endOfSnapshotEncoder = new EndOfSnapshotEncoder();
@@ -87,6 +91,7 @@ public class SnapshotManager implements FragmentHandler
         LOGGER.info("Starting snapshot...");
         offerParticipants(snapshotPublication);
         offerAuctions(snapshotPublication);
+        offerAuctionIdGenerator(snapshotPublication);
         offerEndOfSnapshotMarker(snapshotPublication);
         LOGGER.info("Snapshot complete");
     }
@@ -162,6 +167,11 @@ public class SnapshotManager implements FragmentHandler
                     LOGGER.warn("Auction {} has already started; not restoring", auctionDecoder.auctionId());
                 }
             }
+            case AuctionIdSnapshotDecoder.TEMPLATE_ID ->
+            {
+                auctionIdDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
+                auctions.restoreAuctionId(auctionIdDecoder.lastId());
+            }
             case EndOfSnapshotDecoder.TEMPLATE_ID -> snapshotFullyLoaded = true;
             default -> LOGGER.warn("Unknown snapshot message template id: {}", headerDecoder.templateId());
         }
@@ -173,7 +183,6 @@ public class SnapshotManager implements FragmentHandler
      */
     private void offerParticipants(final ExclusivePublication snapshotPublication)
     {
-        headerEncoder.wrap(buffer, 0);
         participants.getParticipantList().forEach(participant ->
         {
             participantEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
@@ -185,12 +194,22 @@ public class SnapshotManager implements FragmentHandler
     }
 
     /**
+     * Offers the auction id generator's last id to the snapshot publication using the AuctionIdSnapshotEncoder
+     * @param snapshotPublication the publication to offer the snapshot data to
+     */
+    private void offerAuctionIdGenerator(final ExclusivePublication snapshotPublication)
+    {
+        auctionIdEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
+        auctionIdEncoder.lastId(auctions.getAuctionId());
+        retryingOffer(snapshotPublication, buffer, headerEncoder.encodedLength() + auctionIdEncoder.encodedLength());
+    }
+
+    /**
      * Offers the auctions to the snapshot publication using the AuctionSnapshotEncoder
      * @param snapshotPublication the publication to offer the snapshot data to
      */
     private void offerAuctions(final ExclusivePublication snapshotPublication)
     {
-        headerEncoder.wrap(buffer, 0);
         auctions.getAuctionList().forEach(auction ->
         {
             auctionEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
@@ -212,7 +231,6 @@ public class SnapshotManager implements FragmentHandler
 
     private void offerEndOfSnapshotMarker(final ExclusivePublication snapshotPublication)
     {
-        headerEncoder.wrap(buffer, 0);
         endOfSnapshotEncoder.wrapAndApplyHeader(buffer, 0, headerEncoder);
         retryingOffer(snapshotPublication, buffer,
             headerEncoder.encodedLength() + endOfSnapshotEncoder.encodedLength());
