@@ -155,6 +155,12 @@
         <data name="description" id="10" type="varUtf8Encoding"/>
     </sbe:message>
 
+    <sbe:message name="AuctionIdSnapshot"
+                 id="17"
+                 description="Snapshot for the Auction ID generator">
+        <field name="lastId" id="1" type="int64"/>
+    </sbe:message>
+
     <sbe:message name="EndOfSnapshot"
                  id="20"
                  description="Marks the end of snapshot data">
