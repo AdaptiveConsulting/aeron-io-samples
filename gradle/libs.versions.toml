@@ -9,7 +9,7 @@ logbackVersion = "1.4.5"
 picocliVersion = "4.7.1"
 jlineVersion = "3.23.0"
 picoJlineVersion = "4.7.1"
-mockitoVersion = "5.1.1"
+mockitoVersion = "5.2.0"
 junitPlatformLauncherVersion = "1.9.2"
 
 [libraries]
