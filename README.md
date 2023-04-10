@@ -17,7 +17,7 @@ Running the samples in Docker is the easiest way to get started. See the [docker
 # Development requirements
 
 - Java 17 (Zulu 17.0.6 was used for development)
-- Gradle 8.0.1
+- Gradle 8.0.2
 
 # Runtime requirements
 
