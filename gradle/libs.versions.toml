@@ -1,7 +1,7 @@
 [versions]
 junitVersion = "5.9.2"
 checkstyleVersion = "10.9.3"
-aeronVersion = "1.41.1"
+aeronVersion = "1.41.2"
 sbeVersion = "1.28.2"
 agronaVersion = "1.18.1"
 slf4jVersion = "2.0.7"
