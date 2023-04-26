@@ -10,7 +10,7 @@ picocliVersion = "4.7.3"
 jlineVersion = "3.23.0"
 picoJlineVersion = "4.7.3"
 mockitoVersion = "5.3.1"
-junitPlatformLauncherVersion = "1.9.2"
+junitPlatformLauncherVersion = "1.9.3"
 
 [libraries]
 aeron = { group = "io.aeron", name = "aeron-all", version.ref = "aeronVersion" }
