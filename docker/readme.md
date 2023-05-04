@@ -7,8 +7,8 @@ The cluster nodes will run an election, selecting one of the nodes as the leader
 
 Containers will be named as follows:
 
-| Container      | Description  |
-|----------------|--------------|
+| Container       | Description  |
+|-----------------|--------------|
 | aeron-engine0-1 | Cluster Node |
 | aeron-engine1-1 | Cluster Node |
 | aeron-engine2-1 | Cluster Node |

@@ -55,18 +55,18 @@ run.
 
 ## Protocol Notes
 
-The admin uses a simple protocol via SBE to communicate from the CLI commands to an Agrona Agent running the cluster communications. 
+The admin uses a simple protocol via SBE to communicate from the CLI commands to an Agrona Agent running the cluster communications.
 This Agrona agent then converts from the CLI SBE protocol to the cluster SBE protocol.
 This approach is typical for gateways, for example you may have a web socket gateway that uses a json protocol, and then a cluster-specific protocol from the gateway to the cluster.
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| AUTO_CONNECT| If set to `true`, the admin will automatically connect to the cluster on startup. | `false` |
-| PARTICIPANT_ID | The participant ID to use when connecting to the cluster. | `0` |
-| DUMB_TERMINAL | If set to `true`, the admin will not use ANSI escape codes for terminal output. | `false` |
-| CLUSTER_ADDRESSES | A comma separated list of cluster addresses to connect to. | `localhost` |
+| Variable          | Description                                                                       | Default     |
+|-------------------|-----------------------------------------------------------------------------------|-------------|
+| AUTO_CONNECT      | If set to `true`, the admin will automatically connect to the cluster on startup. | `false`     |
+| PARTICIPANT_ID    | The participant ID to use when connecting to the cluster.                         | `0`         |
+| DUMB_TERMINAL     | If set to `true`, the admin will not use ANSI escape codes for terminal output.   | `false`     |
+| CLUSTER_ADDRESSES | A comma separated list of cluster addresses to connect to.                        | `localhost` |
 
 ## Uber Jar Manifest notes
 
