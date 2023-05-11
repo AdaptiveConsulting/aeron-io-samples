@@ -71,6 +71,18 @@ services:
       - PARTICIPANT_ID=501
       - DUMB_TERMINAL=true
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
+  backup:
+    build:
+      context: ../backup
+    hostname: backup
+    shm_size: '1gb'
+    networks:
+      internal_bus:
+        ipv4_address: 172.16.202.20
+    environment:
+      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
+      - CLUSTER_PORT_BASE=9000
+      - BACKUP_HOST=172.16.202.20
 
 networks:
   internal_bus:

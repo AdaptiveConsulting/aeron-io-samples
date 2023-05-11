@@ -15,4 +15,4 @@
  */
 
 rootProject.name = "aeron-io-samples"
-include("cluster", "cluster-protocol", "admin")
+include("cluster", "cluster-protocol", "admin", "backup")

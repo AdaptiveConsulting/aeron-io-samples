@@ -44,6 +44,10 @@ public class AddAuction implements Runnable
     @CommandLine.Option(names = "created-by", description = "Created by participant id")
     private Integer participantId = tryGetParticipantId();
 
+    @SuppressWarnings("all")
+    @CommandLine.Option(names = "duration", description = "Auction duration in seconds (default: 25 seconds)")
+    private Integer duration = 25;
+
     private final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer(1024);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder(); //cluster protocol header
     private final AddAuctionEncoder addAuctionEncoder = new AddAuctionEncoder();
@@ -55,7 +59,7 @@ public class AddAuction implements Runnable
         addAuctionEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         addAuctionEncoder.createdByParticipantId(participantId);
         addAuctionEncoder.startTime(SystemEpochClock.INSTANCE.time() + TimeUnit.MILLISECONDS.toMillis(100));
-        addAuctionEncoder.endTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(25));
+        addAuctionEncoder.endTime(SystemEpochClock.INSTANCE.time() + TimeUnit.SECONDS.toMillis(duration));
         addAuctionEncoder.name(auctionName);
         addAuctionEncoder.description("Admin auction");
         parent.offerRingBufferMessage(buffer, 0, MessageHeaderEncoder.ENCODED_LENGTH +
