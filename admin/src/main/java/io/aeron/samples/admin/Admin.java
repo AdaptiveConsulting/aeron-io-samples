@@ -21,6 +21,7 @@ import io.aeron.samples.admin.cluster.ClusterInteractionAgent;
 import io.aeron.samples.admin.util.EnvironmentUtil;
 import io.aeron.samples.cluster.admin.protocol.ConnectClusterEncoder;
 import io.aeron.samples.cluster.admin.protocol.MessageHeaderEncoder;
+import org.agrona.BufferUtil;
 import org.agrona.CloseHelper;
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.AgentRunner;
@@ -46,7 +47,6 @@ import picocli.shell.jline3.PicocliCommands;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,7 +74,8 @@ public class Admin
         final String prompt = "admin > ";
         final AtomicBoolean running = new AtomicBoolean(true);
         final IdleStrategy idleStrategy = new SleepingMillisIdleStrategy();
-        final UnsafeBuffer adminClusterBuffer = new UnsafeBuffer(ByteBuffer.allocate(8192 + TRAILER_LENGTH));
+        final UnsafeBuffer adminClusterBuffer =
+            new UnsafeBuffer(BufferUtil.allocateDirectAligned(8192 + TRAILER_LENGTH, 8));
         final OneToOneRingBuffer adminClusterChannel = new OneToOneRingBuffer(adminClusterBuffer);
 
         final ClusterInteractionAgent clusterInteractionAgent = new ClusterInteractionAgent(adminClusterChannel,

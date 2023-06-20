@@ -1,15 +1,15 @@
 [versions]
 junitVersion = "5.9.3"
-checkstyleVersion = "10.11.0"
-aeronVersion = "1.41.3"
-sbeVersion = "1.28.2"
-agronaVersion = "1.18.1"
+checkstyleVersion = "10.12.0"
+aeronVersion = "1.41.4"
+sbeVersion = "1.28.3"
+agronaVersion = "1.18.2"
 slf4jVersion = "2.0.7"
-logbackVersion = "1.4.7"
-picocliVersion = "4.7.3"
+logbackVersion = "1.4.8"
+picocliVersion = "4.7.4"
 jlineVersion = "3.23.0"
-picoJlineVersion = "4.7.3"
-mockitoVersion = "5.3.1"
+picoJlineVersion = "4.7.4"
+mockitoVersion = "5.4.0"
 junitPlatformLauncherVersion = "1.9.3"
 
 [libraries]
