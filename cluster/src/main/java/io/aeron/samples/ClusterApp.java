@@ -25,6 +25,7 @@ import org.agrona.concurrent.SystemEpochClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -54,6 +55,7 @@ public class ClusterApp
         final ClusterConfig clusterConfig = ClusterConfig.create(nodeId, hostAddresses, hostAddresses, portBase,
             new AppClusteredService());
         clusterConfig.consensusModuleContext().ingressChannel("aeron:udp");
+        clusterConfig.baseDir(getBaseDir(nodeId));
 
         //this may need tuning for your environment.
         clusterConfig.consensusModuleContext().leaderHeartbeatTimeoutNs(TimeUnit.SECONDS.toNanos(3));
@@ -72,6 +74,22 @@ public class ClusterApp
             barrier.await();
             LOGGER.info("Exiting");
         }
+    }
+
+    /***
+     * Get the base directory for the cluster configuration
+     * @param nodeId node id
+     * @return base directory
+     */
+    private static File getBaseDir(final int nodeId)
+    {
+        final String baseDir = System.getenv("BASE_DIR");
+        if (null == baseDir || baseDir.isEmpty())
+        {
+            return new File(System.getProperty("user.dir"), "node" + nodeId);
+        }
+
+        return new File(baseDir);
     }
 
     /**

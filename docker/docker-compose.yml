@@ -11,6 +11,7 @@ services:
         ipv4_address: 172.16.202.2
     environment:
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
+      - BASE_DIR=/root/jar/aeron-cluster
       - CLUSTER_NODE=0
       - CLUSTER_PORT_BASE=9000
   node1:
@@ -24,6 +25,7 @@ services:
     environment:
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
       - CLUSTER_NODE=1
+      - BASE_DIR=/root/jar/aeron-cluster
       - CLUSTER_PORT_BASE=9000
   node2:
     build:
@@ -36,6 +38,7 @@ services:
     environment:
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
       - CLUSTER_NODE=2
+      - BASE_DIR=/root/jar/aeron-cluster
       - CLUSTER_PORT_BASE=9000
   admin1:
     build:

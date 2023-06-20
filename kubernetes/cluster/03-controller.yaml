@@ -41,6 +41,8 @@ spec:
           env:
             - name: DNS_DELAY
               value: "true"
+            - name: BASE_DIR
+              value: "/root/jar/aeron-cluster"
             - name: CLUSTER_ADDRESSES
               value: aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.
             - name: POD_NAME
