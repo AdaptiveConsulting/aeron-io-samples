@@ -1,5 +1,3 @@
-import org.gradle.internal.impldep.junit.runner.Version.id
-
 /*
  * Copyright 2023 Adaptive Financial Consulting
  *
