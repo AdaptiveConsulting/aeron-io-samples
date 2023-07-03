@@ -48,7 +48,7 @@ sourceSets {
 testing {
     suites {
         // Configure the built-in test suite
-        val test by getting(JvmTestSuite::class) {
+        getting(JvmTestSuite::class) {
             // Use JUnit Jupiter test framework
             useJUnitJupiter(libs.versions.junitVersion.get())
         }
