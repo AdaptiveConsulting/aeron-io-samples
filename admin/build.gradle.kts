@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.junit.runner.Version.id
+
 /*
  * Copyright 2023 Adaptive Financial Consulting
  *
@@ -15,8 +17,7 @@
  */
 
 plugins {
-    application
-    checkstyle
+    id("java-application-conventions")
 }
 
 val generatedDir = file("${buildDir}/generated/src/main/java")
@@ -24,7 +25,6 @@ val codecGeneration = configurations.create("codecGeneration")
 
 dependencies {
     "codecGeneration"(libs.sbe)
-    checkstyle(libs.checkstyle)
     implementation(libs.agrona)
     implementation(libs.aeron)
     implementation(libs.slf4j)
@@ -42,16 +42,6 @@ application {
 sourceSets {
     main {
         java.srcDirs("src/main/java", generatedDir)
-    }
-}
-
-testing {
-    suites {
-        // Configure the built-in test suite
-        getting(JvmTestSuite::class) {
-            // Use JUnit Jupiter test framework
-            useJUnitJupiter(libs.versions.junitVersion.get())
-        }
     }
 }
 
