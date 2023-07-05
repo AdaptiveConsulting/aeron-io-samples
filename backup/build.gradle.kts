@@ -15,16 +15,10 @@
  */
 
 plugins {
-    application
-    checkstyle
-}
-
-repositories {
-    mavenCentral()
+    id("java-application-conventions")
 }
 
 dependencies {
-    checkstyle(libs.checkstyle)
     implementation(libs.agrona)
     implementation(libs.aeron)
     implementation(libs.slf4j)

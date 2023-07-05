@@ -15,16 +15,11 @@
  */
 
 plugins {
-    java
+    // Support convention plugins written in Kotlin. Convention plugins are build scripts in 'src/main' that automatically become available as plugins in the main build.
+    `kotlin-dsl`
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-        vendor.set(JvmVendorSpec.AZUL)
-    }
+repositories {
+    // Use the plugin portal to apply community plugins in convention plugins.
+    gradlePluginPortal()
 }
-
-version = "0.0.1-SNAPSHOT"
-
-defaultTasks("clean", "check", "build", "test", "uberJar")

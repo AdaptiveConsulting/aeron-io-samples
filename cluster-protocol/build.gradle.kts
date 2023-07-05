@@ -15,7 +15,7 @@
  */
 
 plugins {
-    `java-library`
+    id("java-library-conventions")
 }
 
 val generatedDir = file("${buildDir}/generated/src/main/java")
