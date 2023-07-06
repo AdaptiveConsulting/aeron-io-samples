@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if ! [ -x "$(command -v docker)" ]; then
   echo 'Error: docker is not installed. Please install it first.' >&2
   exit 1
@@ -27,6 +29,9 @@ docker build . -t admin --no-cache
 echo "➡️  Building cluster image..."
 cd ../cluster || exit
 docker build . -t cluster --no-cache
+echo "➡️  Building cluster backup image..."
+cd ../backup || exit
+docker build . -t backup --no-cache
 cd .. || exit
 echo "➡️  Removing old kubernetes namespaces (if they exist)..."
 kubectl delete ns aeron-io-sample-cluster
@@ -34,10 +39,14 @@ kubectl delete ns aeron-io-sample-admin
 echo "➡️  Loading docker images into minikube..."
 minikube image load admin:latest
 minikube image load cluster:latest
+minikube image load backup:latest
 echo "➡️  Applying admin..."
 cd ./kubernetes/admin || exit
 kubectl apply -f .
 echo "➡️  Applying cluster..."
 cd ../cluster || exit
+kubectl apply -f .
+echo "➡️  Applying cluster backup..."
+cd ../backup || exit
 kubectl apply -f .
 echo "➡️  Done"

@@ -16,6 +16,22 @@
 
 package io.aeron.samples;
 
+import static io.aeron.samples.cluster.ClusterConfig.MEMBER_FACING_PORT_OFFSET;
+import static java.lang.Integer.parseInt;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.concurrent.TimeUnit;
+
+import org.agrona.concurrent.ShutdownSignalBarrier;
+import org.agrona.concurrent.SystemEpochClock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.aeron.ChannelUri;
 import io.aeron.CommonContext;
 import io.aeron.archive.Archive;
@@ -27,18 +43,6 @@ import io.aeron.cluster.ClusterMember;
 import io.aeron.cluster.RecordingLog;
 import io.aeron.driver.MediaDriver;
 import io.aeron.samples.cluster.ClusterConfig;
-import org.agrona.concurrent.ShutdownSignalBarrier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
-
-import static io.aeron.samples.cluster.ClusterConfig.MEMBER_FACING_PORT_OFFSET;
-import static java.lang.Integer.parseInt;
 
 /**
  * Sample cluster backup application
@@ -156,6 +160,7 @@ public class ClusterBackupApp
         final int portBase = getBasePort();
         final String hosts = getClusterAddresses();
         final String[] hostAddresses = hosts.split(",");
+        awaitDnsResolution(hostAddresses);
         final StringJoiner endpointsBuilder = new StringJoiner(",");
         for (int nodeId = 0; nodeId < hostAddresses.length; nodeId++)
         {
@@ -192,7 +197,77 @@ public class ClusterBackupApp
         {
             return "localhost";
         }
+        awaitDnsResolution(backupHost);
         return backupHost;
+    }
+
+    private static void awaitDnsResolution(final String[] hosts)
+    {
+        if (applyDnsDelay())
+        {
+            LOGGER.info("Waiting 5 seconds for DNS to be registered...");
+            quietSleep(5000);
+        }
+        java.security.Security.setProperty("networkaddress.cache.ttl", "0");
+
+        Arrays.stream(hosts).forEach(ClusterBackupApp::awaitDnsResolution);
+    }
+
+    private static void awaitDnsResolution(final String host)
+    {
+        final long endTime = SystemEpochClock.INSTANCE.time() + 60000;
+        boolean resolved = false;
+        while (!resolved)
+        {
+            if (SystemEpochClock.INSTANCE.time() > endTime)
+            {
+                LOGGER.error("cannot resolve name {}, exiting", host);
+                System.exit(-1);
+            }
+
+            try
+            {
+                InetAddress.getByName(host);
+                resolved = true;
+            }
+            catch (final UnknownHostException e)
+            {
+                LOGGER.warn("cannot yet resolve name {}, retrying in 3 seconds", host);
+                quietSleep(3000);
+            }
+        }
+    }
+
+    /**
+     * Apply DNS delay
+     *
+     * @return true if DNS delay should be applied
+     */
+    private static boolean applyDnsDelay()
+    {
+        final String dnsDelay = System.getenv("DNS_DELAY");
+        if (null == dnsDelay || dnsDelay.isEmpty())
+        {
+            return false;
+        }
+        return Boolean.parseBoolean(dnsDelay);
+    }
+
+    /**
+     * Sleeps for the given number of milliseconds, ignoring any interrupts.
+     *
+     * @param millis the number of milliseconds to sleep.
+     */
+    private static void quietSleep(final long millis)
+    {
+        try
+        {
+            Thread.sleep(millis);
+        }
+        catch (final InterruptedException ex)
+        {
+            LOGGER.warn("Interrupted while sleeping");
+        }
     }
 
     private static class LoggingBackupListener implements ClusterBackupEventsListener

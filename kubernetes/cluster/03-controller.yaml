@@ -15,6 +15,15 @@ spec:
     matchLabels:
       app.kubernetes.io/name: aeron-io-sample-cluster
       app.kubernetes.io/instance: aeron-io-sample-cluster
+  volumeClaimTemplates:
+  - metadata:
+      name: data-volume-claim
+    spec:
+      accessModes: [ReadWriteOnce]
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 1Gi
   template:
     metadata:
       annotations:
@@ -25,10 +34,10 @@ spec:
     spec:
       serviceAccountName: aeron-io-sample-cluster
       volumes:
-        - emptyDir:
+        - name: shm
+          emptyDir:
             medium: Memory
             sizeLimit: 1Gi
-          name: shm
       containers:
         - name: aeron-io-sample-cluster
           image: "cluster:latest"
@@ -52,3 +61,5 @@ spec:
           volumeMounts:
             - mountPath: /dev/shm
               name: shm
+            - mountPath: /root/jar/aeron-cluster
+              name: data-volume-claim
