@@ -16,14 +16,7 @@
 
 package io.aeron.samples;
 
-import io.aeron.cluster.ClusteredMediaDriver;
-import io.aeron.cluster.service.ClusteredServiceContainer;
-import io.aeron.samples.cluster.ClusterConfig;
-import io.aeron.samples.infra.AppClusteredService;
-import org.agrona.concurrent.ShutdownSignalBarrier;
-import org.agrona.concurrent.SystemEpochClock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Integer.parseInt;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -31,7 +24,15 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Integer.parseInt;
+import org.agrona.concurrent.ShutdownSignalBarrier;
+import org.agrona.concurrent.SystemEpochClock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.aeron.cluster.ClusteredMediaDriver;
+import io.aeron.cluster.service.ClusteredServiceContainer;
+import io.aeron.samples.cluster.ClusterConfig;
+import io.aeron.samples.infra.AppClusteredService;
 
 /**
  * Sample cluster application
@@ -61,10 +62,7 @@ public class ClusterApp
         clusterConfig.consensusModuleContext().leaderHeartbeatTimeoutNs(TimeUnit.SECONDS.toNanos(3));
 
         //await DNS resolution of all the hostnames
-        for (int i = 0; i < hostAddresses.size(); i++)
-        {
-            awaitDnsResolution(hostAddresses, i);
-        }
+        hostAddresses.forEach(ClusterApp::awaitDnsResolution);
 
         try (
             ClusteredMediaDriver ignored = ClusteredMediaDriver.launch(
@@ -140,11 +138,10 @@ public class ClusterApp
     }
 
     /**
-     * Await DNS resolution of self. Under Kubernetes, this can take a while.
-     * @param hostArray host array
-     * @param nodeId node id
+     * Await DNS resolution of the given host. Under Kubernetes, this can take a while.
+     * @param host of the node to resolve
      */
-    private static void awaitDnsResolution(final List<String> hostArray, final int nodeId)
+    private static void awaitDnsResolution(final String host)
     {
         if (applyDnsDelay())
         {
@@ -153,7 +150,6 @@ public class ClusterApp
         }
 
         final long endTime = SystemEpochClock.INSTANCE.time() + 60000;
-        final String nodeName = hostArray.get(nodeId);
         java.security.Security.setProperty("networkaddress.cache.ttl", "0");
 
         boolean resolved = false;
@@ -161,18 +157,18 @@ public class ClusterApp
         {
             if (SystemEpochClock.INSTANCE.time() > endTime)
             {
-                LOGGER.error("cannot resolve name {}, exiting", nodeName);
+                LOGGER.error("cannot resolve name {}, exiting", host);
                 System.exit(-1);
             }
 
             try
             {
-                InetAddress.getByName(nodeName);
+                InetAddress.getByName(host);
                 resolved = true;
             }
             catch (final UnknownHostException e)
             {
-                LOGGER.warn("cannot yet resolve name {}, retrying in 3 seconds", nodeName);
+                LOGGER.warn("cannot yet resolve name {}, retrying in 3 seconds", host);
                 quietSleep(3000);
             }
         }
