@@ -36,6 +36,7 @@ cd .. || exit
 echo "➡️  Removing old kubernetes namespaces (if they exist)..."
 kubectl delete ns aeron-io-sample-cluster
 kubectl delete ns aeron-io-sample-admin
+kubectl delete ns aeron-io-sample-backup
 echo "➡️  Loading docker images into minikube..."
 minikube image load admin:latest
 minikube image load cluster:latest

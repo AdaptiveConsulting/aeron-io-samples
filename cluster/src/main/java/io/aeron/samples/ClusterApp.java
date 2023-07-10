@@ -30,6 +30,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import static java.lang.Integer.parseInt;
 
@@ -60,7 +61,17 @@ public class ClusterApp
         //this may need tuning for your environment.
         clusterConfig.consensusModuleContext().leaderHeartbeatTimeoutNs(TimeUnit.SECONDS.toNanos(3));
 
+        //await DNS resolution of the leader
         awaitDnsResolution(hostAddresses, nodeId);
+
+        //get the other nodeIds
+        final List<Integer> otherNodes = IntStream.rangeClosed(0, hostAddresses.size() - 1)
+            .filter(i -> i != nodeId)
+            .boxed()
+            .toList();
+
+        //await their dns resolution
+        otherNodes.forEach(id -> awaitDnsResolution(hostAddresses, id));
 
         try (
             ClusteredMediaDriver ignored = ClusteredMediaDriver.launch(
