@@ -1,3 +1,5 @@
+#!/bin/bash
+
 nodes=(
   "aeron-io-sample-cluster-0"
   "aeron-io-sample-cluster-1"

@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: aeron-io-sample-backup
+  namespace: aeron-io-sample-backup
+  labels:
+    app.kubernetes.io/name: aeron-io-sample-backup
+    app.kubernetes.io/instance: aeron-io-sample-backup
+spec:
+  replicas: 1
+  serviceName: aeron-io-sample-backup
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aeron-io-sample-backup
+      app.kubernetes.io/instance: aeron-io-sample-backup
+  template:
+    metadata:
+      annotations:
+        {}
+      labels:
+        app.kubernetes.io/name: aeron-io-sample-backup
+        app.kubernetes.io/instance: aeron-io-sample-backup
+    spec:
+      serviceAccountName: aeron-io-sample-backup
+      volumes:
+        - emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+          name: shm
+      containers:
+        - name: aeron-io-sample-backup
+          image: "backup:latest"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DNS_DELAY
+              value: "true"
+            - name: CLUSTER_PORT_BASE
+              value: "9000"
+            - name: CLUSTER_ADDRESSES
+              value: aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.
+            - name: BACKUP_HOST
+              value: aeron-io-sample-backup-0.aeron-io-sample-backup.aeron-io-sample-backup.svc.cluster.local.
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: shm
