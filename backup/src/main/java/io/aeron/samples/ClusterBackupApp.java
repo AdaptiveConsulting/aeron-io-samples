@@ -270,7 +270,7 @@ public class ClusterBackupApp
         }
     }
 
-    private static class LoggingBackupListener implements ClusterBackupEventsListener
+    private static final class LoggingBackupListener implements ClusterBackupEventsListener
     {
         @Override
         public void onBackupQuery()
