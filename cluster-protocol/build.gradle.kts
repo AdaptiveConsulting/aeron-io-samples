@@ -18,6 +18,7 @@ plugins {
     id("java-library-conventions")
 }
 
+@Suppress("DEPRECATION")
 val generatedDir = file("${buildDir}/generated/src/main/java")
 val codecGeneration = configurations.create("codecGeneration")
 
