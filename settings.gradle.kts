@@ -24,10 +24,10 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
 }
 
-val useStandby = true
-
 rootProject.name = "aeron-io-samples"
 include("cluster", "cluster-protocol", "admin", "backup")
-if (useStandby) {
+
+val standby: String? by settings
+if (true == standby?.toBoolean()) {
     include("standby")
 }

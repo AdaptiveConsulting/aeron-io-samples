@@ -86,6 +86,20 @@ services:
       - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
       - CLUSTER_PORT_BASE=9000
       - BACKUP_HOST=172.16.202.20
+  standby:
+    profiles: ["standby"]
+    build:
+      context: ../standby
+    hostname: backup
+    shm_size: '1gb'
+    networks:
+      internal_bus:
+        ipv4_address: 172.16.202.30
+    environment:
+      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
+      - CLUSTER_PORT_BASE=9000
+      - STANDBY_HOST=172.16.202.30
+      - CLUSTER_NODE=4
 
 networks:
   internal_bus:

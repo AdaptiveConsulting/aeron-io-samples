@@ -16,12 +16,17 @@
 
 package io.aeron.samples;
 
+import io.aeron.archive.Archive;
+import io.aeron.archive.ArchiveThreadingMode;
 import io.aeron.archive.ArchivingMediaDriver;
+import io.aeron.archive.client.AeronArchive;
 import io.aeron.cluster.ClusterBackup;
 import io.aeron.cluster.ClusterStandby;
 import io.aeron.cluster.service.ClusteredServiceContainer;
+import io.aeron.driver.MediaDriver;
 import io.aeron.samples.cluster.ClusterConfig;
 import io.aeron.samples.infra.AppClusteredService;
+import org.agrona.concurrent.NoOpLock;
 import org.agrona.concurrent.ShutdownSignalBarrier;
 import org.agrona.concurrent.SystemEpochClock;
 import org.slf4j.Logger;
@@ -31,7 +36,6 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.StringJoiner;
 
 import static io.aeron.samples.cluster.ClusterConfig.ARCHIVE_CONTROL_PORT_OFFSET;
@@ -39,7 +43,7 @@ import static io.aeron.samples.cluster.ClusterConfig.MEMBER_FACING_PORT_OFFSET;
 import static java.lang.Integer.parseInt;
 
 /**
- * Sample cluster backup application
+ * Sample cluster standby application
  */
 public class ClusterStandbyApp
 {
@@ -58,22 +62,38 @@ public class ClusterStandbyApp
         final String standbyHost = getStandbyHost();
         final int standbyMemberId = getMemberId();
         final int basePort = getBasePort();
-        final String hosts = getClusterAddresses();
-        final List<String> hostAddresses = List.of(hosts.split(","));
         final File baseDir = getBaseDir(standbyMemberId);
 
-        final ClusterConfig clusterConfig = ClusterConfig.create(
-            standbyMemberId, hostAddresses, hostAddresses, basePort, new AppClusteredService());
-        clusterConfig.baseDir(baseDir);
+        final MediaDriver.Context mediaDriverContext = new MediaDriver.Context().dirDeleteOnStart(true);
+        final String aeronDirectoryName = mediaDriverContext.aeronDirectoryName();
 
         final String standbyConsensusEndpoint = standbyHost + ":" + ClusterConfig.calculatePort(
             standbyMemberId, basePort, MEMBER_FACING_PORT_OFFSET);
         final String standbyArchiveEndpoint = standbyHost + ":" + ClusterConfig.calculatePort(
             standbyMemberId, basePort, ARCHIVE_CONTROL_PORT_OFFSET);
-        final String standbyResponseEndpoint = standbyHost + ":0";
+        final String standbyDynamicEndpoint = standbyHost + ":0";
+        final String standbyResponseEndpoint = standbyDynamicEndpoint;
         final String clusterConsensusEndpoints = getClusterConsensusEndpoints();
 
-        clusterConfig.archiveContext().archiveDir(new File("standby/archive"));
+        final AeronArchive.Context replicationArchiveContext = new AeronArchive.Context()
+            .controlResponseChannel("aeron:udp?endpoint=" + standbyDynamicEndpoint);
+
+        final Archive.Context archiveContext = new Archive.Context()
+            .aeronDirectoryName(aeronDirectoryName)
+            .archiveDir(new File(baseDir, ClusterConfig.ARCHIVE_SUB_DIR))
+            .controlChannel("aeron:udp?endpoint=" + standbyArchiveEndpoint)
+            .archiveClientContext(replicationArchiveContext)
+            .localControlChannel("aeron:ipc?term-length=64k")
+            .replicationChannel("aeron:udp?endpoint=" + standbyDynamicEndpoint)
+            .recordingEventsEnabled(false)
+            .threadingMode(ArchiveThreadingMode.SHARED);
+
+        final AeronArchive.Context aeronArchiveContext = new AeronArchive.Context()
+            .lock(NoOpLock.INSTANCE)
+            .controlRequestChannel(archiveContext.localControlChannel())
+            .controlRequestStreamId(archiveContext.localControlStreamId())
+            .controlResponseChannel(archiveContext.localControlChannel())
+            .aeronDirectoryName(aeronDirectoryName);
 
         // Context for Cluster Standby.
         final ClusterStandby.Context clusterStandbyContext = new ClusterStandby.Context()
@@ -87,26 +107,30 @@ public class ClusterStandbyApp
             .responseEndpoint(standbyResponseEndpoint)             // The endpoint that receives responses to requests
                                                                    // (e.g backup queries).
             .standbyDir(new File(baseDir, "standby"))
-            .archiveContext(clusterConfig.aeronArchiveContext().clone())
-            .aeronDirectoryName(clusterConfig.mediaDriverContext().aeronDirectoryName())
+            .archiveContext(aeronArchiveContext.clone())
+            .aeronDirectoryName(aeronDirectoryName)
             .sourceType(ClusterBackup.SourceType.FOLLOWER) // What kind of node(s) to connect to.
             .standbySnapshotEnabled(true)
             .standbySnapshotNotificationsEnabled(true)
             .deleteDirOnStart(true);
 
-        final ClusteredServiceContainer.Context clusteredServiceContext = clusterConfig.clusteredServiceContext();
+        final ClusteredServiceContainer.Context clusteredServiceContext = new ClusteredServiceContainer.Context()
+            .aeronDirectoryName(aeronDirectoryName)
+            .archiveContext(aeronArchiveContext.clone())
+            .clusterDir(new File(baseDir, ClusterConfig.CLUSTER_SUB_DIR))
+            .clusteredService(new AppClusteredService())
+            .serviceId(0);
 
         LOGGER.info("Standby Directory: {} ", clusterStandbyContext.standbyDirectoryName());
-        LOGGER.info("Archive Directory: {} ", clusterConfig.archiveContext().archiveDir());
+        LOGGER.info("Archive Directory: {} ", archiveContext.archiveDir());
         LOGGER.info("Connecting to cluster: {}", clusterConsensusEndpoints);
 
         try (
-            ArchivingMediaDriver ignored = ArchivingMediaDriver.launch(
-                clusterConfig.mediaDriverContext(), clusterConfig.archiveContext());
+            ArchivingMediaDriver ignored = ArchivingMediaDriver.launch(mediaDriverContext, archiveContext);
             ClusterStandby ignored1 = ClusterStandby.launch(clusterStandbyContext);
             ClusteredServiceContainer ignored2 = ClusteredServiceContainer.launch(clusteredServiceContext))
         {
-            LOGGER.info("Started Cluster Backup...");
+            LOGGER.info("Started Cluster Standby...");
             barrier.await();
             LOGGER.info("Exiting");
         }
@@ -180,13 +204,13 @@ public class ClusterStandbyApp
 
     private static String getStandbyHost()
     {
-        final String backupHost = System.getenv("STANDBY_HOST");
-        if (backupHost == null || backupHost.isEmpty())
+        final String standbyHost = System.getenv("STANDBY_HOST");
+        if (standbyHost == null || standbyHost.isEmpty())
         {
             return "localhost";
         }
-        awaitDnsResolution(backupHost);
-        return backupHost;
+        awaitDnsResolution(standbyHost);
+        return standbyHost;
     }
 
     private static void awaitDnsResolution(final String[] hosts)
