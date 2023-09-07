@@ -11,6 +11,7 @@ jlineVersion = "3.23.0"
 picoJlineVersion = "4.7.5"
 mockitoVersion = "5.5.0"
 junitPlatformLauncherVersion = "1.10.0"
+aeronClusterStandbyVersion = "1.42.0-SNAPSHOT"
 
 [libraries]
 aeron = { group = "io.aeron", name = "aeron-all", version.ref = "aeronVersion" }
@@ -27,6 +28,7 @@ mockito-junit = { group = "org.mockito", name="mockito-junit-jupiter", version.r
 jline = { group = "org.jline", name = "jline", version.ref = "jlineVersion" }
 picoJline = { group = "info.picocli", name = "picocli-shell-jline3", version.ref = "picoJlineVersion" }
 junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformLauncherVersion" }
+clusterStandby = { group = "io.aeron", name = "aeron-cluster-standby", version.ref = "aeronClusterStandbyVersion" }
 
 [bundles]
 testing = ["junitPlatformLauncher", "jupiterApi", "jupiterEngine", "mockito-core", "mockito-junit"]
