@@ -2,6 +2,8 @@
 
 > **Note**: Assumes Docker Compose 2 is available.
 
+Unless otherwise stated all commands should be run from the `<project root>/docker` directory.
+
 This will start a three-node cluster, with 2 admin containers.
 The cluster nodes will run an election, selecting one of the nodes as the leader.
 
