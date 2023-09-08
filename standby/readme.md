@@ -9,11 +9,11 @@ They need to be enabled in both the build and with any docker compose steps.
 E.g. for builds within the project root.
 
 ```shell
-> ./gradlew -Pstandby=true
+./gradlew -Pstandby=true
 ```
 
 When running the docker steps within the `<project root>/docker` directory
 ```shell
-> docker compose --profile standby build --no-cache
-> docker compose --profile standby up
+docker compose --profile standby build --no-cache
+docker compose --profile standby up
 ```
