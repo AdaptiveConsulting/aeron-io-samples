@@ -51,3 +51,16 @@ tasks {
         })
     }
 }
+
+repositories {
+    maven {
+        url = uri("https://weareadaptive.jfrog.io/artifactory/aeron-premium-virtual")
+        credentials {
+            username = providers.gradleProperty("artifactory_user").get()
+            password = providers.gradleProperty("artifactory_password").get()
+        }
+        content {
+            includeModule("io.aeron", "aeron-cluster-standby")
+        }
+    }
+}

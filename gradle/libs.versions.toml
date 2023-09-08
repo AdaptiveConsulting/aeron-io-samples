@@ -11,7 +11,7 @@ jlineVersion = "3.23.0"
 picoJlineVersion = "4.7.5"
 mockitoVersion = "5.5.0"
 junitPlatformLauncherVersion = "1.10.0"
-aeronClusterStandbyVersion = "1.42.0-SNAPSHOT"
+aeronClusterStandbyVersion = "1.42.0"
 
 [libraries]
 aeron = { group = "io.aeron", name = "aeron-all", version.ref = "aeronVersion" }
