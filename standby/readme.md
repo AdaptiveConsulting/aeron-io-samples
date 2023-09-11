@@ -12,8 +12,9 @@ E.g. for builds within the project root.
 ./gradlew -Pstandby=true
 ```
 
-When running the docker steps within the `<project root>/docker` directory
+To run Standby with docker:
 ```shell
+cd docker
 docker compose --profile standby build --no-cache
 docker compose --profile standby up
 ```
