@@ -20,13 +20,6 @@ plugins {
     java
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-        vendor.set(JvmVendorSpec.AZUL)
-    }
-}
-
 version = "0.0.1-SNAPSHOT"
 
 defaultTasks("clean", "check", "build", "test", "uberJar")
