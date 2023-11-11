@@ -25,7 +25,7 @@ Auction 1 is now in state OPEN. There have been 0 bids.
 We want to demonstrate that we can replicate snapshots, so we will trigger a snapshot on the leader.
 
 ```bash
-docker exec -it $(./docker_find_leader.sh) /root/jar/snapshot.sh
+docker exec -it $(./docker_find_leader.sh) /home/aeron/jar/snapshot.sh
 ```
 
 We also want to demonstrate replicating cluster log that follows a snapshot, so let's create another
@@ -58,8 +58,8 @@ Create a backup tarball of the `archive` and `cluster` directories on the Backup
 and copy it out of the container.
 
 ```bash
-docker exec -it aeron-backup-1 tar cvzf /root/jar/cluster_backup.tgz -C /root/jar/backup archive/ cluster/
-docker cp aeron-backup-1:/root/jar/cluster_backup.tgz .
+docker exec -it aeron-backup-1 tar cvzf /home/aeron/jar/cluster_backup.tgz -C /home/aeron/jar/backup archive/ cluster/
+docker cp aeron-backup-1:/home/aeron/jar/cluster_backup.tgz .
 ```
 
 ## 3. Restart the system with clean state
@@ -86,7 +86,7 @@ Now, let's stop the containers, restore the data from the backup, and start the 
 
 ```bash
 docker compose stop
-for i in {0..2}; do zcat cluster_backup.tgz | docker cp - aeron-node${i}-1:/root/jar/aeron-cluster; done
+for i in {0..2}; do zcat cluster_backup.tgz | docker cp - aeron-node${i}-1:/home/aeron/jar/aeron-cluster; done
 docker compose up -d
 ```
 
@@ -131,7 +131,7 @@ Auction 1 is now in state OPEN. There have been 0 bids.
 We want to demonstrate that we can replicate snapshots, so we will trigger a snapshot on the leader.
 
 ```bash
-kubectl exec -it -n aeron-io-sample-cluster $(./k8s_find_leader.sh) -- /root/jar/snapshot.sh
+kubectl exec -it -n aeron-io-sample-cluster $(./k8s_find_leader.sh) -- /home/aeron/jar/snapshot.sh
 ```
 
 We also want to demonstrate replicating cluster log that follows a snapshot, so let's create another
@@ -164,8 +164,8 @@ Create a backup tarball of the `archive` and `cluster` directories on the Backup
 and copy it out of the container.
 
 ```bash
-kubectl exec -i -n aeron-io-sample-backup aeron-io-sample-backup-0 -- tar cvzf /root/jar/cluster_backup.tgz -C /root/jar/backup archive/ cluster/
-kubectl cp -n aeron-io-sample-backup aeron-io-sample-backup-0:/root/jar/cluster_backup.tgz ./cluster_backup.tgz
+kubectl exec -i -n aeron-io-sample-backup aeron-io-sample-backup-0 -- tar cvzf /home/aeron/jar/cluster_backup.tgz -C /home/aeron/jar/backup archive/ cluster/
+kubectl cp -n aeron-io-sample-backup aeron-io-sample-backup-0:/home/aeron/jar/cluster_backup.tgz ./cluster_backup.tgz
 ```
 
 ## 3. Restart the system with clean state
@@ -194,10 +194,10 @@ Now, let's stop the containers, restore the data from the backup, and start the 
 
 ```bash
 # Stop the application from writing data and remove the data directory
-for i in {0..2}; do kubectl exec  -n aeron-io-sample-cluster aeron-io-sample-cluster-${i} -- sh -c 'kill -STOP $(pidof java); rm -r /root/jar/aeron-cluster/*'; done
+for i in {0..2}; do kubectl exec  -n aeron-io-sample-cluster aeron-io-sample-cluster-${i} -- sh -c 'kill -STOP $(pidof java); rm -r /home/aeron/jar/aeron-cluster/*'; done
 
 # Replace the data directory from the backup
-for i in {0..2}; do zcat cluster_backup.tgz | kubectl exec -i -n aeron-io-sample-cluster aeron-io-sample-cluster-${i} -- tar xf - -C /root/jar/aeron-cluster/; done
+for i in {0..2}; do zcat cluster_backup.tgz | kubectl exec -i -n aeron-io-sample-cluster aeron-io-sample-cluster-${i} -- tar xf - -C /home/aeron/jar/aeron-cluster/; done
 
 # Restart the Cluster nodes
 kubectl rollout restart statefulset -n aeron-io-sample-cluster aeron-io-sample-cluster
