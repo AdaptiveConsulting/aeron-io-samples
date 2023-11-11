@@ -46,7 +46,7 @@ services:
     depends_on:
       - node0
     hostname: admin1
-    shm_size: '1gb'
+    shm_size: '500mb'
     stdin_open: true
     tty: true
     networks:
@@ -63,7 +63,7 @@ services:
     depends_on:
       - node0
     hostname: admin2
-    shm_size: '1gb'
+    shm_size: '500mb'
     stdin_open: true
     tty: true
     networks:
