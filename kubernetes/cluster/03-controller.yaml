@@ -46,12 +46,12 @@ spec:
             - /bin/bash
           args:
             - -c
-            - /root/jar/entrypoint.sh -Dnode.id=${POD_NAME##*-}
+            - /home/aeron/jar/entrypoint.sh -Dnode.id=${POD_NAME##*-}
           env:
             - name: DNS_DELAY
               value: "true"
             - name: BASE_DIR
-              value: "/root/jar/aeron-cluster"
+              value: "/home/aeron/jar/aeron-cluster"
             - name: CLUSTER_ADDRESSES
               value: aeron-io-sample-cluster-0.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-1.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.,aeron-io-sample-cluster-2.aeron-io-sample-cluster.aeron-io-sample-cluster.svc.cluster.local.
             - name: POD_NAME
@@ -61,5 +61,5 @@ spec:
           volumeMounts:
             - mountPath: /dev/shm
               name: shm
-            - mountPath: /root/jar/aeron-cluster
+            - mountPath: /home/aeron/jar/aeron-cluster
               name: data-volume-claim

@@ -1,2 +1,2 @@
 #!/bin/sh
-java -cp ~/aeron/aeron-all-*.jar io.aeron.cluster.ClusterTool /root/jar/aeron-cluster/cluster describe
+java -cp /home/aeron/jar/aeron-all-*.jar io.aeron.cluster.ClusterTool /home/aeron/jar/aeron-cluster/cluster describe

@@ -13,10 +13,4 @@ apt-get install \
     bash \
     procps \
     less \
-    sysstat \
-    wget
-
-mkdir /root/aeron
-mkdir /root/jar
-
-wget https://repo1.maven.org/maven2/io/aeron/aeron-all/1.42.1/aeron-all-1.42.1.jar -P /root/aeron/
+    sysstat
