@@ -13,11 +13,6 @@ apt-get install \
     bash \
     procps \
     less \
-    sysstat \
-    wget
+    sysstat
 
-mkdir /root/aeron
-mkdir /root/jar
 
-wget https://repo1.maven.org/maven2/io/aeron/aeron-all/1.42.0/aeron-all-1.42.0.jar -P /root/aeron/
-# TODO: Copy cluster standby jars in place as well...

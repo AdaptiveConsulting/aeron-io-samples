@@ -1,2 +1,2 @@
 #!/bin/sh
-java -Djava.net.preferIPv4Stack=true -Daeron.ipc.mtu.length=8k "$@" -jar /root/jar/backup-uber.jar
+java -Djava.net.preferIPv4Stack=true -Daeron.ipc.mtu.length=8k "$@" -jar /home/aeron/jar/backup-uber.jar

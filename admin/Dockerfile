@@ -20,6 +20,7 @@ RUN /home/aeron/dockerbuild/setup-docker.sh && rm --recursive --force "/home/aer
 RUN apt-get install wget --quiet --assume-yes
 RUN wget https://repo1.maven.org/maven2/io/aeron/aeron-all/1.42.1/aeron-all-1.42.1.jar -P /home/aeron/jar/
 RUN apt-get remove wget --quiet --assume-yes
+RUN apt-get clean --quiet --assume-yes
 
 WORKDIR /home/aeron/jar/
 COPY --chown=aeron:aeron --chmod=755 /build/libs/admin-uber.jar /home/aeron/jar/admin-uber.jar
