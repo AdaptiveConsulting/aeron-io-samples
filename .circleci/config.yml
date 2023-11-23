@@ -1,0 +1,109 @@
+---
+version: 2.1
+
+orbs:
+  gradle: circleci/gradle@3.0.0
+  aws-cli: circleci/aws-cli@4.1.2
+  aws-ecr: circleci/aws-ecr@9.0.1
+  slack: circleci/slack@4.12.5
+
+parameters:
+  openjdk-tag:
+    type: string
+    default: '17.0'
+  slack-notification-channel:
+    type: string
+    default: 'CS19AFB6H'  # webhook-tests
+
+jobs:
+  build_and_push:
+    executor:
+      name: aws-ecr/default
+    steps:
+      - attach_workspace:
+          at: cluster
+
+      - run:
+          command: |
+            echo 'export ECR_TAG=cluster-sample${CIRCLE_TAG:+-v${CIRCLE_TAG}}-git${CIRCLE_SHA1:0:7}' >> "$BASH_ENV"
+
+      - aws-ecr/build_and_push_image:
+          attach_workspace: false  # done already
+          auth:
+            - aws-cli/setup:
+                profile_name: OIDC_USER
+                role_arn: ${AWS_ROLE_ARN}
+          build_path: cluster
+          checkout: false
+          path: cluster
+          profile_name: OIDC_USER
+          push_image: false
+          repo: adaptive/aeron-premium
+          repo_encryption_kms_key: aws/ecr
+          repo_encryption_type: KMS
+          tag: ${ECR_TAG}
+          workspace_root: cluster
+
+      - when:
+          condition: << pipeline.git.tag >>
+          steps:
+            - aws-ecr/push_image:
+                repo: adaptive/aeron-premium
+                tag: ${ECR_TAG}
+
+  success:
+    executor:
+      name: gradle/default
+      tag: <<pipeline.parameters.openjdk-tag>>
+    steps:
+      - slack/notify:
+          channel: <<pipeline.parameters.slack-notification-channel>>
+          event: pass
+          template: basic_success_1
+
+workflows:
+  on_commit:
+    jobs:
+      - gradle/test:
+          context:
+            - slack
+          deps_checksum_file: gradle/libs.versions.toml
+          executor:
+            name: 'gradle/default'
+            tag: <<pipeline.parameters.openjdk-tag>>
+          filters:
+            tags:
+              only: /^v.*/
+          post-steps:
+            - slack/notify:
+                channel: <<pipeline.parameters.slack-notification-channel>>
+                event: fail
+                template: basic_fail_1
+            - persist_to_workspace:
+                root: cluster
+                paths:
+                  - build/libs/*-uber.jar
+                  - Dockerfile
+                  - '*.sh'
+          test_command: ""  # default build
+          test_results_path: "cluster/build/test-results/"
+          reports_path: "cluster/build/reports/"
+      
+      - build_and_push:
+          filters:
+            tags:
+              only: /^v.*/
+          requires:
+            - gradle/test
+          post-steps:
+            - slack/notify:
+                channel: <<pipeline.parameters.slack-notification-channel>>
+                event: fail
+                template: basic_fail_1
+
+      - success:
+          context:
+            - slack
+          requires:
+            - gradle/test
+            - build_and_push

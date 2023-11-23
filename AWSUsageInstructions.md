@@ -43,7 +43,7 @@ When successful it prints out information about docker starting with "Hello from
 
 ## 3. Configure EC2 Instance to be able to access ECR
 
-#### 3a. Attach IAM Role that allows read-only access to ECR
+### 3a. Attach IAM Role that allows read-only access to ECR
 
 Create a new AWS role either based on the pre-defined `AmazonEC2ContainerRegistryReadOnly` or one with the policy as below and attach to your EC2 instance
 ```
@@ -65,7 +65,7 @@ Create a new AWS role either based on the pre-defined `AmazonEC2ContainerRegistr
 }
 ```
 
-#### 3b. Install Amazon ECR Credential Helper
+### 3b. Install Amazon ECR Credential Helper
 
 Unfortunately, Docker CLI does not support standard AWS authentication methods. Installing the Amazon ECR Credential Helper on the EC2 instance will allow pulling images from ECR without the need to use `docker login`:
 
@@ -82,7 +82,26 @@ Then create a file called *~/.docker/config.json* and paste the following conten
 
 ## 4. Create Docker Compose configuration
 
-Create a file called *docker-compose.yaml* and paste the following content in:
+### 4a. Create `.env` file
+
+The `.env` file is loaded by Docker Compose and allows you to change the image or tag without modifying `docker-compose.yaml`.
+
+Create a file called `.env` and paste the following content in:
+
+NOTE: The value of `IMAGE_TAG` will vary depending upon the version of the product available in the AWS Marketplace.
+The exact value you should use is part of the Marketplace documentation. The `IMAGE_TAG` shown in this 
+document is typically the latest AWS Marketplace version.
+
+```shell
+IMAGE_REGISTRY=709825985650.dkr.ecr.us-east-1.amazonaws.com/adaptive/aeron-premium
+IMAGE_TAG=cluster-sample-v0.1.0-git7e38381
+```
+
+This file should be in the same directory as `docker-compose.yaml`
+
+### 4b. Create `docker-compose.yaml` file
+
+Create a file called `docker-compose.yaml` and paste the following content in:
 
 <details>
 
@@ -96,7 +115,7 @@ name: aeron
 
 services:
   node0:
-    image: 709825985650.dkr.ecr.us-east-1.amazonaws.com/adaptive/aeron-premium:cluster-sample-v0.1.0-git7e38381
+    image: ${IMAGE_REGISTRY}:${IMAGE_TAG}
     build:
       context: cluster
     hostname: cluster0
@@ -109,7 +128,7 @@ services:
       - CLUSTER_NODE=0
       - CLUSTER_PORT_BASE=9000
   node1:
-    image: 709825985650.dkr.ecr.us-east-1.amazonaws.com/adaptive/aeron-premium:cluster-sample-v0.1.0-git7e38381
+    image: ${IMAGE_REGISTRY}:${IMAGE_TAG}
     build:
       context: cluster
     hostname: cluster1
@@ -122,7 +141,7 @@ services:
       - CLUSTER_NODE=1
       - CLUSTER_PORT_BASE=9000
   node2:
-    image: 709825985650.dkr.ecr.us-east-1.amazonaws.com/adaptive/aeron-premium:cluster-sample-v0.1.0-git7e38381
+    image: ${IMAGE_REGISTRY}:${IMAGE_TAG}
     build:
       context: cluster
     hostname: cluster2
