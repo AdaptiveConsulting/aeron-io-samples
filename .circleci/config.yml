@@ -105,6 +105,9 @@ workflows:
       - success:
           context:
             - slack
+          filters:
+            tags:
+              only: /^v.*/
           requires:
             - gradle/test
             - build_and_push
