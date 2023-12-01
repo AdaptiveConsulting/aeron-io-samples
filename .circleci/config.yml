@@ -11,6 +11,9 @@ parameters:
   openjdk-tag:
     type: string
     default: '17.0'
+  slack-notification-channel:
+    type: string
+    default: 'GSMSBFBJ5'
 
 jobs:
   build_and_push:
@@ -53,6 +56,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - slack/notify:
+          channel: <<pipeline.parameters.slack-notification-channel>>
           event: pass
           template: basic_success_1
 
@@ -71,6 +75,7 @@ workflows:
               only: /^v.*/
           post-steps:
             - slack/notify:
+                channel: <<pipeline.parameters.slack-notification-channel>>
                 event: fail
                 template: basic_fail_1
             - persist_to_workspace:
@@ -84,6 +89,8 @@ workflows:
           reports_path: "cluster/build/reports/"
       
       - build_and_push:
+          context:
+            - slack
           filters:
             tags:
               only: /^v.*/
@@ -91,6 +98,7 @@ workflows:
             - gradle/test
           post-steps:
             - slack/notify:
+                channel: <<pipeline.parameters.slack-notification-channel>>
                 event: fail
                 template: basic_fail_1
 
