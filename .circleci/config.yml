@@ -11,9 +11,6 @@ parameters:
   openjdk-tag:
     type: string
     default: '17.0'
-  slack-notification-channel:
-    type: string
-    default: 'CS19AFB6H'  # webhook-tests
 
 jobs:
   build_and_push:
@@ -52,12 +49,10 @@ jobs:
                 tag: ${ECR_TAG}
 
   success:
-    executor:
-      name: gradle/default
-      tag: <<pipeline.parameters.openjdk-tag>>
+    docker:
+      - image: cimg/base:stable
     steps:
       - slack/notify:
-          channel: <<pipeline.parameters.slack-notification-channel>>
           event: pass
           template: basic_success_1
 
@@ -76,7 +71,6 @@ workflows:
               only: /^v.*/
           post-steps:
             - slack/notify:
-                channel: <<pipeline.parameters.slack-notification-channel>>
                 event: fail
                 template: basic_fail_1
             - persist_to_workspace:
@@ -97,7 +91,6 @@ workflows:
             - gradle/test
           post-steps:
             - slack/notify:
-                channel: <<pipeline.parameters.slack-notification-channel>>
                 event: fail
                 template: basic_fail_1
 
