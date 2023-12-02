@@ -10,7 +10,7 @@ orbs:
 parameters:
   openjdk-tag:
     type: string
-    default: '17.0'
+    default: '21.0'
   slack-notification-channel:
     type: string
     default: 'GSMSBFBJ5'
@@ -87,7 +87,7 @@ workflows:
           test_command: ""  # default build
           test_results_path: "cluster/build/test-results/"
           reports_path: "cluster/build/reports/"
-      
+
       - build_and_push:
           context:
             - slack
