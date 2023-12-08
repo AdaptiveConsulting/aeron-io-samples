@@ -1,0 +1,20 @@
+#!/bin/sh
+
+CPU_NAME=$(lscpu -J | jq -r '.lscpu[] | select(.field=="Model name:") | .data')
+INSTANCE_TYPE=$(basename $(curl -s http://metadata.google.internal/computeMetadata/v1/instance/machine-type -H 'Metadata-Flavor: Google'))
+echo ""
+echo "*******************************************************************************"
+echo " Aeron Premium"
+echo " ============="
+echo ""
+echo " Instance type:     $INSTANCE_TYPE"
+echo " CPU type:          $CPU_NAME"
+echo ""
+echo " In order to run the Aeron Cluster sample application, run:"
+echo " - cd /opt/aeron-io-samples/docker"
+echo " - docker compose up -d"
+echo " - docker exec -it aeron-admin1-1 java -jar admin-uber.jar"
+echo " - type 'help' to see the available commands"
+echo ""
+echo " See /opt/aeron-io-samples/README.md for complete instructions"
+echo "*******************************************************************************"
