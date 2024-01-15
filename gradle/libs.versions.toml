@@ -9,7 +9,7 @@ logbackVersion = "1.4.14"
 picocliVersion = "4.7.5"
 jlineVersion = "3.24.1"
 picoJlineVersion = "4.7.5"
-mockitoVersion = "5.7.0"
+mockitoVersion = "5.9.0"
 junitPlatformLauncherVersion = "1.10.1"
 aeronClusterStandbyVersion = "1.42.0"
 
