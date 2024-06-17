@@ -1,5 +1,7 @@
 # Aeron.io Quick Start
 
+> **Note**: This code in this repo is for demonstration purposes only and is not representative of a production system. Please contact info@aeron.io for help configuring your system.
+
 A Cluster and command line client built using Aeron Cluster.
 
 ![demo](images/docker_demo.gif)
