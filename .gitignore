@@ -4,6 +4,7 @@
 *.sln.docstates
 *.userprefs
 .ionide/
+.kotlin/
 
 # Idea IntelliJ/Rider
 !.idea/runConfigurations/

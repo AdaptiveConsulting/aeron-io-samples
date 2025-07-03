@@ -23,15 +23,9 @@ fi
 
 echo "➡️  Building Java..."
 ./gradlew
-echo "➡️  Building admin docker image..."
-cd admin || exit
-docker build . -t admin --no-cache
-echo "➡️  Building cluster image..."
-cd ../cluster || exit
-docker build . -t cluster --no-cache
-echo "➡️  Building cluster backup image..."
-cd ../backup || exit
-docker build . -t backup --no-cache
+echo "➡️  Building docker images..."
+cd docker || exit
+docker compose build
 cd .. || exit
 echo "➡️  Removing old kubernetes namespaces (if they exist)..."
 kubectl delete ns aeron-io-sample-cluster

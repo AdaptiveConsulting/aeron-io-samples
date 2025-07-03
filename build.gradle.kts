@@ -20,6 +20,6 @@ plugins {
     java
 }
 
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
 
-defaultTasks("clean", "check", "build", "test", "uberJar")
+defaultTasks("clean", "build")

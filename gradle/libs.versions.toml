@@ -1,17 +1,18 @@
 [versions]
-junitVersion = "5.10.1"
+aeronVersion = "1.48.4"
+aeronClusterStandbyVersion = "1.48.4"
+agronaVersion = "2.2.4"
 checkstyleVersion = "10.12.5"
-aeronVersion = "1.43.0"
-sbeVersion = "1.30.0"
-agronaVersion = "1.20.0"
-slf4jVersion = "2.0.9"
-logbackVersion = "1.4.14"
-picocliVersion = "4.7.5"
-jlineVersion = "3.24.1"
-picoJlineVersion = "4.7.5"
-mockitoVersion = "5.7.0"
-junitPlatformLauncherVersion = "1.10.1"
-aeronClusterStandbyVersion = "1.42.0"
+jlineVersion = "3.26.3"
+junitPlatformLauncherVersion = "1.13.2"
+junitVersion = "5.13.2"
+logbackVersion = "1.5.18"
+mockitoVersion = "5.18.0"
+picoJlineVersion = "4.7.7"
+picocliVersion = "4.7.7"
+sbeVersion = "1.35.6"
+shadowPluginVersion = "9.0.0-rc1"
+slf4jVersion = "2.0.17"
 
 [libraries]
 aeron = { group = "io.aeron", name = "aeron-all", version.ref = "aeronVersion" }
@@ -28,7 +29,10 @@ mockito-junit = { group = "org.mockito", name="mockito-junit-jupiter", version.r
 jline = { group = "org.jline", name = "jline", version.ref = "jlineVersion" }
 picoJline = { group = "info.picocli", name = "picocli-shell-jline3", version.ref = "picoJlineVersion" }
 junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformLauncherVersion" }
-clusterStandby = { group = "io.aeron", name = "aeron-cluster-standby", version.ref = "aeronClusterStandbyVersion" }
+clusterStandby = { group = "io.aeron.premium.standby", name = "aeron-cluster-standby", version.ref = "aeronClusterStandbyVersion" }
 
 [bundles]
 testing = ["junitPlatformLauncher", "jupiterApi", "jupiterEngine", "mockito-core", "mockito-junit"]
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadowPluginVersion" }

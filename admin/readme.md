@@ -6,17 +6,17 @@
 
 You can obtain per command help by typing `help` followed by the command name.
 
-- `connect` - connect to a cluster. Optional arguments are `hostnames` and `baseport`. Defaults are `localhost`
-  and `9000`.
-- `disconnect` - disconnect from the cluster.
-- `add-participant` - adds a participant to the cluster. Arguments are `id` and `name`.
-- `list-participants` - lists all participants in the cluster.
-- `add-auction` - adds an auction to the cluster starting in 0.1 seconds and ending 25 seconds later. `name` is a
-  required argument, created by is optional.
-- `list-auctions` - lists all auctions in the cluster.
-- `add-bid` - adds a bid to the cluster. Arguments are `id`, `participant-id`, `price`.
-- `help` - show help.
-- `exit` - exit the application.
+-   `connect` - connect to a cluster. Optional arguments are `hostnames` and `baseport`. Defaults are `localhost`
+    and `9000`.
+-   `disconnect` - disconnect from the cluster.
+-   `add-participant` - adds a participant to the cluster. Arguments are `id` and `name`.
+-   `list-participants` - lists all participants in the cluster.
+-   `add-auction` - adds an auction to the cluster starting in 0.1 seconds and ending 25 seconds later. `name` is a
+    required argument, created by is optional.
+-   `list-auctions` - lists all auctions in the cluster.
+-   `add-bid` - adds a bid to the cluster. Arguments are `id`, `participant-id`, `price`.
+-   `help` - show help.
+-   `exit` - exit the application.
 
 Sample happy path script:
 
@@ -62,7 +62,7 @@ This approach is typical for gateways, for example you may have a web socket gat
 ## Environment Variables
 
 | Variable          | Description                                                                       | Default     |
-|-------------------|-----------------------------------------------------------------------------------|-------------|
+| ----------------- | --------------------------------------------------------------------------------- | ----------- |
 | AUTO_CONNECT      | If set to `true`, the admin will automatically connect to the cluster on startup. | `false`     |
 | PARTICIPANT_ID    | The participant ID to use when connecting to the cluster.                         | `0`         |
 | DUMB_TERMINAL     | If set to `true`, the admin will not use ANSI escape codes for terminal output.   | `false`     |
@@ -70,5 +70,5 @@ This approach is typical for gateways, for example you may have a web socket gat
 
 ## Uber Jar Manifest notes
 
-- `Main-Class: io.aeron.samples.admin.Admin`
-- `Add-Opens: java.base/sun.nio.ch`
+-   `Main-Class: io.aeron.samples.admin.Admin`
+-   `Add-Opens: java.base/sun.nio.ch java.base/jdk.internal.misc java.base/java.util.zip`

@@ -1,113 +1,130 @@
-version: '3.8'
-name: 'aeron'
+---
+name: "aeron"
+
+x-base-env: &x-base-env
+  CLUSTER_ADDRESSES: "172.16.202.2,172.16.202.3,172.16.202.4"
+
+x-cluster-base: &x-cluster-base
+  image: ${PROJECT_REPO:-}cluster:${PROJECT_TAG}
+  build:
+    additional_contexts:
+      gradle: ../cluster
+    cache_from:
+      - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
+    dockerfile: ./Dockerfile
+  shm_size: "1gb"
+
+x-cluster-env: &x-cluster-env
+  CLUSTER_PORT_BASE: "9000"
+  BASE_DIR: "/home/aeron/jar/aeron-cluster"
+
+x-admin-base: &x-admin-base
+  image: ${PROJECT_REPO:-}admin:${PROJECT_TAG}
+  build:
+    additional_contexts:
+      gradle: ../admin
+    cache_from:
+      - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
+    dockerfile: ./Dockerfile
+  depends_on:
+    - node0
+  shm_size: "500mb"
+  stdin_open: true
+  tty: true
+
+x-admin-env: &x-admin-env
+  AUTO_CONNECT: "true"
+  DUMB_TERMINAL: "true"
+
 services:
   node0:
-    build:
-      context: ../cluster
+    <<: *x-cluster-base
     hostname: cluster0
-    shm_size: '1gb'
+    shm_size: "1gb"
     networks:
       internal_bus:
         ipv4_address: 172.16.202.2
     environment:
-      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
-      - BASE_DIR=/home/aeron/jar/aeron-cluster
-      - CLUSTER_NODE=0
-      - CLUSTER_PORT_BASE=9000
+      <<: [*x-base-env, *x-cluster-env]
+      CLUSTER_NODE: "0"
   node1:
-    build:
-      context: ../cluster
+    <<: *x-cluster-base
     hostname: cluster1
-    shm_size: '1gb'
     networks:
       internal_bus:
         ipv4_address: 172.16.202.3
     environment:
-      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
-      - CLUSTER_NODE=1
-      - BASE_DIR=/home/aeron/jar/aeron-cluster
-      - CLUSTER_PORT_BASE=9000
+      <<: [*x-base-env, *x-cluster-env]
+      CLUSTER_NODE: "1"
   node2:
-    build:
-      context: ../cluster
+    <<: *x-cluster-base
     hostname: cluster2
-    shm_size: '1gb'
     networks:
       internal_bus:
         ipv4_address: 172.16.202.4
     environment:
-      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
-      - CLUSTER_NODE=2
-      - BASE_DIR=/home/aeron/jar/aeron-cluster
-      - CLUSTER_PORT_BASE=9000
+      <<: [*x-base-env, *x-cluster-env]
+      CLUSTER_NODE: "2"
   admin1:
-    build:
-      context: ../admin
-    depends_on:
-      - node0
+    <<: *x-admin-base
     hostname: admin1
-    shm_size: '500mb'
-    stdin_open: true
-    tty: true
     networks:
       internal_bus:
         ipv4_address: 172.16.202.10
     environment:
-      - AUTO_CONNECT=true
-      - PARTICIPANT_ID=500
-      - DUMB_TERMINAL=true
-      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
+      <<: [*x-base-env, *x-admin-env]
+      PARTICIPANT_ID: "500"
   admin2:
-    build:
-      context: ../admin
-    depends_on:
-      - node0
+    <<: *x-admin-base
     hostname: admin2
-    shm_size: '500mb'
-    stdin_open: true
-    tty: true
     networks:
       internal_bus:
         ipv4_address: 172.16.202.11
     environment:
-      - AUTO_CONNECT=true
-      - PARTICIPANT_ID=501
-      - DUMB_TERMINAL=true
-      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
+      <<: [*x-base-env, *x-admin-env]
+      PARTICIPANT_ID: "501"
   backup:
+    image: ${PROJECT_REPO:-}backup:${PROJECT_TAG}
     build:
-      context: ../backup
+      additional_contexts:
+        gradle: ../backup
+      cache_from:
+        - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
     hostname: backup
-    shm_size: '1gb'
+    shm_size: "1gb"
     networks:
       internal_bus:
         ipv4_address: 172.16.202.20
     environment:
-      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
-      - CLUSTER_PORT_BASE=9000
-      - BACKUP_HOST=172.16.202.20
+      <<: [*x-base-env]
+      BACKUP_HOST: "172.16.202.20"
+      CLUSTER_PORT_BASE: "9000"
   standby:
     profiles: ["standby"]
+    image: ${PROJECT_REPO:-}standby:${PROJECT_TAG}
     build:
-      context: ../standby
+      additional_contexts:
+        gradle: ../standby
+      cache_from:
+        - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
     hostname: backup
-    shm_size: '1gb'
+    shm_size: "1gb"
     networks:
       internal_bus:
         ipv4_address: 172.16.202.30
     environment:
-      - CLUSTER_ADDRESSES=172.16.202.2,172.16.202.3,172.16.202.4
-      - CLUSTER_PORT_BASE=9000
-      - STANDBY_HOST=172.16.202.30
-      - CLUSTER_NODE=4
+      <<: [*x-base-env]
+      CLUSTER_PORT_BASE: "9000"
+      CLUSTER_NODE: "4"
+      STANDBY_HOST: "172.16.202.30"
 
 networks:
   internal_bus:
     driver: bridge
     driver_opts:
-      com.docker.network.bridge.enable_icc: 'true'
+      com.docker.network.bridge.enable_icc: "true"
       com.docker.network.driver.mtu: 9000
-      com.docker.network.enable_ipv6: 'false'
+      com.docker.network.enable_ipv6: "false"
     ipam:
       driver: default
       config:
