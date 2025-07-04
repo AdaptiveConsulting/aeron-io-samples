@@ -28,6 +28,12 @@ java {
     }
 }
 
+// Reproducible Builds
+tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+}
+
 repositories {
     //maven local if using locally built Aeron
     mavenLocal()

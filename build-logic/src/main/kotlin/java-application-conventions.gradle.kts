@@ -17,4 +17,32 @@
 plugins {
     id("java-base-convention")
     application
+    id("com.gradleup.shadow")
+}
+
+tasks {
+    named<Jar>("jar") {
+        manifest {
+            attributes("Add-Opens" to "java.base/jdk.internal.misc java.base/java.util.zip")
+        }
+    }
+
+    named<Jar>("shadowJar") {
+        archiveClassifier = "uber"
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
+    // Disable Application Distributions at this time.
+    named("distTar") {
+        enabled = false
+    }
+    named("distZip") {
+        enabled = false
+    }
+    named("shadowDistTar") {
+        enabled = false
+    }
+    named("shadowDistZip") {
+        enabled = false
+    }
 }

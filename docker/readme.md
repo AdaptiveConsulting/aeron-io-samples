@@ -10,7 +10,7 @@ The cluster nodes will run an election, selecting one of the nodes as the leader
 Containers will be named as follows:
 
 | Container       | Description  |
-|-----------------|--------------|
+| --------------- | ------------ |
 | aeron-engine0-1 | Cluster Node |
 | aeron-engine1-1 | Cluster Node |
 | aeron-engine2-1 | Cluster Node |
@@ -19,8 +19,9 @@ Containers will be named as follows:
 
 ## Building containers
 
-- First, build the source code by running `./gradlew` in the project root directory
-- Then, build the containers with `docker compose build --no-cache`
+-   First, build the source code by running `./gradlew` in the project root directory
+-   Then, build the containers with `docker compose build`. If you want to force a clean rebuild of everything,
+    use `docker compose build --no-cache`
 
 ## Running containers
 

@@ -14,4 +14,12 @@
  * limitations under the License.
  */
 
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("libs") {
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
+}
+
 rootProject.name = "io-aeron-samples-build-logic"

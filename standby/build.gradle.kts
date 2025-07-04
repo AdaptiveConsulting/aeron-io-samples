@@ -28,39 +28,28 @@ dependencies {
     testImplementation(libs.bundles.testing)
 }
 
-tasks {
-    task("runClusterStandby", JavaExec::class) {
-        group = "run"
-        classpath = sourceSets.main.get().runtimeClasspath
-        mainClass.set("io.aeron.samples.ClusterStandbyApp")
-        jvmArgs("--add-opens=java.base/sun.nio.ch=ALL-UNNAMED")
-    }
+application {
+    mainClass = "io.aeron.samples.ClusterStandbyApp"
+}
 
-    task ("uberJar", Jar::class) {
-        group = "uber"
-        manifest {
-            attributes["Main-Class"]="io.aeron.samples.ClusterStandbyApp"
-            attributes["Add-Opens"]="java.base/sun.nio.ch"
-        }
-        archiveClassifier.set("uber")
-        from(sourceSets.main.get().output)
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        dependsOn(configurations.runtimeClasspath)
-        from({
-            configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
-        })
+tasks {
+    register<Task>("runClusterStandby") {
+        group = "run"
+        dependsOn("run")
     }
 }
 
 repositories {
-    maven {
-        url = uri("https://weareadaptive.jfrog.io/artifactory/aeron-premium")
-        credentials {
-            username = providers.gradleProperty("adaptive_username").get()
-            password = providers.gradleProperty("adaptive_password").get()
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "adaptive"
+                url = uri("https://weareadaptive.jfrog.io/artifactory/aeron-premium/")
+                credentials(PasswordCredentials::class)
+            }
         }
-        content {
-            includeModule("io.aeron", "aeron-cluster-standby")
+        filter {
+            includeGroupAndSubgroups("io.aeron.premium")
         }
     }
 }

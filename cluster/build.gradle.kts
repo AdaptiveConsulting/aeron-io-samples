@@ -27,28 +27,13 @@ dependencies {
     testImplementation(libs.bundles.testing)
 }
 
+application {
+    mainClass = "io.aeron.samples.ClusterApp"
+}
+
 tasks {
-    task("runSingleNodeCluster", JavaExec::class) {
+    register<Task>("runSingleNodeCluster") {
         group = "run"
-        classpath = sourceSets.main.get().runtimeClasspath
-        mainClass.set("io.aeron.samples.ClusterApp")
-        jvmArgs("--add-opens=java.base/sun.nio.ch=ALL-UNNAMED")
+        dependsOn("run")
     }
-
-
-    task ("uberJar", Jar::class) {
-        group = "uber"
-        manifest {
-            attributes["Main-Class"]="io.aeron.samples.ClusterApp"
-            attributes["Add-Opens"]="java.base/sun.nio.ch"
-        }
-        archiveClassifier.set("uber")
-        from(sourceSets.main.get().output)
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        dependsOn(configurations.runtimeClasspath)
-        from({
-            configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
-        })
-    }
-
 }

@@ -3,9 +3,9 @@ version: 2.1
 
 orbs:
   gradle: circleci/gradle@3.0.0
-  aws-cli: circleci/aws-cli@4.1.2
-  aws-ecr: circleci/aws-ecr@9.0.1
-  slack: circleci/slack@4.12.5
+  aws-cli: circleci/aws-cli@5.4.0
+  aws-ecr: circleci/aws-ecr@9.5.2
+  slack: circleci/slack@5.1.1
 
 parameters:
   openjdk-tag:
@@ -21,8 +21,7 @@ jobs:
       name: aws-ecr/default
     steps:
       - attach_workspace:
-          at: cluster
-
+          at: '.'
       - run:
           command: |
             echo 'export ECR_TAG=cluster-sample${CIRCLE_TAG:+-v${CIRCLE_TAG}}-git${CIRCLE_SHA1:0:7}' >> "$BASH_ENV"
@@ -33,16 +32,17 @@ jobs:
             - aws-cli/setup:
                 profile_name: OIDC_USER
                 role_arn: ${AWS_ROLE_ARN}
-          build_path: cluster
+          build_path: docker
           checkout: false
-          path: cluster
+          extra_build_args: >-
+            --build-context gradle=./cluster
+          path: docker
           profile_name: OIDC_USER
           push_image: false
           repo: adaptive/aeron-premium
           repo_encryption_kms_key: aws/ecr
           repo_encryption_type: KMS
           tag: ${ECR_TAG}
-          workspace_root: cluster
 
       - when:
           condition: << pipeline.git.tag >>
@@ -79,11 +79,12 @@ workflows:
                 event: fail
                 template: basic_fail_1
             - persist_to_workspace:
-                root: cluster
+                root: '.'
                 paths:
-                  - build/libs/*-uber.jar
-                  - Dockerfile
-                  - '*.sh'
+                  - "cluster/build/libs/*-uber.jar"
+                  - "cluster/*.sh"
+                  - "docker/Dockerfile"
+                  - "docker/.env"
           test_command: ""  # default build
           test_results_path: "cluster/build/test-results/"
           reports_path: "cluster/build/reports/"
