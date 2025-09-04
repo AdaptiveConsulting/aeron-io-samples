@@ -47,7 +47,6 @@ public class ClusterApp
      */
     public static void main(final String[] args)
     {
-        final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
         final int portBase = getBasePort();
         final int nodeId = getClusterNode();
         final String hosts = getClusterAddresses();
@@ -65,6 +64,7 @@ public class ClusterApp
         hostAddresses.forEach(ClusterApp::awaitDnsResolution);
 
         try (
+            ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
             ClusteredMediaDriver ignored = ClusteredMediaDriver.launch(
                 clusterConfig.mediaDriverContext(),
                 clusterConfig.archiveContext(),

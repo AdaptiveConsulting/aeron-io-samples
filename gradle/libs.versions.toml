@@ -1,7 +1,7 @@
 [versions]
 aeronVersion = "1.48.4"
 aeronClusterStandbyVersion = "1.48.4"
-agronaVersion = "2.2.4"
+agronaVersion = "2.3.0-rc1"
 checkstyleVersion = "10.26.1"
 jlineVersion = "3.30.4"
 junitPlatformLauncherVersion = "1.13.3"
