@@ -68,7 +68,7 @@ public class ClusterApp
             ClusteredMediaDriver ignored = ClusteredMediaDriver.launch(
                 clusterConfig.mediaDriverContext(),
                 clusterConfig.archiveContext(),
-                clusterConfig.consensusModuleContext());
+                clusterConfig.consensusModuleContext().shutdownSignalBarrier(barrier));
             ClusteredServiceContainer ignored1 = ClusteredServiceContainer.launch(
                 clusterConfig.clusteredServiceContext()))
         {
