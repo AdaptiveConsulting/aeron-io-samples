@@ -16,22 +16,6 @@
 
 package io.aeron.samples;
 
-import static io.aeron.samples.cluster.ClusterConfig.MEMBER_FACING_PORT_OFFSET;
-import static java.lang.Integer.parseInt;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
-
-import org.agrona.concurrent.ShutdownSignalBarrier;
-import org.agrona.concurrent.SystemEpochClock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.aeron.ChannelUri;
 import io.aeron.CommonContext;
 import io.aeron.archive.Archive;
@@ -43,6 +27,21 @@ import io.aeron.cluster.ClusterMember;
 import io.aeron.cluster.RecordingLog;
 import io.aeron.driver.MediaDriver;
 import io.aeron.samples.cluster.ClusterConfig;
+import org.agrona.concurrent.ShutdownSignalBarrier;
+import org.agrona.concurrent.SystemEpochClock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.concurrent.TimeUnit;
+
+import static io.aeron.samples.cluster.ClusterConfig.MEMBER_FACING_PORT_OFFSET;
+import static java.lang.Integer.parseInt;
 
 /**
  * Sample cluster backup application
@@ -59,7 +58,6 @@ public class ClusterBackupApp
      */
     public static void main(final String[] args)
     {
-        final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
         final String clusterConsensusEndpoints = getClusterConsensusEndpoints();
 
         // Host for the Cluster Backup application. This will be used to construct
@@ -85,8 +83,9 @@ public class ClusterBackupApp
         LOGGER.info("Connecting to cluster: {}", clusterConsensusEndpoints);
 
         try (
+            ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
             ArchivingMediaDriver ignored = ArchivingMediaDriver.launch(mediaDriverContext, localArchiveContext);
-            ClusterBackup ignored1 = ClusterBackup.launch(clusterBackupContext))
+            ClusterBackup ignored1 = ClusterBackup.launch(clusterBackupContext.shutdownSignalBarrier(barrier)))
         {
             LOGGER.info("Started Cluster Backup...");
             barrier.await();
