@@ -18,6 +18,7 @@ val useStandby: String by project
 
 plugins {
     java
+    alias(libs.plugins.versions)
 }
 
 version = "0.0.2-SNAPSHOT"
