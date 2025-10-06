@@ -4,8 +4,7 @@ aeronClusterStandbyVersion = "1.49.0"
 agronaVersion = "2.3.0"
 checkstyleVersion = "11.1.0"
 jlineVersion = "3.30.5"
-junitPlatformLauncherVersion = "1.13.4"
-junitVersion = "5.13.4"
+junitVersion = "6.0.0"
 logbackVersion = "1.5.18"
 mockitoVersion = "5.19.0"
 picoJlineVersion = "4.7.7"
@@ -28,7 +27,7 @@ mockito-core = { group = "org.mockito", name="mockito-core", version.ref = "mock
 mockito-junit = { group = "org.mockito", name="mockito-junit-jupiter", version.ref = "mockitoVersion"}
 jline = { group = "org.jline", name = "jline", version.ref = "jlineVersion" }
 picoJline = { group = "info.picocli", name = "picocli-shell-jline3", version.ref = "picoJlineVersion" }
-junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformLauncherVersion" }
+junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitVersion" }
 clusterStandby = { group = "io.aeron.premium.standby", name = "aeron-cluster-standby", version.ref = "aeronClusterStandbyVersion" }
 
 [bundles]
