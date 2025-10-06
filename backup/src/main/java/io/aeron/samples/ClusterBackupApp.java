@@ -84,8 +84,10 @@ public class ClusterBackupApp
 
         try (
             ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
-            ArchivingMediaDriver ignored = ArchivingMediaDriver.launch(mediaDriverContext, localArchiveContext);
-            ClusterBackup ignored1 = ClusterBackup.launch(clusterBackupContext.shutdownSignalBarrier(barrier)))
+            ArchivingMediaDriver ignored = ArchivingMediaDriver.launch(
+                mediaDriverContext.terminationHook(barrier::signalAll),
+                localArchiveContext);
+            ClusterBackup ignored1 = ClusterBackup.launch(clusterBackupContext.terminationHook(barrier::signalAll)))
         {
             LOGGER.info("Started Cluster Backup...");
             barrier.await();

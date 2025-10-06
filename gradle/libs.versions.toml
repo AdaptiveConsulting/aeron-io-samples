@@ -1,5 +1,5 @@
 [versions]
-aeronVersion = "1.49.9"
+aeronVersion = "1.49.0"
 aeronClusterStandbyVersion = "1.49.0"
 agronaVersion = "2.3.0"
 checkstyleVersion = "11.1.0"
