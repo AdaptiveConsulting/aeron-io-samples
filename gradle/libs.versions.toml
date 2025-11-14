@@ -2,6 +2,7 @@
 aeronVersion = "1.49.1"
 aeronClusterStandbyVersion = "1.49.1"
 agronaVersion = "2.3.0"
+awssdk = "2.38.6"
 checkstyleVersion = "11.1.0"
 jlineVersion = "3.30.6"
 junitVersion = "6.0.1"
@@ -30,6 +31,9 @@ jline = { group = "org.jline", name = "jline", version.ref = "jlineVersion" }
 picoJline = { group = "info.picocli", name = "picocli-shell-jline3", version.ref = "picoJlineVersion" }
 junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitVersion" }
 clusterStandby = { group = "io.aeron.premium.standby", name = "aeron-cluster-standby", version.ref = "aeronClusterStandbyVersion" }
+
+awssdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "awssdk" }
+awssdk-licensemanager = { module = "software.amazon.awssdk:licensemanager" }
 
 [bundles]
 testing = ["junitPlatformLauncher", "jupiterApi", "jupiterEngine", "mockito-core", "mockito-junit"]

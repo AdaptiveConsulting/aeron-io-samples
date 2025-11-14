@@ -12,6 +12,7 @@ x-cluster-base: &x-cluster-base
     cache_from:
       - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
     dockerfile: ./Dockerfile
+    target: cluster
   shm_size: "1gb"
 
 x-cluster-env: &x-cluster-env
@@ -26,6 +27,7 @@ x-admin-base: &x-admin-base
     cache_from:
       - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
     dockerfile: ./Dockerfile
+    target: cluster
   depends_on:
     - node0
   shm_size: "500mb"

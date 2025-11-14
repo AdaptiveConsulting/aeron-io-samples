@@ -28,7 +28,7 @@ ADD --chown=aeron:aeron --chmod=0644 "https://repo1.maven.org/maven2/io/aeron/ae
 
 WORKDIR /home/aeron/jar/
 
-FROM base AS target
+FROM base AS cluster
 
 COPY --from=gradle --chown=aeron:aeron --chmod=0644 /build/libs/*-uber.jar /home/aeron/jar/
 COPY --from=gradle --chown=aeron:aeron --chmod=0755 *.sh /home/aeron/jar/
@@ -37,3 +37,10 @@ COPY --from=gradle --chown=aeron:aeron --chmod=0755 *.sh /home/aeron/jar/
 USER aeron
 
 ENTRYPOINT ["/home/aeron/jar/entrypoint.sh"]
+
+FROM cluster AS marketplace
+
+COPY --from=marketplace --chown=aeron:aeron --chmod=0644 /build/libs/*-uber.jar /home/aeron/jar/
+COPY --from=marketplace --chown=aeron:aeron --chmod=0755 *.sh /home/aeron/jar/
+
+ENTRYPOINT ["/home/aeron/jar/marketplace.sh"]

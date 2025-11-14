@@ -36,6 +36,7 @@ jobs:
           checkout: false
           extra_build_args: >-
             --build-context gradle=./cluster
+            --build-context marketplace=./marketplace
           path: docker
           profile_name: OIDC_USER
           push_image: false
@@ -64,6 +65,8 @@ workflows:
   on_commit:
     jobs:
       - gradle/test:
+          env:
+            ORG_GRADLE_PROJECT_marketplace: "true"
           context:
             - slack
           deps_checksum_file: gradle/libs.versions.toml
@@ -85,6 +88,8 @@ workflows:
                   - "cluster/*.sh"
                   - "docker/Dockerfile"
                   - "docker/.env"
+                  - "marketplace/build/libs/*-uber.jar"
+                  - "marketplace/*.sh"
           test_command: ""  # default build
           test_results_path: "cluster/build/test-results/"
           reports_path: "cluster/build/reports/"
