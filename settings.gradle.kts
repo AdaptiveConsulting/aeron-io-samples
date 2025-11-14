@@ -31,3 +31,8 @@ val standby: String? by settings
 if (true == standby?.toBoolean()) {
     include("standby")
 }
+
+val marketplace: String? by settings
+if (true == marketplace?.toBoolean()) {
+    include("marketplace")
+}

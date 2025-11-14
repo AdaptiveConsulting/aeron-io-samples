@@ -1,0 +1,11 @@
+*
+!/admin/*.sh
+!/admin/build/libs/*.jar
+!/backup/*.sh
+!/backup/build/libs/*.jar
+!/cluster/*.sh
+!/cluster/build/libs/*.jar
+!/marketplace/*.sh
+!/marketplacey/build/libs/*.jar
+!/standby/*.sh
+!/standby/build/libs/*.jar

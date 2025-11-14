@@ -24,7 +24,7 @@ jobs:
           at: '.'
       - run:
           command: |
-            echo 'export ECR_TAG=cluster-sample${CIRCLE_TAG:+-v${CIRCLE_TAG}}-git${CIRCLE_SHA1:0:7}' >> "$BASH_ENV"
+            echo 'export ECR_TAG=cluster-sample${CIRCLE_TAG:+-${CIRCLE_TAG}}-git${CIRCLE_SHA1:0:7}' >> "$BASH_ENV"
 
       - aws-ecr/build_and_push_image:
           attach_workspace: false  # done already
@@ -35,7 +35,7 @@ jobs:
           build_path: docker
           checkout: false
           extra_build_args: >-
-            --build-context gradle=./cluster
+            --build-context gradle=./
           path: docker
           profile_name: OIDC_USER
           push_image: false
@@ -73,6 +73,10 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+          pre-steps:
+            - run:
+                name: setup
+                command: echo 'export ORG_GRADLE_PROJECT_marketplace="true"' >> "${BASH_ENV}"
           post-steps:
             - slack/notify:
                 channel: <<pipeline.parameters.slack-notification-channel>>
@@ -85,6 +89,8 @@ workflows:
                   - "cluster/*.sh"
                   - "docker/Dockerfile"
                   - "docker/.env"
+                  - "marketplace/build/libs/*-uber.jar"
+                  - "marketplace/*.sh"
           test_command: ""  # default build
           test_results_path: "cluster/build/test-results/"
           reports_path: "cluster/build/reports/"

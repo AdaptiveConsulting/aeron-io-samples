@@ -28,12 +28,34 @@ ADD --chown=aeron:aeron --chmod=0644 "https://repo1.maven.org/maven2/io/aeron/ae
 
 WORKDIR /home/aeron/jar/
 
-FROM base AS target
-
-COPY --from=gradle --chown=aeron:aeron --chmod=0644 /build/libs/*-uber.jar /home/aeron/jar/
-COPY --from=gradle --chown=aeron:aeron --chmod=0755 *.sh /home/aeron/jar/
-
 # Set the user to aeron
 USER aeron
 
 ENTRYPOINT ["/home/aeron/jar/entrypoint.sh"]
+
+FROM base AS admin
+
+COPY --from=gradle --chown=aeron:aeron --chmod=0644 /admin/build/libs/*-uber.jar /home/aeron/jar/
+COPY --from=gradle --chown=aeron:aeron --chmod=0755 /admin/*.sh /home/aeron/jar/
+
+FROM base AS backup
+
+COPY --from=gradle --chown=aeron:aeron --chmod=0644 /backup/build/libs/*-uber.jar /home/aeron/jar/
+COPY --from=gradle --chown=aeron:aeron --chmod=0755 /backup/*.sh /home/aeron/jar/
+
+FROM base AS cluster
+
+COPY --from=gradle --chown=aeron:aeron --chmod=0644 /cluster/build/libs/*-uber.jar /home/aeron/jar/
+COPY --from=gradle --chown=aeron:aeron --chmod=0755 /cluster/*.sh /home/aeron/jar/
+
+FROM base AS standby
+
+COPY --from=gradle --chown=aeron:aeron --chmod=0644 /standby/build/libs/*-uber.jar /home/aeron/jar/
+COPY --from=gradle --chown=aeron:aeron --chmod=0755 /standby/*.sh /home/aeron/jar/
+
+FROM cluster AS marketplace
+
+COPY --from=gradle --chown=aeron:aeron --chmod=0644 /marketplace/build/libs/*-uber.jar /home/aeron/jar/
+COPY --from=gradle --chown=aeron:aeron --chmod=0755 /marketplace/*.sh /home/aeron/jar/
+
+ENTRYPOINT ["/home/aeron/jar/marektplace.sh"]
