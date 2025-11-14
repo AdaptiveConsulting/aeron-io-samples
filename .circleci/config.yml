@@ -2,10 +2,10 @@
 version: 2.1
 
 orbs:
-  gradle: circleci/gradle@3.0.0
-  aws-cli: circleci/aws-cli@5.4.0
-  aws-ecr: circleci/aws-ecr@9.5.2
-  slack: circleci/slack@5.1.1
+  gradle: circleci/gradle@4.0.0
+  aws-cli: circleci/aws-cli@5.4.1
+  aws-ecr: circleci/aws-ecr@9.7.0
+  slack: circleci/slack@6.0.0
 
 parameters:
   openjdk-tag:
