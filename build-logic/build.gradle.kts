@@ -21,6 +21,7 @@ plugins {
 
 dependencies {
     implementation(plugin(libs.plugins.shadow))
+    implementation(plugin(libs.plugins.versions))
 }
 
 // Helper function that transforms a Gradle Plugin alias from a
