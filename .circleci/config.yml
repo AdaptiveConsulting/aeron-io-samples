@@ -10,10 +10,10 @@ orbs:
 parameters:
   openjdk-tag:
     type: string
-    default: '21.0'
+    default: "21.0"
   slack-notification-channel:
     type: string
-    default: 'GSMSBFBJ5'
+    default: "GSMSBFBJ5"
 
 jobs:
   build_and_push:
@@ -21,13 +21,13 @@ jobs:
       name: aws-ecr/default
     steps:
       - attach_workspace:
-          at: '.'
+          at: "."
       - run:
           command: |
-            echo 'export ECR_TAG=cluster-sample${CIRCLE_TAG:+-v${CIRCLE_TAG}}-git${CIRCLE_SHA1:0:7}' >> "$BASH_ENV"
+            echo 'export ECR_TAG=cluster-sample${CIRCLE_TAG:+-${CIRCLE_TAG}}-git${CIRCLE_SHA1:0:7}' >> "$BASH_ENV"
 
       - aws-ecr/build_and_push_image:
-          attach_workspace: false  # done already
+          attach_workspace: false # done already
           auth:
             - aws-cli/setup:
                 profile_name: OIDC_USER
@@ -68,7 +68,7 @@ workflows:
             - slack
           deps_checksum_file: gradle/libs.versions.toml
           executor:
-            name: 'gradle/default'
+            name: "gradle/default"
             tag: <<pipeline.parameters.openjdk-tag>>
           filters:
             tags:
@@ -79,13 +79,13 @@ workflows:
                 event: fail
                 template: basic_fail_1
             - persist_to_workspace:
-                root: '.'
+                root: "."
                 paths:
                   - "cluster/build/libs/*-uber.jar"
                   - "cluster/*.sh"
                   - "docker/Dockerfile"
                   - "docker/.env"
-          test_command: ""  # default build
+          test_command: "" # default build
           test_results_path: "cluster/build/test-results/"
           reports_path: "cluster/build/reports/"
 
