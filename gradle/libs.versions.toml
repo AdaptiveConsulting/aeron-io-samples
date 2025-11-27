@@ -1,8 +1,9 @@
 [versions]
-aeronVersion = "1.49.1"
-aeronClusterStandbyVersion = "1.49.1"
+# update AERON_VERSION in docker/Dockerfile too
+aeronVersion = "1.49.2"
+aeronClusterStandbyVersion = "1.49.2"
 agronaVersion = "2.3.0"
-checkstyleVersion = "11.1.0"
+checkstyleVersion = "12.1.2"
 jlineVersion = "3.30.6"
 junitVersion = "6.0.1"
 logbackVersion = "1.5.21"
