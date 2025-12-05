@@ -11,7 +11,7 @@ mockitoVersion = "5.20.0"
 picoJlineVersion = "4.7.7"
 picocliVersion = "4.7.7"
 sbeVersion = "1.36.2"
-shadow = "9.2.2"
+shadow = "9.3.0"
 slf4jVersion = "2.0.17"
 versions = "0.53.0"
 
