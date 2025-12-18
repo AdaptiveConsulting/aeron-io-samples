@@ -1,6 +1,4 @@
 echo "building admin image..."
-cd admin
-docker build . -t admin --no-cache
+docker build -f docker/Dockerfile --no-cache -t admin --build-context gradle=admin admin
 echo "building cluster image..."
-cd ../cluster
-docker build . -t cluster --no-cache
+docker build -f docker/Dockerfile --no-cache -t cluster --build-context gradle=cluster cluster
