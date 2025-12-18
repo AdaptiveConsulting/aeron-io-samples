@@ -65,7 +65,23 @@ Create a new AWS role either based on the pre-defined `AmazonEC2ContainerRegistr
 }
 ```
 
-### 3b. Install Amazon ECR Credential Helper
+### 3b. Create the AWS License Manger Service Linked Role
+
+Required only if:
+
+* Launching this product from the Marketplace
+* The AWS License Manager Service linked core role doesn't already exist
+
+The name of the service is _license-manager_. To create the service linked role, use either the AWS Console or CLI as per
+the [documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create-service-linked-role.html#create-service-linked-role-permissions-transfer).
+
+Assuming sufficient AWS credentials are exported, the AWS CLI command to create the service linked role is this:
+
+```
+aws iam create-service-linked-role --aws-service-name license-manager.amazonaws.com
+```
+
+### 3c. Install Amazon ECR Credential Helper
 
 Unfortunately, Docker CLI does not support standard AWS authentication methods. Installing the Amazon ECR Credential Helper on the EC2 instance will allow pulling images from ECR without the need to use `docker login`:
 
