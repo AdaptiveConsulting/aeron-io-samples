@@ -6,12 +6,6 @@ x-base-env: &x-base-env
 
 x-cluster-base: &x-cluster-base
   image: ${PROJECT_REPO:-}cluster:${PROJECT_TAG}
-  build:
-    additional_contexts:
-      gradle: ../cluster
-    cache_from:
-      - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
-    dockerfile: ./Dockerfile
   shm_size: "1gb"
 
 x-cluster-env: &x-cluster-env
@@ -20,12 +14,6 @@ x-cluster-env: &x-cluster-env
 
 x-admin-base: &x-admin-base
   image: ${PROJECT_REPO:-}admin:${PROJECT_TAG}
-  build:
-    additional_contexts:
-      gradle: ../admin
-    cache_from:
-      - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
-    dockerfile: ./Dockerfile
   depends_on:
     - node0
   shm_size: "500mb"
@@ -47,6 +35,12 @@ services:
     environment:
       <<: [*x-base-env, *x-cluster-env]
       CLUSTER_NODE: "0"
+    build:
+      additional_contexts:
+        gradle: ../cluster
+      cache_from:
+        - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
+      dockerfile: ./Dockerfile
   node1:
     <<: *x-cluster-base
     hostname: cluster1
@@ -74,6 +68,12 @@ services:
     environment:
       <<: [*x-base-env, *x-admin-env]
       PARTICIPANT_ID: "500"
+    build:
+      additional_contexts:
+        gradle: ../admin
+      cache_from:
+        - type=registry,ref=${REPO_NAME}${IMAGE_NAME}:${IMAGE_TAG}
+      dockerfile: ./Dockerfile
   admin2:
     <<: *x-admin-base
     hostname: admin2
