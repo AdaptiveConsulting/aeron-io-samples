@@ -13,13 +13,13 @@ Running the samples in Docker is the easiest way to get started. See the [docker
 ## Local
 
 -   run `./gradlew` to build the code
--   in one terminal, run `./gradlew runSingleNodeCluster`
--   in another terminal, run the admin application. See [admin readme](admin/readme.md) for more details.
+-   in one terminal, run `./gradlew :cluster:run`
+-   in another terminal, run the admin application. See the [admin readme](admin/readme.md) for more details.
 
 # Development requirements
 
 -   Java 21
--   Gradle 8.14.2
+-   Gradle 9.4.1
 
 # Runtime requirements
 
