@@ -40,12 +40,6 @@ Both admin containers can be used at the same time. Change `aeron-admin1-1` for 
 
 `docker exec -it aeron-admin1-1 java -jar admin-uber.jar`
 
-Within the admin, you can then connect to the cluster:
-
-```bash
-connect
-```
-
 ## Stopping containers
 
 To stop a specific container, run:

@@ -1,7 +1,10 @@
 ## Running Local
 
--   run `./gradlew` to build the code
--   run `./gradlew runSingleNodeCluster`
+From the root folder:
+
+- run `./gradlew` to build the code
+- run `./gradlew :cluster:run`  
+  or `java -jar cluster/build/libs/cluster-uber.jar`
 
 ## Environment Variables
 

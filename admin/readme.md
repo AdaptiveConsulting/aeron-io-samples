@@ -1,8 +1,18 @@
-# Admin
+## Running Local
+
+> **Note**: The Admin is a terminal application, and cannot run inside other tools such as IntelliJ terminal or via Gradle
+run.
+
+From the root folder:
+
+- run `./gradlew` to build the code
+- run `./gradlew :cluster:run` to start a single-node cluster
+- run `java -jar admin/build/libs/admin-uber.jar`
+- type `connect` to connect to the cluster
 
 ## Admin Commands
 
-> Note: The cluster starts up with two participants, `500` (`initiator`) and `501` (`responder`) preconfigured.
+> **Note**: The cluster starts up with two participants, `500` (`initiator`) and `501` (`responder`) preconfigured.
 
 You can obtain per command help by typing `help` followed by the command name.
 
@@ -28,30 +38,6 @@ add-bid auction-id=1 created-by=501 price=1000
 disconnect
 exit
 ```
-
-## Running Admin outside of Kubernetes or Docker
-
-> **Note**: You will need a running cluster for the Admin to connect to. `./gradlew runSingleNodeCluster` will start a
-> cluster.
-
-First, you will need to build the uber jar. You can do this via gradle in the project root directory:
-
-```bash
-./gradlew
-```
-
-This should output an Admin uber jar in:
-
-`/admin/build/libs/`
-
-Then you can move to that folder and run admin with:
-
-```bash
-java -jar admin-uber.jar
-```
-
-Note that the admin is a terminal application, and cannot run inside other tools such as IntelliJ terminal or via Gradle
-run.
 
 ## Protocol Notes
 
