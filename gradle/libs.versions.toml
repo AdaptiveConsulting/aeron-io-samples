@@ -16,7 +16,10 @@ slf4jVersion = "2.0.17"
 versions = "0.53.0"
 
 [libraries]
-aeron = { group = "io.aeron", name = "aeron-all", version.ref = "aeronVersion" }
+aeron-archive = { group = "io.aeron", name = "aeron-archive", version.ref = "aeronVersion" }
+aeron-client = { group = "io.aeron", name = "aeron-client", version.ref = "aeronVersion" }
+aeron-cluster = { group = "io.aeron", name = "aeron-cluster", version.ref = "aeronVersion" }
+aeron-samples = { group = "io.aeron", name = "aeron-samples", version.ref = "aeronVersion" }
 agrona = { group = "org.agrona", name = "agrona", version.ref = "agronaVersion" }
 sbe = { group = "uk.co.real-logic", name = "sbe-tool", version.ref = "sbeVersion" }
 jupiterEngine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junitVersion" }
@@ -33,6 +36,7 @@ junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-l
 clusterStandby = { group = "io.aeron.premium.standby", name = "aeron-cluster-standby", version.ref = "aeronClusterStandbyVersion" }
 
 [bundles]
+aeron = ["aeron-archive", "aeron-client", "aeron-cluster", "aeron-samples"]
 testing = ["junitPlatformLauncher", "jupiterApi", "jupiterEngine", "mockito-core", "mockito-junit"]
 
 [plugins]

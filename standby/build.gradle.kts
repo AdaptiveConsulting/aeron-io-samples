@@ -20,7 +20,7 @@ plugins {
 
 dependencies {
     implementation(libs.agrona)
-    implementation(libs.aeron)
+    implementation(libs.bundles.aeron)
     implementation(libs.clusterStandby)
     implementation(libs.slf4j)
     implementation(libs.logback)
