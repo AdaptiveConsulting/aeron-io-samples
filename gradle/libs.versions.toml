@@ -3,7 +3,7 @@
 aeronVersion = "1.50.4"
 aeronClusterStandbyVersion = "1.50.4"
 agronaVersion = "2.4.1"
-checkstyleVersion = "13.4.0"
+checkstyleVersion = "13.4.1"
 jlineVersion = "4.0.12"
 junitVersion = "6.0.3"
 logbackVersion = "1.5.32"
