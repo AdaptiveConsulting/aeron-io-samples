@@ -325,7 +325,7 @@ public class ClusterBackupApp
         {
             final StringJoiner snapshotsString = new StringJoiner(", ", "[", "]");
             snapshotsToRetrieve.forEach(snapshot ->
-                snapshotsString.add("Snapshot recordingId: " + snapshot.recordingId)
+                snapshotsString.add("Snapshot recordingId: " + snapshot.recordingId())
             );
             return snapshotsString.toString();
         }
