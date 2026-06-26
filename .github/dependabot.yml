@@ -5,3 +5,31 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
+  groups:
+    aeron:
+      applies-to: version-updates
+      patterns:
+        - "io.aeron*"
+        - "org.agrona*"
+        - "uk.co.real-logic*"
+      update-types:
+        - minor
+        - patch
+    non-breaking:
+      applies-to: version-updates
+      patterns:
+        - '*'
+      exclude-patterns:
+        - "io.aeron*"
+        - "org.agrona*"
+        - "uk.co.real-logic*"
+      update-types:
+        - minor
+        - patch
+    non-breaking-sec:
+      applies-to: security-updates
+      patterns:
+        - '*'
+      update-types:
+        - minor
+        - patch
