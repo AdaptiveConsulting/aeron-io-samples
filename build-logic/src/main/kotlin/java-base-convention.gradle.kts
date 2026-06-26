@@ -49,8 +49,7 @@ checkstyle {
 testing {
     suites {
         // Configure the built-in test suite
-        @Suppress("UNUSED_VARIABLE")
-        val test by getting(JvmTestSuite::class) {
+        val test = named<JvmTestSuite>("test") {
             // Use JUnit Jupiter test framework
             useJUnitJupiter(libs.findVersion("junitVersion").get().toString())
         }
