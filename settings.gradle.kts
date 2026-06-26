@@ -27,7 +27,7 @@ plugins {
 rootProject.name = "aeron-io-samples"
 include("cluster", "cluster-protocol", "admin", "backup")
 
-val standby: String? by settings
+val standby = settings.extra["standby"] as? String
 if (true == standby?.toBoolean()) {
     include("standby")
 }

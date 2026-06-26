@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-val useStandby: String by project
-
 plugins {
     java
     id("dependency-updates-conventions")
