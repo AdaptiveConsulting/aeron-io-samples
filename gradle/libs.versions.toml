@@ -1,6 +1,6 @@
 [versions]
 # update AERON_VERSION in docker/Dockerfile too
-aeronVersion = "1.51.0"
+aeronVersion = "1.51.1"
 aeronClusterStandbyVersion = "1.51.0"
 agronaVersion = "2.4.1"
 checkstyleVersion = "13.6.0"
